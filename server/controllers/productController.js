@@ -1,158 +1,147 @@
-const db = require("../database/db.js");
+const { Op } = require("sequelize");
 const { validationResult } = require('express-validator');
+const Product = require("../models/products");
+const Category = require("../models/category");
 
-exports.createProduct = (req, res) => {
+exports.createProduct = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const products = req.body.products; // Assuming req.body.products is an array of products
+    const { products } = req.body;
 
-    const insertionPromises = products.map(product => {
-        const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } = product;
+    try {
+        const createdProducts = await Promise.all(products.map(async (product) => {
+            const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } = product;
 
-        const q = `
-            INSERT INTO products (ProductName, CategoryID, PDescription, UnitPrice, M_Date, E_Date)
-            SELECT ?, c.CategoryID, ?, ?, ?, ?
-            FROM category c
-            WHERE c.CategoryName = ?`;
+            const category = await Category.findOne({ where: { CategoryName } });
 
-        return new Promise((resolve, reject) => {
-            db.execute(q, [ProductName, PDescription, UnitPrice, M_Date, E_Date, CategoryName], (err, result) => {
-                if (err) {
-                    console.error('Error executing query:', err.stack);
-                    reject(err);
-                } else {
-                    resolve('Product added successfully');
-                }
-            });
-        });
-    });
-
-    Promise.all(insertionPromises)
-        .then(results => {
-            res.status(201).json({ message: 'Products added successfully', results });
-        })
-        .catch(err => {
-            console.error('Error adding products:', err);
-            res.status(500).send('Error adding products');
-        });
-};
-
-exports.getAllProduct = (req, res) => {
-    const q = 'SELECT * FROM products';
-    db.query(q, (err, data) => {
-        if (err) {
-            console.error('Error executing query:', err.stack);
-            return res.status(500).send('Error executing query');
-        }
-        res.json(data);
-    });
-};
-
-exports.getProduct = (req, res) => {
-    const { id } = req.params;
-    const q = 'SELECT * FROM products WHERE ProductID = ?';
-
-    db.query(q, [id], (err, data) => {
-        if (err) {
-            console.error('Error executing query:', err.stack);
-            return res.status(500).send('Error executing query');
-        }
-        res.json(data);
-    });
-};
-
-exports.updateProduct = [
-    (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        const { id } = req.params;
-        const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } = req.body;
-
-        let query = 'UPDATE products SET';
-        let values = [];
-
-        if (ProductName) {
-            query += ' ProductName = ?,';
-            values.push(ProductName);
-        }
-        if (PDescription) {
-            query += ' PDescription = ?,';
-            values.push(PDescription);
-        }
-        if (UnitPrice) {
-            query += ' UnitPrice = ?,';
-            values.push(UnitPrice);
-        }
-        if (M_Date) {
-            query += ' M_Date = ?,';
-            values.push(M_Date);
-        }
-        if (E_Date) {
-            query += ' E_Date = ?,';
-            values.push(E_Date);
-        }
-
-        if (CategoryName) {
-            query += ' CategoryID = (SELECT CategoryID FROM category WHERE CategoryName = ?),';
-            values.push(CategoryName);
-        }
-
-        query = query.slice(0, -1) + ' WHERE ProductID = ?';
-        values.push(id);
-
-        db.execute(query, values, (err, result) => {
-            if (err) {
-                console.error('Error executing query:', err.stack);
-                return res.status(500).send('Error executing query');
+            if (!category) {
+                throw new Error(`Category ${CategoryName} not found.`);
             }
-            res.status(200).send('Product updated successfully');
-        });
-    }
-];
 
-exports.deleteProduct = (req, res) => {
-    const { id } = req.params;
-    const q = 'DELETE FROM products WHERE ProductID = ?';
-    db.execute(q, [id], (err, result) => {
-        if (err) {
-            console.error('Error executing query:', err.stack);
-            return res.status(500).send('Error executing query');
-        }
-        res.status(200).send('Product deleted successfully');
-    });
+            const newProduct = await Product.create({
+                ProductName,
+                PDescription,
+                UnitPrice,
+                M_Date,
+                E_Date,
+                CategoryID: category.CategoryID
+            });
+
+            return newProduct;
+        }));
+
+        res.status(201).json({ message: 'Products added successfully', results: createdProducts });
+    } catch (error) {
+        console.error('Error adding products:', error);
+        res.status(500).send('Error adding products');
+    }
 };
 
-exports.searchProduct = (req, res) => {
+exports.getAllProduct = async (req, res) => {
+    try {
+        const products = await Product.findAll();
+        res.json(products);
+    } catch (error) {
+        console.error('Error retrieving products:', error);
+        res.status(500).send('Error retrieving products');
+    }
+};
+
+exports.getProduct = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const product = await Product.findByPk(id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        res.json(product);
+    } catch (error) {
+        console.error('Error retrieving product:', error);
+        res.status(500).send('Error retrieving product');
+    }
+};
+
+exports.updateProduct = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { id } = req.params;
+    const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } = req.body;
+
+    try {
+        const product = await Product.findByPk(id);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        const category = await Category.findOne({ where: { CategoryName } });
+
+        if (!category) {
+            throw new Error(`Category ${CategoryName} not found.`);
+        }
+
+        await product.update({
+            ProductName,
+            PDescription,
+            UnitPrice,
+            M_Date,
+            E_Date,
+            CategoryID: category.CategoryID
+        });
+
+        res.status(200).send('Product updated successfully');
+    } catch (error) {
+        console.error('Error updating product:', error);
+        res.status(500).send('Error updating product');
+    }
+};
+
+exports.deleteProduct = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const product = await Product.findByPk(id);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        await product.destroy();
+        res.status(200).send('Product deleted successfully');
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        res.status(500).send('Error deleting product');
+    }
+};
+
+exports.searchProduct = async (req, res) => {
     const { ProductName, CategoryName } = req.query;
 
-    let query = `
-        SELECT p.ProductID, p.ProductName, c.CategoryName, p.PDescription, p.UnitPrice, p.M_Date, p.E_Date
-        FROM products p
-        JOIN category c ON p.CategoryID = c.CategoryID
-        WHERE 1`;
+    try {
+        const products = await Product.findAll({
+            where: {
+                ProductName: {
+                    [Op.like]: `%${ProductName}%`
+                }
+            },
+            include: [{
+                model: Category,
+                where: {
+                    CategoryName: {
+                        [Op.like]: `%${CategoryName}%`
+                    }
+                }
+            }]
+        });
 
-    let values = [];
-
-    if (ProductName) {
-        query += ' AND p.ProductName LIKE ?';
-        values.push(`%${ProductName}%`);
+        res.json(products);
+    } catch (error) {
+        console.error('Error searching products:', error);
+        res.status(500).send('Error searching products');
     }
-    if (CategoryName) {
-        query += ' AND c.CategoryName LIKE ?';
-        values.push(`%${CategoryName}%`);
-    }
-
-    db.query(query, values, (err, data) => {
-        if (err) {
-            console.error('Error executing query:', err);
-            return res.status(500).send('Error executing query: ' + err.message);
-        }
-        res.json(data);
-    });
 };

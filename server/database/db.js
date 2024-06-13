@@ -1,6 +1,5 @@
-const Sequelize = require('sequelize');
+const { Sequelize } = require('sequelize');
 const dotenv = require('dotenv');
-
 
 dotenv.config();
 
@@ -11,7 +10,7 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
   dialect: "mysql",
 });
 
-const connect = async (req, res) => {
+const connect = async () => {
   try {
     await sequelize.authenticate();
     console.log("Connection has been established successfully.");
@@ -22,4 +21,4 @@ const connect = async (req, res) => {
 
 connect();
 
-module.export =sequelize;
+module.exports = sequelize;

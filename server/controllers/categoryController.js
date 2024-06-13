@@ -1,168 +1,141 @@
-const db = require("../database/db.js");
-const { body,validationResult } = require('express-validator');
-
+const Category = require("../models/category");
+const { body, validationResult } = require('express-validator');
 
 // POST - /api/v1/category
-exports.createCategory = (req, res) => {
+exports.createCategory = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const sql = "INSERT INTO category (CategoryName, CDescription) VALUES (?)";
-  const values = [req.body.categoryName, req.body.categoryDescription];
-  db.query(sql, [values], (err, result) => {
-    if (err) {
-      console.error("Error creating category:", err.message);
-      return res
-        .status(500)
-        .json({ message: "Error creating category", error: err.message });
-    } else {
-      res.status(201).json({
-        message: "Category created successfully",
-        result,
-      });
-    }
-  });
+  const { categoryName, categoryDescription } = req.body;
+
+  try {
+    const newCategory = await Category.create({
+      CategoryName: categoryName,
+      CDescription: categoryDescription
+    });
+
+    res.status(201).json({
+      message: "Category created successfully",
+      result: newCategory,
+    });
+  } catch (error) {
+    console.error("Error creating category:", error.message);
+    res.status(500).json({ message: "Error creating category", error: error.message });
+  }
 };
 
 // GET - /api/v1/category/list
-exports.getCategories = (req, res) => {
-  const sql = "SELECT * FROM category";
-  db.query(sql, (err, result) => {
-    if (err) {
-      console.error("Error fetching categories:", err.message);
-      res.status(500).send({
-        message: "Error fetching categories",
-        error: err.message,
-      });
-    } else {
-      res.status(200).send(result);
-    }
-  });
+exports.getCategories = async (req, res) => {
+  try {
+    const categories = await Category.findAll();
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error("Error fetching categories:", error.message);
+    res.status(500).json({ message: "Error fetching categories", error: error.message });
+  }
 };
 
 // PUT - /api/v1/category/:id
 exports.updateCategory = [
-  body('CategoryName').notEmpty().withMessage('CategoryName cannot be empty'),
-  (req, res) => {
+  body('categoryName').notEmpty().withMessage('CategoryName cannot be empty'),
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
     const { id } = req.params;
+    const { categoryName, categoryDescription } = req.body;
 
-    const sql = "UPDATE category SET `CategoryName`= ?, `CDescription`= ? WHERE CategoryID = ?";
-    const values = [req.body.categoryName, req.body.categoryDescription];
-    db.query(sql, [...values, id], (err, result) => {
-      if (err) {
-        console.error("Error updating category:", err.message);
-        return res
-          .status(500)
-          .json({ message: "Error updating category", error: err.message });
-      } else {
-        res.status(201).json({
-          message: "Category updated successfully",
-        });
+    try {
+      const category = await Category.findByPk(id);
+
+      if (!category) {
+        return res.status(404).json({ message: 'Category not found' });
       }
-    });
+
+      await category.update({
+        CategoryName: categoryName,
+        CDescription: categoryDescription
+      });
+
+      res.status(200).json({
+        message: "Category updated successfully",
+        result: category,
+      });
+    } catch (error) {
+      console.error("Error updating category:", error.message);
+      res.status(500).json({ message: "Error updating category", error: error.message });
+    }
   }
 ];
 
 // DELETE - /api/v1/category/:id
-exports.deleteCategory = (req, res) => {
+exports.deleteCategory = async (req, res) => {
   const { id } = req.params;
-  const sql = "DELETE FROM category WHERE CategoryID = ?";
-  db.execute(sql, [id], (err, result) => {
-    if (err) {
-      console.error("Error deleting category:", err.message);
-      res.status(500).send({
-        message: "Error deleting category",
-        error: err.message,
-      });
+  
+  try {
+    const category = await Category.findByPk(id);
+
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Category not found" });
-    }
+    await category.destroy();
 
-    res.status(200).json({ message: "Category deleted successfully", result });
-  });
+    res.status(200).json({ message: "Category deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting category:", error.message);
+    res.status(500).json({ message: "Error deleting category", error: error.message });
+  }
 };
 
 // GET - /api/v1/category/paginated-list
-exports.categoryPagination = (req, res) => {
-  const { limit, page } = req.query;
+exports.categoryPagination = async (req, res) => {
+  const { limit = 10, page = 1 } = req.query;
   const offset = limit * (page - 1);
 
-  // Fetch limit and offset
-  const limitQuery = `SELECT * FROM category LIMIT ? OFFSET ?`;
-  // Fetch Categories count
-  const countQuery = `SELECT COUNT(*) as count FROM category`;
+  try {
+    const totalCount = await Category.count();
+    const totalPages = Math.ceil(totalCount / limit);
 
-  // Total number of categories
-  db.query(countQuery, (err, totalPageData) => {
-    if (err) {
-      return res.status(500).send({
-        message: "Error fetching category count",
-        error: err.message,
-      });
-    }
-
-    const totalCount = totalPageData[0].count;
-    const totalPage = Math.ceil(totalCount / limit);
-
-    // Pagination for categories
-    db.query(limitQuery, [+limit, +offset], (err, data) => {
-      if (err) {
-        return res.status(500).send({
-          message: "Error fetching categories",
-          error: err.message,
-        });
-      }
-
-      res.status(200).send({
-        data: data,
-        pagination: {
-          page: +page,
-          limit: +limit,
-          totalPage,
-        },
-      });
+    const categories = await Category.findAll({
+      limit: +limit,
+      offset: +offset
     });
-  });
+
+    res.status(200).json({
+      data: categories,
+      pagination: {
+        page: +page,
+        limit: +limit,
+        totalPage: totalPages
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching categories:", error.message);
+    res.status(500).json({ message: "Error fetching categories", error: error.message });
+  }
 };
 
 // GET - /api/v1/category/search
-exports.searchCategory = (req, res) => {
+exports.searchCategory = async (req, res) => {
   const { CategoryName, CDescription } = req.query;
-  
-  let query = 'SELECT * FROM category';
-  let values = [];
-  
-  if (CategoryName || CDescription) {
-      query += ' WHERE';
-      
-      if (CategoryName) {
-          query += ' CategoryName LIKE ?';
-          values.push(`%${CategoryName}%`);
-      }
-      
-      if (CategoryName && CDescription) {
-          query += ' AND';
-      }
-      
-      if (CDescription) {
-          query += ' CDescription LIKE ?';
-          values.push(`%${CDescription}%`);
-      }
+  const whereClause = {};
+
+  if (CategoryName) {
+    whereClause.CategoryName = { [Sequelize.Op.like]: `%${CategoryName}%` };
+  }
+  if (CDescription) {
+    whereClause.CDescription = { [Sequelize.Op.like]: `%${CDescription}%` };
   }
 
-  db.query(query, values, (err, data) => {
-      if (err) {
-          console.error('Error executing query:', err.stack);
-          return res.status(500).send('Error executing query');
-      }
-      res.json(data);
-  });
+  try {
+    const categories = await Category.findAll({ where: whereClause });
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error("Error searching categories:", error.message);
+    res.status(500).json({ message: "Error searching categories", error: error.message });
+  }
 };
