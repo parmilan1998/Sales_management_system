@@ -1,8 +1,9 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-// import categoryRoute from "./routes/categoryRoute.js";
-import bodyParser from "body-parser";
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const categoryRoute = require("./routes/categoryRoute.js");
+const bodyParser = require("body-parser");
+const db = require("./database/db.js");
 
 dotenv.config();
 
@@ -18,7 +19,7 @@ app.get("/", (req, res) => {
 });
 
 // Routes
-// app.use("/api/v1/category", categoryRoute);
+app.use("/api/v1/category", categoryRoute);
 
 const PORT = 8080 || process.env.PORT;
 

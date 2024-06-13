@@ -1,11 +1,10 @@
-import { Sequelize } from "sequelize";
-
-const sequelize = new Sequelize("database", "username", "password", {
+const Sequelize = require("sequelize");
+const sequelize = new Sequelize("sales", "root", "root", {
   host: "localhost",
   dialect: "mysql",
 });
 
-const connect = async (req, res) => {
+const connect = async () => {
   try {
     await sequelize.authenticate();
     console.log("Connection has been established successfully.");
@@ -16,4 +15,4 @@ const connect = async (req, res) => {
 
 connect();
 
-export default sequelize;
+module.exports = sequelize;
