@@ -2,6 +2,13 @@ import db from "../database/db.js";
 
 // POST - /api/v1/category
 export const createCategory = (req, res) => {
+  const { categoryName, categoryDescription } = req.body;
+
+  if (!categoryName || !categoryDescription) {
+    return res
+      .status(400)
+      .json({ message: "Category name and description are required" });
+  }
   const sql =
     "INSERT INTO category (categoryName, categoryDescription) VALUES (?)";
   const values = [req.body.categoryName, req.body.categoryDescription];
@@ -40,6 +47,7 @@ export const getCategories = (req, res) => {
 // PUT - /api/v1/category/:id
 export const updateCategory = (req, res) => {
   const { id } = req.params;
+
   const sql =
     "UPDATE category SET `categoryName`= ?, `categoryDescription`= ? WHERE categoryID = ?";
   const values = [req.body.categoryName, req.body.categoryDescription];
@@ -68,11 +76,13 @@ export const deleteCategory = (req, res) => {
         message: "Error deleting category",
         error: err.message,
       });
-    } else {
-      res
-        .status(200)
-        .json({ message: "Category deleted successfully", result });
     }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    res.status(200).json({ message: "Category deleted successfully", result });
   });
 };
 
