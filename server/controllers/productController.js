@@ -1,7 +1,7 @@
 import db from "../database/db.js";
 import { validationResult} from 'express-validator'
 
-exports.createProduct = (req, res) => {
+export const createProduct = (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -40,7 +40,7 @@ exports.createProduct = (req, res) => {
         });
 };
 
-exports.getAllProduct =(req,res)=>{ 
+export const getAllProduct =(req,res)=>{ 
     const q = 'SELECT * FROM products';
     db.query(q, (err, data) => {
         if (err) {
@@ -50,7 +50,7 @@ exports.getAllProduct =(req,res)=>{
         res.json(data);
     });}
 
-    exports.getProduct =(req,res)=>{ 
+    export const getProduct =(req,res)=>{ 
         const { id } = req.params;
         const q = 'SELECT * FROM products WHERE ProductID = ?';
   
@@ -63,7 +63,7 @@ exports.getAllProduct =(req,res)=>{
         });}
         
        
-exports.updateProduct = [
+export const updateProduct = [
         (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -114,7 +114,7 @@ exports.updateProduct = [
         });
     }
 ];
-        exports.deleteProduct =(req, res) => {
+        export const deleteProduct =(req, res) => {
             const { id } = req.params;
             const q = 'DELETE FROM products WHERE ProductID = ?';
             db.execute(q, [id], (err, result) => {
@@ -126,7 +126,7 @@ exports.updateProduct = [
             });
         };       
 
-        exports.searchProduct = (req, res) => {
+        export const searchProduct = (req, res) => {
             const { ProductName,CategoryName } = req.query;
             
             let query = `

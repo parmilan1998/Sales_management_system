@@ -139,7 +139,7 @@ export const categoryPagination = (req, res) => {
   });
 };
 
-exports.searchCategory = (req, res) => {
+export const searchCategory = (req, res) => {
   const { CategoryName, CDescription } = req.query;
   
   let query = 'SELECT * FROM category';

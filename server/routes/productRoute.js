@@ -7,7 +7,7 @@ getAllProduct,
 updateProduct,
 deleteProduct,
 getProduct
-} from '../controllers/productController'
+} from '../controllers/productController.js'
 
 router.post('/', createProduct)
 router.get('/search', searchProduct);
@@ -16,4 +16,4 @@ router.put('/:id', updateProduct)
 router.delete('/:id', deleteProduct)
 router.get('/:id', getProduct)
 
-module.exports = router
+export default router;
