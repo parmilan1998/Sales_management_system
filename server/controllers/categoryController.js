@@ -1,16 +1,18 @@
 import db from "../database/db.js";
+import {body, validationResult} from 'express-validator'
 
 // POST - /api/v1/category
-export const createCategory = (req, res) => {
-  const { categoryName, categoryDescription } = req.body;
 
-  if (!categoryName || !categoryDescription) {
-    return res
-      .status(400)
-      .json({ message: "Category name and description are required" });
-  }
+
+export const createCategory = [(req, res) => {
+  const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+
   const sql =
-    "INSERT INTO category (categoryName, categoryDescription) VALUES (?)";
+    "INSERT INTO category (CategoryName, CDescription) VALUES (?)";
   const values = [req.body.categoryName, req.body.categoryDescription];
   db.query(sql, [values], (err, result) => {
     if (err) {
@@ -25,7 +27,8 @@ export const createCategory = (req, res) => {
       });
     }
   });
-};
+}
+]
 
 // GET - /api/v1/category/list
 export const getCategories = (req, res) => {
@@ -45,11 +48,18 @@ export const getCategories = (req, res) => {
 };
 
 // PUT - /api/v1/category/:id
-export const updateCategory = (req, res) => {
+export const updateCategory =[ 
+  body('CategoryName').notEmpty().withMessage('CategoryName cannot be empty'),
+  
+  (req, res) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+      }
   const { id } = req.params;
 
   const sql =
-    "UPDATE category SET `categoryName`= ?, `categoryDescription`= ? WHERE categoryID = ?";
+    "UPDATE category SET `CategoryName`= ?, `CDescription`= ? WHERE CategoryID = ?";
   const values = [req.body.categoryName, req.body.categoryDescription];
   db.query(sql, [...values, id], (err, result) => {
     if (err) {
@@ -63,12 +73,12 @@ export const updateCategory = (req, res) => {
       });
     }
   });
-};
+}]
 
 // DELETE - /api/v1/category/:id
 export const deleteCategory = (req, res) => {
   const { id } = req.params;
-  const sql = "DELETE FROM category WHERE categoryID = ?";
+  const sql = "DELETE FROM category WHERE CategoryID = ?";
   db.execute(sql, [id], (err, result) => {
     if (err) {
       console.error("Error deleting category:", err.message);
@@ -128,3 +138,41 @@ export const categoryPagination = (req, res) => {
     });
   });
 };
+
+exports.searchCategory = (req, res) => {
+  const { CategoryName, CDescription } = req.query;
+  
+  let query = 'SELECT * FROM category';
+  let values = [];
+  
+  if (CategoryName || CDescription) {
+      query += ' WHERE';
+      
+      if (CategoryName) {
+          query += ' CategoryName LIKE ?';
+          values.push(`%${CategoryName}%`);
+      }
+      
+      if (CategoryName && CDescription) {
+          query += ' AND';
+      }
+      
+      if (CDescription) {
+          query += ' CDescription LIKE ?';
+          values.push(`%${CDescription}%`);
+      }
+  }
+
+  db.query(query, values, (err, data) => {
+      if (err) {
+          console.error('Error executing query:', err.stack);
+          return res.status(500).send('Error executing query');
+      }
+      res.json(data);
+  });
+};
+
+
+  
+
+

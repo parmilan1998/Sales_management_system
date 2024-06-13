@@ -5,6 +5,7 @@ import {
   updateCategory,
   deleteCategory,
   categoryPagination,
+  searchCategory
 } from "../controllers/categoryController.js";
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.get("/list", getCategories);
 router.put("/:id", updateCategory);
 router.delete("/:id", deleteCategory);
 router.get("/paginated-list", categoryPagination);
+router.get('/search', searchCategory);
 
 export default router;
