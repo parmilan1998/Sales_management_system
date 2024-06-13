@@ -11,7 +11,7 @@ const RootLayout = () => {
       <Sidebar />
       <div className="w-full bg-gray-200">
         <Navbar />
-        <div className="max-w-screen-md px-10 py-5 font-poppins">
+        <div className="w-full px-10 py-5 font-poppins">
           <Outlet />
         </div>
       </div>
