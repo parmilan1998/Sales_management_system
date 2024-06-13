@@ -1,5 +1,5 @@
-import db from "../database/db.js";
-import { validationResult} from 'express-validator'
+const db = require("../database/db.js");
+const { validationResult } = require('express-validator');
 
 exports.createProduct = (req, res) => {
     const errors = validationResult(req);
@@ -7,7 +7,7 @@ exports.createProduct = (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const products = req.body; 
+    const products = req.body.products; // Assuming req.body.products is an array of products
 
     const insertionPromises = products.map(product => {
         const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } = product;
@@ -40,7 +40,7 @@ exports.createProduct = (req, res) => {
         });
 };
 
-exports.getAllProduct =(req,res)=>{ 
+exports.getAllProduct = (req, res) => {
     const q = 'SELECT * FROM products';
     db.query(q, (err, data) => {
         if (err) {
@@ -48,23 +48,24 @@ exports.getAllProduct =(req,res)=>{
             return res.status(500).send('Error executing query');
         }
         res.json(data);
-    });}
+    });
+};
 
-    exports.getProduct =(req,res)=>{ 
-        const { id } = req.params;
-        const q = 'SELECT * FROM products WHERE ProductID = ?';
-  
-        db.query(q,[id], (err, data) => {
-            if (err) {
-                console.error('Error executing query:', err.stack);
-                return res.status(500).send('Error executing query');
-            }
-            res.json(data);
-        });}
-        
-       
+exports.getProduct = (req, res) => {
+    const { id } = req.params;
+    const q = 'SELECT * FROM products WHERE ProductID = ?';
+
+    db.query(q, [id], (err, data) => {
+        if (err) {
+            console.error('Error executing query:', err.stack);
+            return res.status(500).send('Error executing query');
+        }
+        res.json(data);
+    });
+};
+
 exports.updateProduct = [
-        (req, res) => {
+    (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -114,43 +115,44 @@ exports.updateProduct = [
         });
     }
 ];
-        exports.deleteProduct =(req, res) => {
-            const { id } = req.params;
-            const q = 'DELETE FROM products WHERE ProductID = ?';
-            db.execute(q, [id], (err, result) => {
-                if (err) {
-                    console.error('Error executing query:', err.stack);
-                    return res.status(500).send('Error executing query');
-                }
-                res.status(200).send('Product deleted successfully');
-            });
-        };       
 
-        exports.searchProduct = (req, res) => {
-            const { ProductName,CategoryName } = req.query;
-            
-            let query = `
-                SELECT p.ProductID, p.ProductName, c.CategoryName, p.PDescription, p.UnitPrice, p.M_Date, p.E_Date
-                FROM products p
-                JOIN category c ON p.CategoryID = c.CategoryID
-            `;
-            let values = [];
-        
-            if (ProductName) {
-                query += ' AND ProductName LIKE ?';
-                values.push(`%${ProductName}%`);
-            }
-            if (CategoryName) {
-                query += ' AND c.CategoryName LIKE ?';
-                values.push(`%${CategoryName}%`);
-            }
-        
-            db.query(query, values, (err, data) => {
-                if (err) {
-                    console.error('Error executing query:', err);
-                    return res.status(500).send('Error executing query: ' + err.message);
-                }
-                res.json(data);
-            });
-        };
-        
+exports.deleteProduct = (req, res) => {
+    const { id } = req.params;
+    const q = 'DELETE FROM products WHERE ProductID = ?';
+    db.execute(q, [id], (err, result) => {
+        if (err) {
+            console.error('Error executing query:', err.stack);
+            return res.status(500).send('Error executing query');
+        }
+        res.status(200).send('Product deleted successfully');
+    });
+};
+
+exports.searchProduct = (req, res) => {
+    const { ProductName, CategoryName } = req.query;
+
+    let query = `
+        SELECT p.ProductID, p.ProductName, c.CategoryName, p.PDescription, p.UnitPrice, p.M_Date, p.E_Date
+        FROM products p
+        JOIN category c ON p.CategoryID = c.CategoryID
+        WHERE 1`;
+
+    let values = [];
+
+    if (ProductName) {
+        query += ' AND p.ProductName LIKE ?';
+        values.push(`%${ProductName}%`);
+    }
+    if (CategoryName) {
+        query += ' AND c.CategoryName LIKE ?';
+        values.push(`%${CategoryName}%`);
+    }
+
+    db.query(query, values, (err, data) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            return res.status(500).send('Error executing query: ' + err.message);
+        }
+        res.json(data);
+    });
+};

@@ -1,18 +1,15 @@
-import db from "../database/db.js";
-import {body, validationResult} from 'express-validator'
+const db = require("../database/db.js");
+const { body,validationResult } = require('express-validator');
+
 
 // POST - /api/v1/category
-
-
-export const createCategory = [(req, res) => {
+exports.createCategory = (req, res) => {
   const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-
-  const sql =
-    "INSERT INTO category (CategoryName, CDescription) VALUES (?)";
+  const sql = "INSERT INTO category (CategoryName, CDescription) VALUES (?)";
   const values = [req.body.categoryName, req.body.categoryDescription];
   db.query(sql, [values], (err, result) => {
     if (err) {
@@ -27,13 +24,11 @@ export const createCategory = [(req, res) => {
       });
     }
   });
-}
-]
+};
 
 // GET - /api/v1/category/list
-export const getCategories = (req, res) => {
+exports.getCategories = (req, res) => {
   const sql = "SELECT * FROM category";
-
   db.query(sql, (err, result) => {
     if (err) {
       console.error("Error fetching categories:", err.message);
@@ -48,35 +43,34 @@ export const getCategories = (req, res) => {
 };
 
 // PUT - /api/v1/category/:id
-export const updateCategory =[ 
+exports.updateCategory = [
   body('CategoryName').notEmpty().withMessage('CategoryName cannot be empty'),
-  
   (req, res) => {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
-      }
-  const { id } = req.params;
-
-  const sql =
-    "UPDATE category SET `CategoryName`= ?, `CDescription`= ? WHERE CategoryID = ?";
-  const values = [req.body.categoryName, req.body.categoryDescription];
-  db.query(sql, [...values, id], (err, result) => {
-    if (err) {
-      console.error("Error updating category:", err.message);
-      return res
-        .status(500)
-        .json({ message: "Error updating category", error: err.message });
-    } else {
-      res.status(201).json({
-        message: "Category updated successfully",
-      });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
-  });
-}]
+    const { id } = req.params;
+
+    const sql = "UPDATE category SET `CategoryName`= ?, `CDescription`= ? WHERE CategoryID = ?";
+    const values = [req.body.categoryName, req.body.categoryDescription];
+    db.query(sql, [...values, id], (err, result) => {
+      if (err) {
+        console.error("Error updating category:", err.message);
+        return res
+          .status(500)
+          .json({ message: "Error updating category", error: err.message });
+      } else {
+        res.status(201).json({
+          message: "Category updated successfully",
+        });
+      }
+    });
+  }
+];
 
 // DELETE - /api/v1/category/:id
-export const deleteCategory = (req, res) => {
+exports.deleteCategory = (req, res) => {
   const { id } = req.params;
   const sql = "DELETE FROM category WHERE CategoryID = ?";
   db.execute(sql, [id], (err, result) => {
@@ -97,7 +91,7 @@ export const deleteCategory = (req, res) => {
 };
 
 // GET - /api/v1/category/paginated-list
-export const categoryPagination = (req, res) => {
+exports.categoryPagination = (req, res) => {
   const { limit, page } = req.query;
   const offset = limit * (page - 1);
 
@@ -139,6 +133,7 @@ export const categoryPagination = (req, res) => {
   });
 };
 
+// GET - /api/v1/category/search
 exports.searchCategory = (req, res) => {
   const { CategoryName, CDescription } = req.query;
   
@@ -171,8 +166,3 @@ exports.searchCategory = (req, res) => {
       res.json(data);
   });
 };
-
-
-  
-
-

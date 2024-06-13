@@ -1,9 +1,9 @@
-"use strict";
+const { readdirSync } = require("fs");
+const { basename: _basename, join } = require("path");
+const Sequelize = require("sequelize");
+const { env: _env } = require("process");
+const { DataTypes } = Sequelize;
 
-import { readdirSync } from "fs";
-import { basename as _basename, join } from "path";
-import Sequelize, { DataTypes } from "sequelize";
-import { env as _env } from "process";
 const basename = _basename(__filename);
 const env = _env.NODE_ENV || "development";
 const config = require(__dirname + "/../config/config.json")[env];
@@ -44,4 +44,4 @@ Object.keys(db).forEach((modelName) => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-export default db;
+module.exports = db;
