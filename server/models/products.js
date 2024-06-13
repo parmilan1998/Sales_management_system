@@ -1,15 +1,10 @@
-'use strict';
-const { Model } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class Products extends Model {
-    static associate(models) {
-      // Define the association between Products and Category
-      Products.belongsTo(models.Category, {
-        foreignKey: 'categoryID',
-      });
-    }
-  }
-  Products.init({
+const { DataTypes } = require("sequelize");
+const db = require("../database/db");
+const Category = require("./category"); 
+
+const Product = db.define(
+  "Product",
+  {
     ProductID: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -29,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     categoryID: {
       type: DataTypes.INTEGER,
       references: {
-        model: 'Categories', 
+        model: 'Categories', // This should match the actual table name
         key: 'categoryID', 
       },
       validate: {
@@ -64,9 +59,12 @@ module.exports = (sequelize, DataTypes) => {
         notEmpty: true,
       },
     },
-  }, {
-    sequelize,
-    modelName: 'Products',
-  });
-  return Products;
-};
+  },
+  {
+ 
+  }
+);
+
+Product.belongsTo(Category, { foreignKey: 'categoryID', targetKey: 'categoryID' });
+
+module.exports = Product;
