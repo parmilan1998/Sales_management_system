@@ -4,7 +4,6 @@ const Category = require("../models/category");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
-
   const products = req.body;
 
   try {
@@ -23,9 +22,11 @@ exports.createProduct = async (req, res) => {
           where: { categoryName: CategoryName },
         });
 
-            if (!category) {
-                return res.status(404).json({ error: `Category ${CategoryName} not found` });
-            }
+        if (!category) {
+          return res
+            .status(404)
+            .json({ error: `Category ${CategoryName} not found` });
+        }
 
         const newProduct = await Product.create({
           ProductName,
@@ -40,32 +41,36 @@ exports.createProduct = async (req, res) => {
       })
     );
 
-        res.status(201).json({ message: 'Products added successfully', results: createdProducts });
-    } catch (error) {
-        res.status(500).json({ message: 'Error adding products', error: error.message });
-    }
+    res.status(201).json({
+      message: "Products added successfully",
+      results: createdProducts,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error adding products", error: error.message });
+  }
 };
 
 // GET -> localhost:5000/api/v1/product
 exports.getAllProduct = async (req, res) => {
-    try {
-        const products = await Product.findAll();
-        res.status(200).json(products);
-    } catch (error) {
-        res.status(500).send('Error retrieving products');
-    }
+  try {
+    const products = await Product.findAll();
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).send("Error retrieving products");
+  }
 };
 
 // GET -> localhost:5000/api/v1/product:id
 exports.getProduct = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const product = await Product.findByPk(id);
-        if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-        res.status(200).json(product);
- 
+  const { id } = req.params;
+  try {
+    const product = await Product.findByPk(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(200).json(product);
   } catch (error) {
     console.error("Error retrieving product:", error);
     res.status(500).send("Error retrieving product");
@@ -74,41 +79,44 @@ exports.getProduct = async (req, res) => {
 
 // PUT -> localhost:5000/api/v1/product:id
 exports.updateProduct = async (req, res) => {
- 
-    const { id } = req.params;
-    const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } = req.body;
+  const { id } = req.params;
+  const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } =
+    req.body;
 
-    try {
-        const product = await Product.findByPk(id);
+  try {
+    const product = await Product.findByPk(id);
 
-        if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-
-        let category;
-        if (CategoryName) {
-            category = await Category.findOne({ where: { categoryName: CategoryName } });
-
-            if (!category) {
-                return res.status(404).json({ message:`Category ${CategoryName} not found.`});
-            }
-        }
-
-        await product.update({
-            ProductName,
-            PDescription,
-            UnitPrice,
-            M_Date,
-            E_Date,
-            CategoryID: category ? category.CategoryID : null
-        });
-
-        res.status(200).json({ message:'Product updated successfully'});
-    } catch (error) {
-        res.status(500).json({ message:'Error updating product'});
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
-}
-   
+
+    let category;
+    if (CategoryName) {
+      category = await Category.findOne({
+        where: { categoryName: CategoryName },
+      });
+
+      if (!category) {
+        return res
+          .status(404)
+          .json({ message: `Category ${CategoryName} not found.` });
+      }
+    }
+
+    await product.update({
+      ProductName,
+      PDescription,
+      UnitPrice,
+      M_Date,
+      E_Date,
+      CategoryID: category ? category.CategoryID : null,
+    });
+
+    res.status(200).json({ message: "Product updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating product" });
+  }
+};
 
 // DELETE -> localhost:5000/api/v1/product:id
 exports.deleteProduct = async (req, res) => {
@@ -170,17 +178,37 @@ exports.searchProduct = async (req, res) => {
 // GET -> localhost:5000/api/v1/product/pagination-list
 exports.paginationProduct = async (req, res) => {
   try {
+    const page = parseInt(req.params.page);
+    const limit = parseInt(req.params.limit);
+
+    const offset = (page - 1) * limit;
+
+    const products = await Product.findAndCountAll({
+      offset: offset,
+      limit: limit,
+    });
+
+    res.status(200).json({
+      totalPages: Math.ceil(products.count / limit),
+      totalCount: products.count,
+      currentPage: page,
+    });
   } catch (error) {
-    console.error("Error deleting product:", error);
-    res.status(500).send("Error deleting product");
+    console.error("Error fetching paginated products:", error);
+    res.status(500).json("Error fetching paginated products");
   }
 };
 
-// GET -> localhost:5000/api/v1/product/sorting-list
+// GET -> localhost:5000/api/v1/product/sorting-data
 exports.sortingProduct = async (req, res) => {
+  const sortOrder = req.query.sort === "desc" ? "DESC" : "ASC";
+  const sorting = await Product.findAll({
+    order: [["productName", sortOrder]],
+  });
+
+  res.status(200).json(sorting);
   try {
   } catch (error) {
-    console.error("Error deleting product:", error);
-    res.status(500).send("Error deleting product");
+    res.status(500).send("Error sorting product");
   }
-}
+};
