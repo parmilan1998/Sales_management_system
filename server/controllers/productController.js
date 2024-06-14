@@ -131,7 +131,6 @@ exports.deleteProduct = async (req, res) => {
     await product.destroy();
     res.status(200).send("Product deleted successfully");
   } catch (error) {
-    console.error("Error deleting product:", error);
     res.status(500).send("Error deleting product");
   }
 };
@@ -170,7 +169,6 @@ exports.searchProduct = async (req, res) => {
       res.json(product);
     }
   } catch (error) {
-    console.error("Error searching products:", error);
     res.status(500).send("Error searching products");
   }
 };
@@ -201,8 +199,7 @@ exports.paginationProduct = async (req, res) => {
       currentPage: page,
     });
   } catch (error) {
-    console.error("Error fetching paginated products:", error);
-    res.status(500).json("Error fetching paginated products");
+    res.status(500).send("Error deleting product");
   }
 };
 
@@ -216,6 +213,6 @@ exports.sortingProduct = async (req, res) => {
   res.status(200).json(sorting);
   try {
   } catch (error) {
-    res.status(500).send("Error sorting product");
+    res.status(500).send("Error deleting product");
   }
 };
