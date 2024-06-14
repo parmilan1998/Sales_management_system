@@ -14,7 +14,7 @@ const Purchase = db.define(
         notEmpty: true,
       },
     },
-    purchaseData: {
+    purchaseVendor: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
