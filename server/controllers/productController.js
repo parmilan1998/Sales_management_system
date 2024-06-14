@@ -9,13 +9,13 @@ exports.createProduct = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { products } = req.body;
+    const products = req.body;
 
     try {
         const createdProducts = await Promise.all(products.map(async (product) => {
             const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } = product;
 
-            const category = await Category.findOne({ where: { CategoryName } });
+            const category = await Category.findOne({ where: { categoryName: CategoryName } });
 
             if (!category) {
                 throw new Error(`Category ${CategoryName} not found.`);
@@ -27,7 +27,7 @@ exports.createProduct = async (req, res) => {
                 UnitPrice,
                 M_Date,
                 E_Date,
-                CategoryID: category.CategoryID
+                categoryID: category.categoryID
             });
 
             return newProduct;
@@ -35,10 +35,12 @@ exports.createProduct = async (req, res) => {
 
         res.status(201).json({ message: 'Products added successfully', results: createdProducts });
     } catch (error) {
-        console.error('Error adding products:', error);
-        res.status(500).send('Error adding products');
+        console.error('Error adding products:', error.message);
+        res.status(500).json({ message: 'Error adding products', error: error.message });
     }
 };
+
+
 
 exports.getAllProduct = async (req, res) => {
     try {
@@ -64,6 +66,8 @@ exports.getProduct = async (req, res) => {
     }
 };
 
+
+
 exports.updateProduct = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -80,10 +84,13 @@ exports.updateProduct = async (req, res) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        const category = await Category.findOne({ where: { CategoryName } });
+        let category;
+        if (CategoryName) {
+            category = await Category.findOne({ where: { categoryName: CategoryName } });
 
-        if (!category) {
-            throw new Error(`Category ${CategoryName} not found.`);
+            if (!category) {
+                throw new Error(`Category ${CategoryName} not found.`);
+            }
         }
 
         await product.update({
@@ -92,7 +99,7 @@ exports.updateProduct = async (req, res) => {
             UnitPrice,
             M_Date,
             E_Date,
-            CategoryID: category.CategoryID
+            CategoryID: category ? category.CategoryID : null
         });
 
         res.status(200).send('Product updated successfully');
@@ -101,6 +108,7 @@ exports.updateProduct = async (req, res) => {
         res.status(500).send('Error updating product');
     }
 };
+
 
 exports.deleteProduct = async (req, res) => {
     const { id } = req.params;
@@ -123,23 +131,34 @@ exports.searchProduct = async (req, res) => {
     const { ProductName, CategoryName } = req.query;
 
     try {
-        const products = await Product.findAll({
-            where: {
-                ProductName: {
-                    [Op.like]: `%${ProductName}%`
-                }
-            },
-            include: [{
+        let whereCondition = {};
+
+        if (ProductName) {
+            whereCondition.ProductName = {
+                [Op.like]: `%${ProductName}%`
+            };
+        }
+
+        let include = [];
+
+        if (CategoryName) {
+            include.push({
                 model: Category,
                 where: {
-                    CategoryName: {
+                    categoryName: {
                         [Op.like]: `%${CategoryName}%`
                     }
                 }
-            }]
-        });
+            });
+        }
 
-        res.json(products);
+        const product = await Product.findOne({
+            where: whereCondition,
+            include: include
+        });
+        if (product) {
+        res.json(product);
+        }
     } catch (error) {
         console.error('Error searching products:', error);
         res.status(500).send('Error searching products');

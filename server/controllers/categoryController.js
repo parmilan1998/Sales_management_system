@@ -10,10 +10,11 @@ exports.createCategory = async (req, res) => {
 
   const { categoryName, categoryDescription } = req.body;
 
+
   try {
     const newCategory = await Category.create({
-      CategoryName: categoryName,
-      CDescription: categoryDescription
+      categoryName: categoryName,
+      categoryDescription: categoryDescription
     });
 
     res.status(201).json({
@@ -25,6 +26,7 @@ exports.createCategory = async (req, res) => {
     res.status(500).json({ message: "Error creating category", error: error.message });
   }
 };
+
 
 // GET - /api/v1/category/list
 exports.getCategories = async (req, res) => {
