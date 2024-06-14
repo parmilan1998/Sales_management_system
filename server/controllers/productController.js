@@ -178,8 +178,14 @@ exports.searchProduct = async (req, res) => {
 // GET -> localhost:5000/api/v1/product/pagination-list
 exports.paginationProduct = async (req, res) => {
   try {
-    const page = parseInt(req.params.page);
-    const limit = parseInt(req.params.limit);
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+      return res
+        .status(400)
+        .json({ error: "Invalid page or limit parameters" });
+    }
 
     const offset = (page - 1) * limit;
 
@@ -189,6 +195,7 @@ exports.paginationProduct = async (req, res) => {
     });
 
     res.status(200).json({
+      products: products.rows,
       totalPages: Math.ceil(products.count / limit),
       totalCount: products.count,
       currentPage: page,
