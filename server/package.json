@@ -14,10 +14,7 @@
   },
   "name": "server",
   "version": "1.0.0",
-<<<<<<< HEAD
-=======
   "type": "commonjs",
->>>>>>> f2ffd389922820ad69b48d6185f8f1e521825b5e
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js"

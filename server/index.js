@@ -1,17 +1,10 @@
-<<<<<<< HEAD
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const productRoute = require('./routes/productRoute');
-const bodyParser = require('body-parser');
-=======
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const categoryRoute = require("./routes/categoryRoute");
+const productRoute = require('./routes/productRoute');
 const bodyParser = require("body-parser");
 const db = require("./database/db.js");
->>>>>>> f2ffd389922820ad69b48d6185f8f1e521825b5e
 
 dotenv.config();
 
