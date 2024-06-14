@@ -1,13 +1,8 @@
 const { Op } = require("sequelize");
-const { validationResult } = require('express-validator');
 const Product = require("../models/products");
 const Category = require("../models/category");
 
 exports.createProduct = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
 
     const products = req.body;
 
@@ -18,7 +13,7 @@ exports.createProduct = async (req, res) => {
             const category = await Category.findOne({ where: { categoryName: CategoryName } });
 
             if (!category) {
-                throw new Error(`Category ${CategoryName} not found.`);
+                return res.status(404).json({ error: `Category ${CategoryName} not found` });
             }
 
             const newProduct = await Product.create({
@@ -35,7 +30,6 @@ exports.createProduct = async (req, res) => {
 
         res.status(201).json({ message: 'Products added successfully', results: createdProducts });
     } catch (error) {
-        console.error('Error adding products:', error.message);
         res.status(500).json({ message: 'Error adding products', error: error.message });
     }
 };
@@ -45,9 +39,8 @@ exports.createProduct = async (req, res) => {
 exports.getAllProduct = async (req, res) => {
     try {
         const products = await Product.findAll();
-        res.json(products);
+        res.status(200).json(products);
     } catch (error) {
-        console.error('Error retrieving products:', error);
         res.status(500).send('Error retrieving products');
     }
 };
@@ -59,7 +52,7 @@ exports.getProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
-        res.json(product);
+        res.status(200).json(product);
     } catch (error) {
         console.error('Error retrieving product:', error);
         res.status(500).send('Error retrieving product');
@@ -69,11 +62,7 @@ exports.getProduct = async (req, res) => {
 
 
 exports.updateProduct = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
+ 
     const { id } = req.params;
     const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } = req.body;
 
@@ -89,7 +78,7 @@ exports.updateProduct = async (req, res) => {
             category = await Category.findOne({ where: { categoryName: CategoryName } });
 
             if (!category) {
-                throw new Error(`Category ${CategoryName} not found.`);
+                return res.status(404).json({ message:`Category ${CategoryName} not found.`});
             }
         }
 
@@ -102,10 +91,9 @@ exports.updateProduct = async (req, res) => {
             CategoryID: category ? category.CategoryID : null
         });
 
-        res.status(200).send('Product updated successfully');
+        res.status(200).json({ message:'Product updated successfully'});
     } catch (error) {
-        console.error('Error updating product:', error);
-        res.status(500).send('Error updating product');
+        res.status(500).json({ message:'Error updating product'});
     }
 };
 
