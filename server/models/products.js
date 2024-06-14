@@ -1,6 +1,6 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, Sequelize } = require("sequelize");
 const db = require("../database/db");
-const Category = require("./category"); 
+const Category = require("./category");
 
 const Product = db.define(
   "Product",
@@ -24,8 +24,8 @@ const Product = db.define(
     categoryID: {
       type: DataTypes.INTEGER,
       references: {
-        model: 'Categories', 
-        key: 'categoryID', 
+        model: "Categories",
+        key: "categoryID",
       },
       validate: {
         notEmpty: true,
@@ -59,12 +59,23 @@ const Product = db.define(
         notEmpty: true,
       },
     },
+    createdAt: {
+      allowNull: false,
+      type: Sequelize.DATE,
+      defaultValue: Sequelize.fn("now"),
+    },
+    updatedAt: {
+      allowNull: false,
+      type: Sequelize.DATE,
+      defaultValue: Sequelize.fn("now"),
+    },
   },
-  {
- 
-  }
+  {}
 );
 
-Product.belongsTo(Category, { foreignKey: 'categoryID', targetKey: 'categoryID' });
+Product.belongsTo(Category, {
+  foreignKey: "categoryID",
+  targetKey: "categoryID",
+});
 
 module.exports = Product;

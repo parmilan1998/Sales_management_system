@@ -1,7 +1,7 @@
 const Category = require("../models/category");
 const { Op } = require("sequelize");
 
-// POST -> localhost:8080/api/v1/category
+// POST -> localhost:5000/api/v1/category
 exports.createCategory = async (req, res) => {
   try {
     const { categoryName, categoryDescription } = req.body;
@@ -22,7 +22,7 @@ exports.createCategory = async (req, res) => {
   }
 };
 
-// GET -> localhost:8080/api/v1/category/list
+// GET -> localhost:5000/api/v1/category/list
 exports.getCategories = async (req, res) => {
   try {
     const categories = await Category.findAll();
@@ -34,7 +34,7 @@ exports.getCategories = async (req, res) => {
   }
 };
 
-// PUT -> localhost:8080/api/v1/category/:id
+// PUT -> localhost:5000/api/v1/category/:id
 exports.updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
@@ -55,7 +55,7 @@ exports.updateCategory = async (req, res) => {
   }
 };
 
-// DELETE -> localhost:8080/api/v1/category/:id
+// DELETE -> localhost:5000/api/v1/category/:id
 exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
@@ -75,7 +75,7 @@ exports.deleteCategory = async (req, res) => {
   }
 };
 
-// GET -> localhost:8080/api/v1/category/paginated-list
+// GET -> localhost:5000/api/v1/category/paginated-list
 exports.categoryPagination = async (req, res) => {
   try {
     const page = parseInt(req.query.page);
@@ -96,7 +96,7 @@ exports.categoryPagination = async (req, res) => {
   }
 };
 
-// GET -> localhost:8080/api/v1/category/search
+// GET -> localhost:5000/api/v1/category/search
 exports.searchCategory = async (req, res) => {
   try {
     const { keyword } = req.query;
