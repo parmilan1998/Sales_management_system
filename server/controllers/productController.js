@@ -123,7 +123,6 @@ exports.deleteProduct = async (req, res) => {
     await product.destroy();
     res.status(200).send("Product deleted successfully");
   } catch (error) {
-    console.error("Error deleting product:", error);
     res.status(500).send("Error deleting product");
   }
 };
@@ -162,7 +161,6 @@ exports.searchProduct = async (req, res) => {
       res.json(product);
     }
   } catch (error) {
-    console.error("Error searching products:", error);
     res.status(500).send("Error searching products");
   }
 };
@@ -171,7 +169,6 @@ exports.searchProduct = async (req, res) => {
 exports.paginationProduct = async (req, res) => {
   try {
   } catch (error) {
-    console.error("Error deleting product:", error);
     res.status(500).send("Error deleting product");
   }
 };
@@ -180,7 +177,6 @@ exports.paginationProduct = async (req, res) => {
 exports.sortingProduct = async (req, res) => {
   try {
   } catch (error) {
-    console.error("Error deleting product:", error);
     res.status(500).send("Error deleting product");
   }
 }
