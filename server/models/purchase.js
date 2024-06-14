@@ -1,4 +1,4 @@
-const { DataTypes, Sequelize } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const db = require("../database/db");
 const Product = require("./products");
 
@@ -38,7 +38,7 @@ const Purchase = db.define(
     ProductID: {
       type: DataTypes.INTEGER,
       references: {
-        model: "Product",
+        model: "Products",
         key: "ProductID",
       },
       validate: {

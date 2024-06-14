@@ -24,7 +24,7 @@ const Product = db.define(
     categoryID: {
       type: DataTypes.INTEGER,
       references: {
-        model: "Categories",
+        model: "categories",
         key: "categoryID",
       },
       validate: {
