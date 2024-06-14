@@ -1,11 +1,11 @@
 const { DataTypes, Sequelize } = require("sequelize");
 const db = require("../database/db");
-const Category = require("./category");
+const Product = require("./products");
 
-const Product = db.define(
-  "Product",
+const Purchase = db.define(
+  "Purchase",
   {
-    ProductID: {
+    purchaseID: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -14,47 +14,33 @@ const Product = db.define(
         notEmpty: true,
       },
     },
-    ProductName: {
+    purchaseData: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    categoryID: {
+    purchaseQuantity: {
       type: DataTypes.INTEGER,
-      references: {
-        model: "Categories",
-        key: "categoryID",
-      },
-      validate: {
-        notEmpty: true,
-      },
-    },
-    PDescription: {
-      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    UnitPrice: {
+    purchasePrice: {
       type: DataTypes.FLOAT,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    M_Date: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
+    ProductID: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: "Product",
+        key: "ProductID",
       },
-    },
-    E_Date: {
-      type: DataTypes.DATE,
-      allowNull: false,
       validate: {
         notEmpty: true,
       },
@@ -62,13 +48,12 @@ const Product = db.define(
   },
   {
     timestamps: true,
-    tableName: "Products",
   }
 );
 
-Product.belongsTo(Category, {
-  foreignKey: "categoryID",
-  targetKey: "categoryID",
+Purchase.belongsTo(Product, {
+  foreignKey: "ProductID",
+  targetKey: "ProductID",
 });
 
-module.exports = Product;
+module.exports = Purchase;
