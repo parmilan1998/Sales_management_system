@@ -13,11 +13,11 @@ const {
 
 router.post("/", createProduct);
 router.get("/search", searchProduct);
+router.get("/pagination-list", paginationProduct);
+router.get("/sorting-data", sortingProduct);
 router.get("/all", getAllProduct);
 router.put("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
 router.get("/:id", getProduct);
-router.get("/pagination-list", paginationProduct);
-router.get("/sorting-list", sortingProduct);
 
 module.exports = router;

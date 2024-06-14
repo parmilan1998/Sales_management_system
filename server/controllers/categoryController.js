@@ -78,9 +78,19 @@ exports.deleteCategory = async (req, res) => {
 // GET -> localhost:5000/api/v1/category/paginated-list
 exports.categoryPagination = async (req, res) => {
   try {
-    const page = parseInt(req.query.page);
-    const limit = parseInt(req.query.limit);
+    let { page, limit } = req.query;
+
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+      return res
+        .status(400)
+        .json({ error: "Invalid page or limit parameters" });
+    }
+
     const offset = (page - 1) * limit;
+
     const categories = await Category.findAndCountAll({
       offset: offset,
       limit: limit,
