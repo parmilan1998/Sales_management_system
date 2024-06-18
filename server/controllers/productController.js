@@ -1,5 +1,5 @@
-const { Op, where } = require("sequelize");
-const { Product } = require("../models/products");
+const { Op } = require("sequelize");
+const Product = require("../models/products");
 const Category = require("../models/category");
 const Purchase = require("../models/purchase");
 
@@ -14,6 +14,7 @@ exports.createProduct = async (req, res) => {
           categoryName,
           productDescription,
           productQuantity,
+          unitPrice,
           manufacturedDate,
           expiryDate,
         } = product;
@@ -31,13 +32,15 @@ exports.createProduct = async (req, res) => {
           where: { productName: productName },
         });
 
-        if (!purchase) {
-          return res
-            .status(404)
-            .json({ error: `Purchase price for ${productName} not found` });
-        }
+        if (!unitPrice) {
+          if (!purchase) {
+            return res
+              .status(404)
+              .json({ error: `Purchase price for ${productName} not found` });
+          }
 
-        const unitPrice = purchase.purchasePrice * 1.1;
+          const unitPrice = purchase.purchasePrice * 1.1;
+        }
 
         const newProduct = await Product.create({
           productName,
@@ -65,6 +68,7 @@ exports.createProduct = async (req, res) => {
   }
 };
 
+// GET -> localhost:5000/api/v1/product
 exports.getAllProduct = async (req, res) => {
   try {
     const products = await Product.findAll();
@@ -89,6 +93,7 @@ exports.getProduct = async (req, res) => {
   }
 };
 
+// PUT -> localhost:5000/api/v1/product:id
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
   const {
@@ -153,6 +158,7 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
+// GET -> localhost:5000/api/v1/product
 exports.queryProducts = async (req, res) => {
   try {
     const { page, limit, sort = "ASC", keyword } = req.query;
