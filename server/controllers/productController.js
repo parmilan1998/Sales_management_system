@@ -5,54 +5,54 @@ const Category = require("../models/category");
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
   const products = req.body;
-
   try {
-    const createdProducts = await Promise.all(
+
+   
+    const createdProduct = await Promise.all(
       products.map(async (product) => {
         const {
-          ProductName,
-          CategoryName,
-          PDescription,
-          UnitPrice,
-          M_Date,
-          E_Date,
-        } = product;
+      productName,
+      categoryName,
+      productDescription,
+      unitPrice,
+      manufacturedDate,
+      expiryDate 
+    } = product;
 
-        const category = await Category.findOne({
-          where: { categoryName: CategoryName },
-        });
+      const category = await Category.findOne({
+        where: { categoryName: categoryName },
+      });
 
-        if (!category) {
-          return res
-            .status(404)
-            .json({ error: `Category ${CategoryName} not found` });
-        }
+      if (!category) {
+        return res
+          .status(404)
+          .json({ error: `Category ${categoryName} not found` });
+      }
 
-        const newProduct = await Product.create({
-          ProductName,
-          PDescription,
-          UnitPrice,
-          M_Date,
-          E_Date,
-          categoryID: category.categoryID,
-        });
+      const newProduct = await Product.create({
+        productName,
+        categoryID: category.categoryID,
+        categoryName: category.categoryName,
+        productDescription,
+        unitPrice,
+        manufacturedDate,
+        expiryDate 
+       });
 
         return newProduct;
       })
     );
 
     res.status(201).json({
-      message: "Products added successfully",
-      results: createdProducts,
+      message: "Product added successfully",
+      result: createdProduct,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error adding products", error: error.message });
+    console.error("Error adding product:", error);
+    res.status(500).json({ message: "Error adding product", error: error.message });
   }
 };
 
-// GET -> localhost:5000/api/v1/product
 exports.getAllProduct = async (req, res) => {
   try {
     const products = await Product.findAll();
@@ -77,11 +77,16 @@ exports.getProduct = async (req, res) => {
   }
 };
 
-// PUT -> localhost:5000/api/v1/product:id
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } =
-    req.body;
+  const { 
+    productName,
+    categoryName,
+    productDescription,
+    unitPrice,
+    manufacturedDate,
+    expiryDate  
+  } = req.body;
 
   try {
     const product = await Product.findByPk(id);
@@ -91,25 +96,26 @@ exports.updateProduct = async (req, res) => {
     }
 
     let category;
-    if (CategoryName) {
+    if (categoryName) {
       category = await Category.findOne({
-        where: { categoryName: CategoryName },
+        where: { categoryName: categoryName },
       });
 
       if (!category) {
         return res
           .status(404)
-          .json({ message: `Category ${CategoryName} not found.` });
+          .json({ message: `Category ${categoryName} not found.` });
       }
     }
 
     await product.update({
-      ProductName,
-      PDescription,
-      UnitPrice,
-      M_Date,
-      E_Date,
-      CategoryID: category ? category.CategoryID : null,
+      productName,
+      categoryName,
+      productDescription,
+      unitPrice,
+      manufacturedDate,
+      expiryDate,
+      categoryID: category ? category.categoryID : null,
     });
 
     res.status(200).json({ message: "Product updated successfully" });
@@ -137,25 +143,25 @@ exports.deleteProduct = async (req, res) => {
 
 // GET -> localhost:5000/api/v1/product/search
 exports.searchProduct = async (req, res) => {
-  const { ProductName, CategoryName } = req.query;
+  const { productName, categoryName } = req.query;
 
   try {
     let whereCondition = {};
 
-    if (ProductName) {
-      whereCondition.ProductName = {
-        [Op.like]: `%${ProductName}%`,
+    if (productName) {
+      whereCondition.productName = {
+        [Op.like]: `%${productName}%`,
       };
     }
 
     let include = [];
 
-    if (CategoryName) {
+    if (categoryName) {
       include.push({
         model: Category,
         where: {
           categoryName: {
-            [Op.like]: `%${CategoryName}%`,
+            [Op.like]: `%${categoryName}%`,
           },
         },
       });
@@ -167,7 +173,8 @@ exports.searchProduct = async (req, res) => {
     });
     if (product) {
       res.json(product);
-    }
+    } else {
+      res.status(404).json({ error: "Product not found" }); }
   } catch (error) {
     res.status(500).send("Error searching products");
   }
@@ -190,6 +197,11 @@ exports.paginationProduct = async (req, res) => {
     const products = await Product.findAndCountAll({
       offset: offset,
       limit: limit,
+      include: [{
+        model: Category,
+        as: 'category',
+        attributes: ['categoryName']
+      }]
     });
 
     res.status(200).json({
@@ -216,3 +228,4 @@ exports.sortingProduct = async (req, res) => {
     res.status(500).send("Error deleting product");
   }
 };
+

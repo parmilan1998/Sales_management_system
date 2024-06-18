@@ -35,11 +35,12 @@ exports.createPurchase = async (req, res) => {
     }
 
     const purchase = await Purchase.create({
+      productName,
       purchaseVendor,
       vendorContact,
       purchaseQuantity,
       purchasePrice,
-      productName,
+    
     });
 
     res.status(201).json({
@@ -70,11 +71,12 @@ exports.updatePurchase = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      productName,
       purchaseVendor,
       vendorContact,
       purchaseQuantity,
       purchasePrice,
-      productName,
+     
     } = req.body;
     const purchase = await Purchase.findByPk(id);
     if (!purchase) {
