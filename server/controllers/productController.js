@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const Product = require("../models/products");
 const Category = require("../models/category");
+const Purchase = require("../models/purchase")
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
@@ -14,7 +15,7 @@ exports.createProduct = async (req, res) => {
       productName,
       categoryName,
       productDescription,
-      unitPrice,
+      productQuantity,
       manufacturedDate,
       expiryDate 
     } = product;
@@ -28,12 +29,24 @@ exports.createProduct = async (req, res) => {
           .status(404)
           .json({ error: `Category ${categoryName} not found` });
       }
+      const purchase = await Purchase.findOne({
+        where: { productName: productName },
+      });
+
+      if (!purchase) {
+        return res
+          .status(404)
+          .json({ error: `Purchase price for ${productName} not found` });
+      }
+
+      const unitPrice = purchase.purchasePrice * 1.10;
 
       const newProduct = await Product.create({
         productName,
         categoryID: category.categoryID,
         categoryName: category.categoryName,
         productDescription,
+        productQuantity,
         unitPrice,
         manufacturedDate,
         expiryDate 
@@ -48,7 +61,7 @@ exports.createProduct = async (req, res) => {
       result: createdProduct,
     });
   } catch (error) {
-    console.error("Error adding product:", error);
+
     res.status(500).json({ message: "Error adding product", error: error.message });
   }
 };
