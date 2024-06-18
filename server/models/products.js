@@ -5,7 +5,7 @@ const Category = require("./category");
 const Product = db.define(
   "Product",
   {
-    ProductID: {
+    productID: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -14,7 +14,7 @@ const Product = db.define(
         notEmpty: true,
       },
     },
-    ProductName: {
+    productName: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
@@ -30,29 +30,36 @@ const Product = db.define(
       validate: {
         notEmpty: true,
       },
+      
     },
-    PDescription: {
+    categoryName: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    UnitPrice: {
+    productDescription: {
+      type: DataTypes.STRING,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    unitPrice: {
       type: DataTypes.FLOAT,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    M_Date: {
+    manufacturedDate: {
       type: DataTypes.DATE,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    E_Date: {
+    expiryDate: {
       type: DataTypes.DATE,
       allowNull: false,
       validate: {
@@ -62,13 +69,14 @@ const Product = db.define(
   },
   {
     timestamps: true,
-    tableName: "Products",
+    tableName: "products",
   }
 );
 
 Product.belongsTo(Category, {
   foreignKey: "categoryID",
   targetKey: "categoryID",
+
 });
 
 module.exports = Product;

@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const categoryRoute = require("./routes/categoryRoute");
 const productRoute = require("./routes/productRoute");
 const purchaseRoute = require("./routes/purchaseRoute");
-const stockRoute = require("./routes/salesRoute.js");
+const salesRoute = require("./routes/salesRoute.js");
 
 const bodyParser = require("body-parser");
 const db = require("./database/db.js");
@@ -20,7 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v1/category", categoryRoute);
 app.use("/api/v1/product", productRoute);
 app.use("/api/v1/purchase", purchaseRoute);
-app.use("/api/v1/sales", stockRoute);
+app.use("/api/v1/sales", salesRoute);
 
 const PORT = process.env.PORT || 5000;
 

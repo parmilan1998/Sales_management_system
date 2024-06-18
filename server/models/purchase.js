@@ -21,6 +21,13 @@ const Purchase = db.define(
         notEmpty: true,
       },
     },
+    vendorContact: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     purchaseQuantity: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -35,7 +42,7 @@ const Purchase = db.define(
         notEmpty: true,
       },
     },
-    ProductID: {
+    productID: {
       type: DataTypes.INTEGER,
       references: {
         model: "Products",
@@ -52,8 +59,8 @@ const Purchase = db.define(
 );
 
 Purchase.belongsTo(Product, {
-  foreignKey: "ProductID",
-  targetKey: "ProductID",
+  foreignKey: "productID",
+  targetKey: "productID",
 });
 
 module.exports = Purchase;
