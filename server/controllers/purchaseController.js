@@ -24,11 +24,9 @@ exports.createPurchase = async (req, res) => {
         });
 
         if (!product) {
-          return res
-            .status(404)
-            .json({
-              error: `Product '${productName}' in category '${categoryName}' not found`,
-            });
+          return res.status(404).json({
+            error: `Product '${productName}' in category '${categoryName}' not found`,
+          });
         }
         const newPurchase = await Purchase.create({
           productName,
