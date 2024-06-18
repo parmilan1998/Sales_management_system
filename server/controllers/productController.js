@@ -16,6 +16,7 @@ exports.createProduct = async (req, res) => {
       categoryName,
       productDescription,
       productQuantity,
+      unitPrice,
       manufacturedDate,
       expiryDate 
     } = product;
@@ -33,6 +34,7 @@ exports.createProduct = async (req, res) => {
         where: { productName: productName },
       });
 
+      if(!unitPrice){
       if (!purchase) {
         return res
           .status(404)
@@ -40,6 +42,7 @@ exports.createProduct = async (req, res) => {
       }
 
       const unitPrice = purchase.purchasePrice * 1.10;
+    }
 
       const newProduct = await Product.create({
         productName,
