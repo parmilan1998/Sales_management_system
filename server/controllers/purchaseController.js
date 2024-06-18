@@ -1,22 +1,178 @@
 const Purchase = require("../models/purchase");
 const { Op } = require("sequelize");
+const Product = require("../models/products");
 
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
   try {
-    const { purchaseData, purchaseQuantity, purchasePrice } = req.body;
-    console.log(req.body);
-
-    const purchase = await Purchase.create({
-      purchaseData,
+    const {
+      purchaseVendor,
+      vendorContact,
       purchaseQuantity,
       purchasePrice,
+      productName,
+    } = req.body;
+    // console.log(req.body);
+
+    if (
+      !purchaseVendor ||
+      !purchaseQuantity ||
+      !purchasePrice ||
+      !productName ||
+      !vendorContact
+    ) {
+      return res.status(400).json({
+        message:
+          "All fields (purchaseVendor, purchaseQuantity, purchasePrice,vendorContact, productName) are required.",
+      });
+    }
+
+    const product = await Product.findOne({ where: { productName } });
+    if (!product) {
+      return res.status(404).json({
+        message: `Product ${productName} not found.`,
+      });
+    }
+
+    const purchase = await Purchase.create({
+      purchaseVendor,
+      vendorContact,
+      purchaseQuantity,
+      purchasePrice,
+      productName,
     });
+
     res.status(201).json({
       message: "Purchase Created Successfully!",
       purchase: purchase,
     });
   } catch (err) {
+    console.error("Error creating purchase:", err);
     res.status(500).json({ message: err.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/purchase
+exports.getAllPurchases = async (req, res) => {
+  try {
+    const purchases = await Purchase.findAll();
+    res.status(200).json({
+      message: "Fetch all purchases successfully",
+      purchase: purchases,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving purchases" });
+  }
+};
+
+// PUT -> localhost:5000/api/v1/purchase
+exports.updatePurchase = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      purchaseVendor,
+      vendorContact,
+      purchaseQuantity,
+      purchasePrice,
+      productName,
+    } = req.body;
+    const purchase = await Purchase.findByPk(id);
+    if (!purchase) {
+      return res.status(404).json({ message: "Purchase not found" });
+    }
+    const updatedPurchase = await purchase.update(req.body);
+    res.status(200).json({
+      message: "Purchase Updated Successfully!",
+      updatePurchase: updatedPurchase,
+    });
+  } catch (error) {
+    console.error("Error updating purchase:", error);
+    res.status(500).send("Error updating purchase");
+  }
+};
+
+// DELETE -> localhost:5000/api/v1/purchase
+exports.deletePurchase = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const purchase = await Purchase.findByPk(id);
+    if (!purchase) {
+      return res.status(404).json({ message: "Purchase not found" });
+    }
+    const destroyPurchase = await purchase.destroy();
+    res.status(200).json({
+      message: "Purchase deleted successfully",
+      deletePurchase: destroyPurchase,
+    });
+  } catch (error) {
+    console.error("Error deleting purchase:", error);
+    res.status(500).send("Error deleting purchase");
+  }
+};
+
+// GET -> localhost:5000/api/v1/purchase/search
+exports.searchPurchases = async (req, res) => {
+  try {
+    const { keyword } = req.query;
+    if (!keyword) {
+      return res.status(400).json({ message: "Search keyword is required" });
+    }
+    const purchases = await Purchase.findAll({
+      where: {
+        [Op.or]: [
+          { purchaseVendor: { [Op.like]: `%${keyword}%` } },
+          { productName: { [Op.like]: `%${keyword}%` } },
+        ],
+      },
+    });
+    res.status(200).json({
+      message: "Fetch all purchases successfully",
+      purchase: purchases,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/purchase/pagination
+exports.paginationPurchases = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+      return res
+        .status(400)
+        .json({ error: "Invalid page or limit parameters" });
+    }
+
+    const offset = (page - 1) * limit;
+
+    const purchases = await Purchase.findAndCountAll({
+      offset: offset,
+      limit: limit,
+    });
+    res.status(200).json({
+      purchase: purchases.rows,
+      totalPages: Math.ceil(purchases.count / limit),
+      totalCount: purchases.count,
+      currentPage: page,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/purchase/sorting
+exports.sortingPurchases = async (req, res) => {
+  try {
+    const { sortBy } = req.query;
+
+    res.status(200).json({
+      message: "Fetch all purchases successfully",
+      purchase: purchases,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
