@@ -5,46 +5,47 @@ const Product = require("../models/products");
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
   try {
-    const {
-      purchaseVendor,
-      vendorContact,
-      purchaseQuantity,
-      purchasePrice,
-      productName,
-    } = req.body;
-    // console.log(req.body);
+    const purchases = req.body;
+    const purchasedGoods = await Promise.all(
+      purchases.map(async (purchase) => {
+        const {
+          productName,
+          purchaseVendor,
+          vendorContact,
+          purchaseQuantity,
+          purchasePrice,
+        } = purchase;
 
-    if (
-      !purchaseVendor ||
-      !purchaseQuantity ||
-      !purchasePrice ||
-      !productName ||
-      !vendorContact
-    ) {
-      return res.status(400).json({
-        message:
-          "All fields (purchaseVendor, purchaseQuantity, purchasePrice,vendorContact, productName) are required.",
-      });
-    }
+        const product = await Product.findOne({
+          where: {
+            productName: productName,
+            categoryName: categoryName,
+          },
+        });
 
-    const product = await Product.findOne({ where: { productName } });
-    if (!product) {
-      return res.status(404).json({
-        message: `Product ${productName} not found.`,
-      });
-    }
-
-    const purchase = await Purchase.create({
-      productName,
-      purchaseVendor,
-      vendorContact,
-      purchaseQuantity,
-      purchasePrice,
-    });
+        if (!product) {
+          return res
+            .status(404)
+            .json({
+              error: `Product '${productName}' in category '${categoryName}' not found`,
+            });
+        }
+        const newPurchase = await Purchase.create({
+          productName,
+          purchaseVendor,
+          vendorContact,
+          purchaseQuantity,
+          purchasePrice,
+        });
+        product.productQuantity += purchaseQuantity;
+        await product.save();
+        return newPurchase;
+      })
+    );
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
-      purchase: purchase,
+      result: purchasedGoods,
     });
   } catch (err) {
     console.error("Error creating purchase:", err);
