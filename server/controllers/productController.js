@@ -79,13 +79,14 @@ exports.getProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { productName,
+  const { 
+    productName,
     categoryName,
     productDescription,
     unitPrice,
     manufacturedDate,
-    expiryDate  } =
-    req.body;
+    expiryDate  
+  } = req.body;
 
   try {
     const product = await Product.findByPk(id);
