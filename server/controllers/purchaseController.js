@@ -19,13 +19,12 @@ exports.createPurchase = async (req, res) => {
         const product = await Product.findOne({
           where: {
             productName: productName,
-            categoryName: categoryName,
           },
         });
 
         if (!product) {
           return res.status(404).json({
-            error: `Product '${productName}' in category '${categoryName}' not found`,
+            error: `Product '${productName}' not found`,
           });
         }
         const newPurchase = await Purchase.create({
