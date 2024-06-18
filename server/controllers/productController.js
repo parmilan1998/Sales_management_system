@@ -1,56 +1,54 @@
-const { Op } = require("sequelize");
-const Product = require("../models/products");
+const { Op, where } = require("sequelize");
+const { Product } = require("../models/products");
 const Category = require("../models/category");
-const Purchase = require("../models/purchase")
+const Purchase = require("../models/purchase");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
   const products = req.body;
   try {
-
-   
     const createdProduct = await Promise.all(
       products.map(async (product) => {
         const {
-      productName,
-      categoryName,
-      productDescription,
-      productQuantity,
-      manufacturedDate,
-      expiryDate 
-    } = product;
+          productName,
+          categoryName,
+          productDescription,
+          productQuantity,
+          manufacturedDate,
+          expiryDate,
+        } = product;
 
-      const category = await Category.findOne({
-        where: { categoryName: categoryName },
-      });
+        const category = await Category.findOne({
+          where: { categoryName: categoryName },
+        });
 
-      if (!category) {
-        return res
-          .status(404)
-          .json({ error: `Category ${categoryName} not found` });
-      }
-      const purchase = await Purchase.findOne({
-        where: { productName: productName },
-      });
+        if (!category) {
+          return res
+            .status(404)
+            .json({ error: `Category ${categoryName} not found` });
+        }
+        const purchase = await Purchase.findOne({
+          where: { productName: productName },
+        });
 
-      if (!purchase) {
-        return res
-          .status(404)
-          .json({ error: `Purchase price for ${productName} not found` });
-      }
+        if (!purchase) {
+          return res
+            .status(404)
+            .json({ error: `Purchase price for ${productName} not found` });
+        }
 
-      const unitPrice = purchase.purchasePrice * 1.10;
+        const unitPrice = purchase.purchasePrice * 1.1;
 
-      const newProduct = await Product.create({
-        productName,
-        categoryID: category.categoryID,
-        categoryName: category.categoryName,
-        productDescription,
-        productQuantity,
-        unitPrice,
-        manufacturedDate,
-        expiryDate 
-       });
+        const newProduct = await Product.create({
+          productName,
+          categoryID: category.categoryID,
+          categoryName: category.categoryName,
+          productDescription,
+          productQuantity,
+          unitPrice,
+          manufacturedDate,
+          expiryDate,
+        });
 
         return newProduct;
       })
@@ -61,8 +59,9 @@ exports.createProduct = async (req, res) => {
       result: createdProduct,
     });
   } catch (error) {
-
-    res.status(500).json({ message: "Error adding product", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error adding product", error: error.message });
   }
 };
 
@@ -92,13 +91,13 @@ exports.getProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { 
+  const {
     productName,
     categoryName,
     productDescription,
     unitPrice,
     manufacturedDate,
-    expiryDate  
+    expiryDate,
   } = req.body;
 
   try {
@@ -154,91 +153,51 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-// GET -> localhost:5000/api/v1/product/search
-exports.searchProduct = async (req, res) => {
-  const { productName, categoryName } = req.query;
-
+exports.queryProducts = async (req, res) => {
   try {
-    let whereCondition = {};
+    const { page, limit, sort = "ASC", keyword } = req.query;
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
 
-    if (productName) {
-      whereCondition.productName = {
-        [Op.like]: `%${productName}%`,
-      };
+    if (
+      isNaN(parsedPage) ||
+      parsedPage < 1 ||
+      isNaN(parsedLimit) ||
+      parsedLimit < 1
+    ) {
+      return res.status(400).json({ message: "Invalid parameter" });
     }
 
-    let include = [];
+    // Calculate offset
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    if (categoryName) {
-      include.push({
-        model: Category,
-        where: {
-          categoryName: {
-            [Op.like]: `%${categoryName}%`,
-          },
-        },
-      });
-    }
+    // Set sort order
+    const sortBy = sort.toLowerCase() === "desc" ? "DESC" : "ASC";
 
-    const product = await Product.findOne({
-      where: whereCondition,
-      include: include,
-    });
-    if (product) {
-      res.json(product);
-    } else {
-      res.status(404).json({ error: "Product not found" }); }
-  } catch (error) {
-    res.status(500).send("Error searching products");
-  }
-};
+    // Search condition
+    const searchCondition = keyword
+      ? { productName: { [Op.like]: `%${keyword}%` } }
+      : {};
 
-// GET -> localhost:5000/api/v1/product/pagination-list
-exports.paginationProduct = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page);
-    const limit = parseInt(req.query.limit);
-
-    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
-      return res
-        .status(400)
-        .json({ error: "Invalid page or limit parameters" });
-    }
-
-    const offset = (page - 1) * limit;
-
-    const products = await Product.findAndCountAll({
+    // Fetch products with pagination and sorting
+    const { count, rows: products } = await Product.findAndCountAll({
+      where: searchCondition,
       offset: offset,
-      limit: limit,
-      include: [{
-        model: Category,
-        as: 'category',
-        attributes: ['categoryName']
-      }]
+      limit: parsedLimit,
+      order: [["productName", sortBy]],
     });
 
+    // Respond with products and pagination info
     res.status(200).json({
-      products: products.rows,
-      totalPages: Math.ceil(products.count / limit),
-      totalCount: products.count,
-      currentPage: page,
+      products: products,
+      pagination: {
+        totalPages: Math.ceil(count / parsedLimit),
+        totalCount: count,
+        currentPage: parsedPage,
+      },
     });
   } catch (error) {
-    res.status(500).send("Error deleting product");
+    console.error("Error fetching products:", error);
+    res.status(500).send({ message: error.message });
   }
 };
-
-// GET -> localhost:5000/api/v1/product/sorting-data
-exports.sortingProduct = async (req, res) => {
-  const sortOrder = req.query.sort === "desc" ? "DESC" : "ASC";
-  const sorting = await Product.findAll({
-    order: [["productName", sortOrder]],
-  });
-
-  res.status(200).json(sorting);
-  try {
-  } catch (error) {
-    res.status(500).send("Error deleting product");
-  }
-};
-

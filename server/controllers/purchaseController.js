@@ -4,48 +4,48 @@ const Product = require("../models/products");
 
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
-
   try {
-    const purchases = req.body
+    const purchases = req.body;
     const purchasedGoods = await Promise.all(
-      purchases.map(async(purchase)=>{
-   const{     
-    productName,
-    purchaseVendor,
-    vendorContact,
-    purchaseQuantity,
-    purchasePrice
-        } = purchase 
-  
+      purchases.map(async (purchase) => {
+        const {
+          productName,
+          purchaseVendor,
+          vendorContact,
+          purchaseQuantity,
+          purchasePrice,
+        } = purchase;
 
-      const product = await Product.findOne({
-        where: {
-          productName: productName,
-          categoryName: categoryName
+        const product = await Product.findOne({
+          where: {
+            productName: productName,
+            categoryName: categoryName,
+          },
+        });
+
+        if (!product) {
+          return res
+            .status(404)
+            .json({
+              error: `Product '${productName}' in category '${categoryName}' not found`,
+            });
         }
-      });
+        const newPurchase = await Purchase.create({
+          productName,
+          purchaseVendor,
+          vendorContact,
+          purchaseQuantity,
+          purchasePrice,
+        });
+        product.productQuantity += purchaseQuantity;
+        await product.save();
+        return newPurchase;
+      })
+    );
 
-      if (!product) {
-        return res.status(404).json({ error: `Product '${productName}' in category '${categoryName}' not found` });
-      }  
-      const newPurchase = await Purchase.create({
-        productName,
-        purchaseVendor,
-        vendorContact,
-        purchaseQuantity,
-        purchasePrice,
-      
-      });
-      product.productQuantity += purchaseQuantity;
-      await product.save();
-      return newPurchase;
-
-   })
-  )
-    
     res.status(201).json({
       message: "Purchase Created Successfully!",
-      result : purchasedGoods
+      result: purchasedGoods,
     });
   } catch (err) {
     console.error("Error creating purchase:", err);
@@ -76,7 +76,6 @@ exports.updatePurchase = async (req, res) => {
       vendorContact,
       purchaseQuantity,
       purchasePrice,
-     
     } = req.body;
     const purchase = await Purchase.findByPk(id);
     if (!purchase) {
@@ -112,67 +111,48 @@ exports.deletePurchase = async (req, res) => {
   }
 };
 
-// GET -> localhost:5000/api/v1/purchase/search
-exports.searchPurchases = async (req, res) => {
+// GET -> localhost:5000/api/v1/purchase/query
+exports.queryPurchase = async (req, res) => {
   try {
-    const { keyword } = req.query;
-    if (!keyword) {
-      return res.status(400).json({ message: "Search keyword is required" });
-    }
-    const purchases = await Purchase.findAll({
-      where: {
-        [Op.or]: [
-          { purchaseVendor: { [Op.like]: `%${keyword}%` } },
-          { productName: { [Op.like]: `%${keyword}%` } },
-        ],
-      },
-    });
-    res.status(200).json({
-      message: "Fetch all purchases successfully",
-      purchase: purchases,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+    // Query parameters
+    const { keyword, page, limit, sort = "ASC" } = req.query;
 
-// GET -> localhost:5000/api/v1/purchase/pagination
-exports.paginationPurchases = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page);
-    const limit = parseInt(req.query.limit);
+    // Pagination
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
-      return res
-        .status(400)
-        .json({ error: "Invalid page or limit parameters" });
-    }
+    // Search condition
+    const whereClause = keyword
+      ? {
+          [Op.or]: [
+            { purchaseVendor: { [Op.like]: `%${keyword}%` } },
+            { productName: { [Op.like]: `%${keyword}%` } },
+          ],
+        }
+      : {};
 
-    const offset = (page - 1) * limit;
+    // Sorting by ASC or DESC
+    const sortOrder = sort === "desc" ? "DESC" : "ASC";
 
-    const purchases = await Purchase.findAndCountAll({
+    // search, pagination, and sorting
+    const { count, rows: purchases } = await Purchase.findAndCountAll({
+      where: whereClause,
       offset: offset,
-      limit: limit,
+      limit: parsedLimit,
+      order: [["createdAt", sortOrder]],
     });
-    res.status(200).json({
-      purchase: purchases.rows,
-      totalPages: Math.ceil(purchases.count / limit),
-      totalCount: purchases.count,
-      currentPage: page,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-// GET -> localhost:5000/api/v1/purchase/sorting
-exports.sortingPurchases = async (req, res) => {
-  try {
-    const { sortBy } = req.query;
+    // Total pages
+    const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      message: "Fetch all purchases successfully",
-      purchase: purchases,
+      purchases,
+      pagination: {
+        currentPage: parsedPage,
+        totalPages,
+        totalCount: count,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

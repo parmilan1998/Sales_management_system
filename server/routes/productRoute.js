@@ -2,19 +2,15 @@ const express = require("express");
 const router = express.Router();
 const {
   createProduct,
-  searchProduct,
   getAllProduct,
   updateProduct,
   deleteProduct,
   getProduct,
-  paginationProduct,
-  sortingProduct,
+  queryProducts,
 } = require("../controllers/productController");
 
 router.post("/", createProduct);
-router.get("/search", searchProduct);
-router.get("/pagination-list", paginationProduct);
-router.get("/sorting-data", sortingProduct);
+router.get("/query", queryProducts);
 router.get("/all", getAllProduct);
 router.put("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
