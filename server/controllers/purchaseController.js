@@ -27,15 +27,15 @@ exports.createPurchase = async (req, res) => {
             error: `Product '${productName}' not found`,
           });
         }
-        const calculatedTotalPrice = purchasePrice * purchaseQuantity
+        const calculatedTotalPrice = purchasePrice * purchaseQuantity;
         const newPurchase = await Purchase.create({
-          productID:product.productID,
+          productID: product.productID,
           productName,
           purchaseVendor,
           vendorContact,
           purchaseQuantity,
           purchasePrice,
-          COGP:calculatedTotalPrice 
+          COGP: calculatedTotalPrice,
         });
         product.productQuantity += purchaseQuantity;
         await product.save();
@@ -70,48 +70,59 @@ exports.getAllPurchases = async (req, res) => {
 // PUT -> localhost:5000/api/v1/purchase
 exports.updatePurchase = async (req, res) => {
   try {
-    const { id } = req.params; 
-    const { productName, purchaseQuantity, purchasePrice, purchaseVendor, vendorContact } = req.body;
+    const { id } = req.params;
+    const {
+      productName,
+      purchaseQuantity,
+      purchasePrice,
+      purchaseVendor,
+      vendorContact,
+    } = req.body;
 
     // Find the existing purchase record
     const existingPurchase = await Purchase.findByPk(id);
 
     if (!existingPurchase) {
-      return res.status(404).json({ error: `Purchase record with ID '${id}' not found` });
+      return res
+        .status(404)
+        .json({ error: `Purchase record with ID '${id}' not found` });
     }
 
     // Find the old product associated with the existing purchase record
     const oldProduct = await Product.findOne({
       where: {
-        productID: existingPurchase.productID
-      }
+        productID: existingPurchase.productID,
+      },
     });
 
     if (!oldProduct) {
-      return res.status(404).json({ error: `Original product with ID '${existingPurchase.productID}' not found` });
+      return res.status(404).json({
+        error: `Original product with ID '${existingPurchase.productID}' not found`,
+      });
     }
 
     // Find the new product based on the provided productName
     const newProduct = await Product.findOne({
       where: {
-        productName: productName
-      }
+        productName: productName,
+      },
     });
 
     if (!newProduct) {
-      return res.status(404).json({ error: `Product '${productName}' not found` });
+      return res
+        .status(404)
+        .json({ error: `Product '${productName}' not found` });
     }
 
-    const quantityDifference = purchaseQuantity - existingPurchase.purchaseQuantity;
+    const quantityDifference =
+      purchaseQuantity - existingPurchase.purchaseQuantity;
 
     if (newProduct.productID !== existingPurchase.productID) {
-     
       oldProduct.productQuantity -= existingPurchase.purchaseQuantity; // Restore old product quantity
       await oldProduct.save();
 
       newProduct.productQuantity += purchaseQuantity; // Deduct new product quantity
       await newProduct.save();
-
     } else {
       // Product name is not changing, adjust quantity based on purchaseQuantity change
       if (quantityDifference !== 0) {
@@ -129,10 +140,12 @@ exports.updatePurchase = async (req, res) => {
     // Update the existing purchase record
     existingPurchase.productID = newProduct.productID;
     existingPurchase.productName = productName;
-    if (purchaseQuantity !== undefined) existingPurchase.purchaseQuantity = purchaseQuantity;
+    if (purchaseQuantity !== undefined)
+      existingPurchase.purchaseQuantity = purchaseQuantity;
     if (purchasePrice !== undefined) {
       existingPurchase.purchasePrice = purchasePrice;
-      existingPurchase.COGP = purchasePrice * (purchaseQuantity || existingPurchase.purchaseQuantity);
+      existingPurchase.COGP =
+        purchasePrice * (purchaseQuantity || existingPurchase.purchaseQuantity);
     }
     if (purchaseVendor) existingPurchase.purchaseVendor = purchaseVendor;
     if (vendorContact) existingPurchase.vendorContact = vendorContact;
@@ -142,15 +155,13 @@ exports.updatePurchase = async (req, res) => {
 
     res.status(200).json({
       message: `Purchase record with ID '${id}' updated successfully`,
-      updatedPurchase: existingPurchase
+      updatedPurchase: existingPurchase,
     });
   } catch (e) {
     console.error("Error updating purchase:", e);
     res.status(500).json({ message: "Error updating purchase", e: e.message });
   }
 };
-
-
 
 // DELETE -> localhost:5000/api/v1/purchase
 exports.deletePurchase = async (req, res) => {

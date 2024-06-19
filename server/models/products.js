@@ -58,6 +58,13 @@ const Product = db.define(
         notEmpty: true,
       },
     },
+    purchasePrice: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     manufacturedDate: {
       type: DataTypes.DATE,
       allowNull: false,

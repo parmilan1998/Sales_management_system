@@ -56,12 +56,12 @@ const sales = db.define(
                 notEmpty:true
             }
         },
-        COGS:{
+        revenue:{
             type:DataTypes.FLOAT,
             allowNull:false,
             validate:{
                 notEmpty:true
-            },
+            },},
             custName:{
                 type:DataTypes.STRING,
                 allowNull:false,
@@ -76,9 +76,8 @@ const sales = db.define(
                     notEmpty:true
                 }
             }
-        }
-
-    },{
+        },
+        {
         timestamps:true,
         tableName:"sales"
     }
