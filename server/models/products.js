@@ -30,7 +30,6 @@ const Product = db.define(
       validate: {
         notEmpty: true,
       },
-      
     },
     categoryName: {
       type: DataTypes.STRING,
@@ -45,13 +44,13 @@ const Product = db.define(
         notEmpty: true,
       },
     },
-    productQuantity:{
-      type:DataTypes.INTEGER,
-      allowNull:false,
-      validate:{
-          notEmpty:true
-      }
-  },
+    productQuantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     unitPrice: {
       type: DataTypes.FLOAT,
       allowNull: false,
@@ -83,7 +82,6 @@ const Product = db.define(
 Product.belongsTo(Category, {
   foreignKey: "categoryID",
   targetKey: "categoryID",
-
 });
 
 module.exports = Product;
