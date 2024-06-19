@@ -56,6 +56,7 @@ exports.getAllPurchases = async (req, res) => {
     const purchases = await Purchase.findAll();
     res.status(200).json({
       message: "Fetch all purchases successfully",
+      count: purchases.length,
       purchase: purchases,
     });
   } catch (error) {
@@ -112,15 +113,17 @@ exports.deletePurchase = async (req, res) => {
 exports.queryPurchase = async (req, res) => {
   try {
     // Query parameters
-    const { keyword, page, limit, sort = "ASC" } = req.query;
+    const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
+    // console.log("Query Params:", { keyword, page, limit, sort });
 
     // Pagination
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
     const offset = (parsedPage - 1) * parsedLimit;
+    // console.log("Pagination:", { parsedPage, parsedLimit, offset });
 
     // Search condition
-    const whereClause = keyword
+    const searchCondition = keyword
       ? {
           [Op.or]: [
             { purchaseVendor: { [Op.like]: `%${keyword}%` } },
@@ -128,13 +131,15 @@ exports.queryPurchase = async (req, res) => {
           ],
         }
       : {};
+    // console.log("Where Clause:", searchCondition);
 
     // Sorting by ASC or DESC
     const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    // console.log(sortOrder);
 
     // search, pagination, and sorting
     const { count, rows: purchases } = await Purchase.findAndCountAll({
-      where: whereClause,
+      where: searchCondition,
       offset: offset,
       limit: parsedLimit,
       order: [["createdAt", sortOrder]],
