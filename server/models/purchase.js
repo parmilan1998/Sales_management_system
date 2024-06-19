@@ -46,6 +46,13 @@ const Purchase = db.define(
         notEmpty: true,
       },
     },
+    COGP: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     productID: {
       type: DataTypes.INTEGER,
       references: {
