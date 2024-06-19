@@ -16,39 +16,72 @@ exports.createPurchase = async (req, res) => {
           purchasePrice,
         } = purchase;
 
-        const product = await Product.findOne({
+        const newUnitPrice = purchasePrice * 1.10;
+
+        // Check if there's an existing product with the same productName and unitPrice
+        const existingProduct = await Product.findOne({
           where: {
             productName: productName,
+            unitPrice: {
+              [Op.between]: [newUnitPrice * 0.99, newUnitPrice * 1.01], // Adjust the range as per your precision requirements
+            },
           },
         });
 
-        if (!product) {
-          return res.status(404).json({
-            error: `Product '${productName}' not found`,
+        if (existingProduct) {
+          // Update product quantity for the existing product
+          existingProduct.productQuantity += purchaseQuantity;
+          await existingProduct.save();
+        }  else {
+          // Create a new product entry based on the existing product attributes
+          const product = await Product.findOne({
+            where: {
+              productName: productName,
+            },
+          });
+
+          if (!product) {
+            return res.status(404).json({
+              error: `Product '${productName}' not found`,
+            });
+          }
+
+          await Product.create({
+            productName,
+            categoryID: product.categoryID,
+            categoryName: product.categoryName,
+            productDescription: product.productDescription,
+            manufacturedDate: product.manufacturedDate,
+            expiryDate: product.expiryDate,
+            productQuantity: purchaseQuantity,
+            unitPrice: newUnitPrice,
           });
         }
-        const newPurchase = await Purchase.create({
+
+        // Create a purchase record regardless of whether it's an existing or new product
+        return await Purchase.create({
           productName,
           purchaseVendor,
           vendorContact,
           purchaseQuantity,
           purchasePrice,
         });
-        product.productQuantity += purchaseQuantity;
-        await product.save();
-        return newPurchase;
       })
     );
 
-    res.status(201).json({
-      message: "Purchase Created Successfully!",
-      result: purchasedGoods,
+    res.status(200).json({
+      message: "Purchases created successfully",
+      purchases: purchasedGoods,
     });
   } catch (err) {
     console.error("Error creating purchase:", err);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      error: "Error creating purchase",
+    });
   }
 };
+
+
 
 // GET -> localhost:5000/api/v1/purchase
 exports.getAllPurchases = async (req, res) => {

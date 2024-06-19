@@ -32,16 +32,6 @@ exports.createProduct = async (req, res) => {
           where: { productName: productName },
         });
 
-        if (!unitPrice) {
-          if (!purchase) {
-            return res
-              .status(404)
-              .json({ error: `Purchase price for ${productName} not found` });
-          }
-
-          const unitPrice = purchase.purchasePrice * 1.1;
-        }
-
         const newProduct = await Product.create({
           productName,
           categoryID: category.categoryID,
