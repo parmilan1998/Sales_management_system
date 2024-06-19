@@ -161,7 +161,7 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-// GET -> localhost:5000/api/v1/product
+// GET -> localhost:5000/api/v1/product/query
 exports.queryProducts = async (req, res) => {
   try {
     const { page = 1, limit = 8, sort = "ASC", keyword } = req.query;

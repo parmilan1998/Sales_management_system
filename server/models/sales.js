@@ -29,7 +29,7 @@ const sales = db.define(
             allowNull:false,
             references: {
               model: "products",
-              key: "ProductID",
+              key: "productID",
             },
             validate: {
               notEmpty: true,
@@ -56,7 +56,7 @@ const sales = db.define(
                 notEmpty:true
             }
         },
-        totalPrice:{
+        COGS:{
             type:DataTypes.FLOAT,
             allowNull:false,
             validate:{
@@ -93,3 +93,5 @@ sales.belongsTo(Product,{
     foreignKey:"productID",
     targetKey:"productID"
 })
+
+module.exports = sales;
