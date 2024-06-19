@@ -104,12 +104,47 @@ exports.getUserDetails = async (req, res) => {
     res.json({
       message: "Fetch user details successfully",
       token: token,
-      userInfo: user.username,
       email: user.email,
       username: user.username,
     });
   } catch (error) {
-    console.error("Error in getUserDetails:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// PUT -> localhost:5000/api/v1/user
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const token = req.cookies.Authorization;
+
+    if (!token) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const user = await User.findByPk(decoded.userID);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const { username, email, password } = req.body;
+
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (password) user.password = await bcrypt.hash(password, 10);
+
+    await user.save();
+
+    res.json({
+      message: "User profile updated successfully",
+      userInfo: {
+        userID: user.userID,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
