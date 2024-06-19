@@ -41,7 +41,7 @@
                     productName: productName,
                     salesQuantity: salesQuantity,
                     unitPrice: productUnitPrice,
-                    COGS: calculatedTotalPrice,
+                    revenue: calculatedTotalPrice,
                     custName: custName,
                     customerContact: customerContact
                   });
@@ -144,7 +144,7 @@ exports.updateSales = async (req, res) => {
     // Calculate the new total price
     const { unitPrice: productUnitPrice } = currentProduct;
     const calculatedTotalPrice = productUnitPrice * salesQuantity;
-    existingSale.totalPrice = calculatedTotalPrice;
+    existingSale.revenue = calculatedTotalPrice;
 
     // Save the updated sales record
     await existingSale.save();
