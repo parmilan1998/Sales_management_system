@@ -3,65 +3,42 @@
  const Product = require ("../models/products")
 
 // POST -> localhost:5000/api/v1/sales
- exports.createSales = async (req, res) =>{ 
-   
-    try{
-        const sales = req.body
-        const createdSales = await Promise.all(
-            sales.map(async (sale)=>{
-                const{
-                    productName,
-                    salesQuantity,
-                    custName,
-                    customerContact
-                } = sale
+exports.createSales = async (req, res) => {
+  try {
+    const { custName, customerContact, details } = req.body;
 
-                const product = await Product.findOne({
-                    where: {
-                      productName: productName
-                    }
-                  });
+    // Create the main sales record
+    const newSales = await Sales.create({
+      custName,
+      customerContact
+    });
 
-                  if (!product) {
-                    return res.status(404).json({ error: `Product '${productName}' in category '${categoryName}' not found` });
-                  }  
+    // Create sales details (multiple entries)
+    const createdDetails = await Promise.all(details.map(async (detail) => {
+      const { productID, productName, salesQuantity, unitPrice, revenue } = detail;
 
-                  const { unitPrice: productUnitPrice, productQuantity } = product;
+      const newDetail = await SalesDetail.create({
+        salesID: newSales.salesID,
+        productID,
+        productName,
+        salesQuantity,
+        unitPrice,
+        revenue
+      });
 
-                  if (productQuantity < salesQuantity) {
-                   return res.status(404).json({ error:`Insufficient quantity available for product '${productName}'`});
-                  }
-          
-                  const calculatedTotalPrice = productUnitPrice * salesQuantity;  
+      return newDetail;
+    }));
 
-                  const newSale = await Sales.create({
-                    productID: product.productID,
-                    categoryID: product.categoryID,
-                    categoryName: product.categoryName,
-                    productName: productName,
-                    salesQuantity: salesQuantity,
-                    unitPrice: productUnitPrice,
-                    revenue: calculatedTotalPrice,
-                    custName: custName,
-                    customerContact: customerContact
-                  });
-                  product.productQuantity -= salesQuantity;
-                  await product.save();
-          
-                  return newSale;
-                })
-              );
-          
-              res.status(201).json({
-                message: "Sales added successfully",
-                result: createdSales
-              });
-    }
-    catch(e){
-      console.error("Error creating sales:", e);
-        res.status(500).json({message:"Error carryingout sales", e: e.message,})
-    }
- }
+    res.status(201).json({
+      message: 'Sales added successfully',
+      sales: newSales,
+      details: createdDetails
+    });
+  } catch (error) {
+    console.error('Error creating sales:', error);
+    res.status(500).json({ message: 'Error creating sales', error: error.message });
+  }
+};
 
  // GET -> localhost:5000/api/v1/sales/list
 exports.getAllSales = async (req, res) =>{
@@ -76,86 +53,61 @@ exports.getAllSales = async (req, res) =>{
 // PUT -> localhost:5000/api/v1/sales/:id
 exports.updateSales = async (req, res) => {
   try {
-    const { id } = req.params; 
-    const { productName, salesQuantity, custName, customerContact } = req.body;
+    const { id } = req.params;
+    const { custName, customerContact, details } = req.body;
 
-   
-    const existingSale = await Sales.findByPk(id);
-
-    if (!existingSale) {
+    // Update the main sales record
+    const existingSales = await Sales.findByPk(id);
+    if (!existingSales) {
       return res.status(404).json({ error: `Sales record with ID '${id}' not found` });
     }
 
-    
-    const currentProduct = await Product.findByPk(existingSale.productID);
+    existingSales.custName = custName;
+    existingSales.customerContact = customerContact;
+    await existingSales.save();
 
-    if (!currentProduct) {
-      return res.status(404).json({ error: `Product with ID '${existingSale.productID}' not found` });
-    }
+    // Update or create sales details
+    const updatedDetails = await Promise.all(details.map(async (detail) => {
+      const { salesDetailID, productID, productName, salesQuantity, unitPrice, revenue } = detail;
 
-    // If product name is changing, adjust quantities in old and new products
-    if (productName !== existingSale.productName) {
-      // Find the new product by name
-      const newProduct = await Product.findOne({
-        where: {
-          productName: productName
+      if (salesDetailID) {
+        // Update existing detail
+        const existingDetail = await SalesDetail.findByPk(salesDetailID);
+        if (!existingDetail) {
+          return res.status(404).json({ error: `Sales detail with ID '${salesDetailID}' not found` });
         }
-      });
 
-      if (!newProduct) {
-        return res.status(404).json({ error: `Product '${productName}' not found` });
+        existingDetail.productID = productID;
+        existingDetail.productName = productName;
+        existingDetail.salesQuantity = salesQuantity;
+        existingDetail.unitPrice = unitPrice;
+        existingDetail.revenue = revenue;
+        await existingDetail.save();
+
+        return existingDetail;
+      } else {
+        // Create new detail
+        const newDetail = await SalesDetail.create({
+          salesID: existingSales.salesID,
+          productID,
+          productName,
+          salesQuantity,
+          unitPrice,
+          revenue
+        });
+
+        return newDetail;
       }
-
-      // Restore quantity in the current product
-      currentProduct.productQuantity += existingSale.salesQuantity;
-      await currentProduct.save();
-
-      // Deduct quantity from the new product
-      if (newProduct.productQuantity < salesQuantity) {
-        return res.status(404).json({ error: `Insufficient quantity available for product '${productName}'` });
-      }
-      newProduct.productQuantity -= salesQuantity;
-      await newProduct.save();
-
-      // Update the sales record with new product details
-      existingSale.productID = newProduct.productID;
-      existingSale.categoryID = newProduct.categoryID;
-      existingSale.productName = newProduct.productName;
-    } else {
-      const quantityDifference = salesQuantity - existingSale.salesQuantity;
-      if (quantityDifference !== 0) {
-   
-        if (quantityDifference > 0) {
-          // Decrease product quantity if salesQuantity is increased
-          currentProduct.productQuantity -= Math.abs(quantityDifference);
-        } else {
-          // Increase product quantity if salesQuantity is decreased
-          currentProduct.productQuantity += Math.abs(quantityDifference);
-        }
-        await currentProduct.save();
-      }
-    }
-
-    // Update sales record details
-    existingSale.salesQuantity = salesQuantity;
-    existingSale.custName = custName;
-    existingSale.customerContact = customerContact;
-
-    // Calculate the new total price
-    const { unitPrice: productUnitPrice } = currentProduct;
-    const calculatedTotalPrice = productUnitPrice * salesQuantity;
-    existingSale.revenue = calculatedTotalPrice;
-
-    // Save the updated sales record
-    await existingSale.save();
+    }));
 
     res.status(200).json({
       message: `Sales record with ID '${id}' updated successfully`,
-      updatedSale: existingSale
+      updatedSales: existingSales,
+      updatedDetails
     });
-  } catch (e) {
-    console.error("Error updating sales:", e);
-    res.status(500).json({ message: "Error updating sales", e: e.message });
+  } catch (error) {
+    console.error('Error updating sales:', error);
+    res.status(500).json({ message: 'Error updating sales', error: error.message });
   }
 };
 
