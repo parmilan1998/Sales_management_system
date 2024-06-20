@@ -1,43 +1,22 @@
-const Notification = require("../models/notifications");
+const User = require("../models/user");
 
-async function checkAndSendNotifications(product) {
-  try {
-    // Low stock
-    if (product.quantity <= 10) {
-      await Notification.create({
-        notificationType: "lowStock",
-        notificationMessage: `Low stock alert for ${product.name}`,
-        productID: product.productID,
-        userID: "admin",
-      });
-    }
+// exports.setFcmToken = async (req, res) => {
+//   const { userID, fcmToken } = req.body;
 
-    // Out of stock
-    if (product.quantity === 0) {
-      await Notification.create({
-        notificationType: "outOfStock",
-        notificationMessage: `Out of stock alert for ${product.name}`,
-        productID: product.productID,
-        userID: "admin",
-      });
-    }
+//   try {
+//     const user = await User.findByPk(userID);
 
-    // Expired stock
-    const currentDate = new Date();
-    if (product.expiryDate <= currentDate) {
-      await Notification.create({
-        notificationType: "expiredStock",
-        notificationMessage: `Expired stock alert for ${product.name}`,
-        productID: product.productID,
-        userID: "admin",
-      });
-    }
-  } catch (error) {
-    console.error("Error sending notifications:", error);
-    resizeBy.status(500).json({ message: error.message });
-  }
-}
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-// cron.schedule("0 6 * * *", () => {
-//   console.log("running a task every day at 6:00 AM");
-// });
+//     user.fcmToken = fcmToken;
+//     await user.save();
+
+//     res.status(200).json({ message: "FCM token updated successfully" });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error updating FCM token", error: error.message });
+//   }
+// };
