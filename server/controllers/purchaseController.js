@@ -16,20 +16,45 @@ exports.createPurchase = async (req, res) => {
           purchasePrice,
         } = purchase;
 
-        const product = await Product.findOne({
+        const existingProduct = await Product.findOne({
           where: {
             productName: productName,
+            purchasePrice: purchasePrice
           },
         });
 
-        if (!product) {
-          return res.status(404).json({
-            error: `Product '${productName}' not found`,
+        if (existingProduct) {
+          // Update product quantity for the existing product
+          existingProduct.productQuantity += purchaseQuantity;
+          await existingProduct.save();
+        }  else {
+          // Create a new product entry based on the existing product attributes
+          const product = await Product.findOne({
+            where: {
+              productName: productName,
+            },
+          });
+
+          if (!product) {
+            return res.status(404).json({
+              error: `Product '${productName}' not found`,
+            });
+          }
+          await Product.create({
+            productName,
+            categoryID: product.categoryID,
+            categoryName: product.categoryName,
+            productDescription: product.productDescription,
+            manufacturedDate: product.manufacturedDate,
+            expiryDate: product.expiryDate,
+            productQuantity: purchaseQuantity,
+            unitPrice: product.unitPrice,
+            purchasePrice:purchasePrice
           });
         }
         const calculatedTotalPrice = purchasePrice * purchaseQuantity;
-        const newPurchase = await Purchase.create({
-          productID: product.productID,
+       
+        return await Purchase.create({
           productName,
           purchaseVendor,
           vendorContact,
@@ -37,11 +62,9 @@ exports.createPurchase = async (req, res) => {
           purchasePrice,
           COGP: calculatedTotalPrice,
         });
-        product.productQuantity += purchaseQuantity;
-        await product.save();
-        return newPurchase;
       })
     );
+        
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
