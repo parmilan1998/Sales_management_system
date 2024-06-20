@@ -107,6 +107,7 @@ exports.updateProduct = async (req, res) => {
     categoryName,
     productDescription,
     unitPrice,
+    purchasePrice,
     manufacturedDate,
     expiryDate,
   } = req.body;
@@ -136,6 +137,7 @@ exports.updateProduct = async (req, res) => {
       categoryName,
       productDescription,
       unitPrice,
+      purchasePrice,
       manufacturedDate,
       expiryDate,
       categoryID: category ? category.categoryID : null,

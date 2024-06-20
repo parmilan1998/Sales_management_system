@@ -15,6 +15,10 @@ const db = require("./database/db.js");
 dotenv.config();
 
 const app = express();
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(server);
 
 //Middleware for parse JSON bodies
 app.use(cors());
