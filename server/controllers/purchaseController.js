@@ -48,6 +48,7 @@ exports.createPurchase = async (req, res) => {
           }
           await Product.create({
             productName,
+            productID,
             categoryID: product.categoryID,
             categoryName: product.categoryName,
             productDescription: product.productDescription,
