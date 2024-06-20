@@ -14,6 +14,16 @@ const Purchase = db.define(
         notEmpty: true,
       },
     },
+    productID: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: "products",
+        key: "productID",
+      },
+      validate: {
+        notEmpty: true,
+      },
+  },
     productName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -53,17 +63,14 @@ const Purchase = db.define(
         notEmpty: true,
       },
     },
-    productID: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: "products",
-        key: "productID",
-      },
+    purchasedDate:{
+      type: DataTypes.DATEONLY,
+      allowNull: false,
       validate: {
         notEmpty: true,
       },
-
-  },
+  }
+   
 
 },
   {

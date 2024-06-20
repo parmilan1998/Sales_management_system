@@ -13,13 +13,13 @@ const Reports = db.define(
               notEmpty: true,
             },
         }, periodStart:{
-            type:DataTypes.DATE,
+            type:DataTypes.DATEONLY,
             allowNull:false,
             validate: {
                 notEmpty: true,
               },
         }, periodEnd:{
-            type:DataTypes.DATE,
+            type:DataTypes.DATEONLY,
             allowNull:false,
             validate: {
                 notEmpty: true,

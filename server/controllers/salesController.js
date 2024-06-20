@@ -8,7 +8,7 @@ exports.createSales = async (req, res) => {
     const sales = req.body;
     const createdSales = await Promise.all(
       sales.map(async (sale) => {
-        const { productName, salesQuantity, custName, customerContact } = sale;
+        const { productName, salesQuantity, custName, customerContact,soldDate } = sale;
 
         const product = await Product.findOne({
           where: {
@@ -42,6 +42,7 @@ exports.createSales = async (req, res) => {
           revenue: calculatedTotalPrice,
           custName: custName,
           customerContact: customerContact,
+          soldDate:soldDate
         });
         product.productQuantity -= salesQuantity;
         await product.save();
@@ -74,7 +75,7 @@ exports.getAllSales = async (req, res) => {
 exports.updateSales = async (req, res) => {
   try {
     const { id } = req.params;
-    const { productName, salesQuantity, custName, customerContact } = req.body;
+    const { productName, salesQuantity, custName, customerContact,soldDate } = req.body;
 
     const existingSale = await Sales.findByPk(id);
 
@@ -142,6 +143,7 @@ exports.updateSales = async (req, res) => {
     existingSale.salesQuantity = salesQuantity;
     existingSale.custName = custName;
     existingSale.customerContact = customerContact;
+    existingSale.soldDate = soldDate
 
     // Calculate the new total price
     const { unitPrice: productUnitPrice } = currentProduct;

@@ -14,12 +14,18 @@ exports.createPurchase = async (req, res) => {
           vendorContact,
           purchaseQuantity,
           purchasePrice,
-        } = purchase;
+          manufacturedDate,
+          expiryDate,
+          purchasedDate
+              } = purchase;
 
         const existingProduct = await Product.findOne({
           where: {
             productName: productName,
-            purchasePrice: purchasePrice
+            purchasePrice: purchasePrice,
+            manufacturedDate:manufacturedDate,
+            expiryDate:expiryDate,
+            purchasedDate: purchasedDate
           },
         });
 
@@ -45,11 +51,12 @@ exports.createPurchase = async (req, res) => {
             categoryID: product.categoryID,
             categoryName: product.categoryName,
             productDescription: product.productDescription,
-            manufacturedDate: product.manufacturedDate,
-            expiryDate: product.expiryDate,
             productQuantity: purchaseQuantity,
             unitPrice: product.unitPrice,
-            purchasePrice:purchasePrice
+            manufacturedDate: manufacturedDate,
+            expiryDate: expiryDate,
+            purchasePrice:purchasePrice,
+            purchasedDate: purchasedDate
           });
         }
         const calculatedTotalPrice = purchasePrice * purchaseQuantity;
@@ -61,6 +68,7 @@ exports.createPurchase = async (req, res) => {
           purchaseQuantity,
           purchasePrice,
           COGP: calculatedTotalPrice,
+          purchasedDate
         });
       })
     );
@@ -100,6 +108,7 @@ exports.updatePurchase = async (req, res) => {
       purchasePrice,
       purchaseVendor,
       vendorContact,
+      purchasedDate
     } = req.body;
 
     // Find the existing purchase record
@@ -172,9 +181,14 @@ exports.updatePurchase = async (req, res) => {
     }
     if (purchaseVendor) existingPurchase.purchaseVendor = purchaseVendor;
     if (vendorContact) existingPurchase.vendorContact = vendorContact;
+    existingPurchase.purchasedDate =  purchasedDate
 
     // Save the updated purchase record
     await existingPurchase.save();
+
+    newProduct.purchasedPrice = purchasePrice;
+    newProduct.purchasedDate = purchasedDate;
+    await newProduct.save();
 
     res.status(200).json({
       message: `Purchase record with ID '${id}' updated successfully`,

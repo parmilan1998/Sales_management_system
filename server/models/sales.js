@@ -61,7 +61,9 @@ const sales = db.define(
             allowNull:false,
             validate:{
                 notEmpty:true
-            },},
+            },
+        },
+
             custName:{
                 type:DataTypes.STRING,
                 allowNull:false,
@@ -75,7 +77,14 @@ const sales = db.define(
                 validate:{
                     notEmpty:true
                 }
-            }
+            },
+            soldDate:{
+              type: DataTypes.DATEONLY,
+              allowNull: false,
+              validate: {
+                notEmpty: true,
+              },
+          }
         },
         {
         timestamps:true,

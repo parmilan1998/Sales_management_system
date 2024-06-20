@@ -3,6 +3,7 @@ const Reports = require("../models/reports");
 const Sales = require("../models/sales");
 const Purchase = require("../models/purchase");
 const Product = require("../models/products");
+const SalesReport = require("../models/salesReport")
 
 exports.createReport = async (req, res) => {
   try {
@@ -22,7 +23,7 @@ exports.createReport = async (req, res) => {
     const beginningInventory = await Product.findAll({
         attributes: ['purchasePrice', 'productQuantity'],
         where: {
-          createdAt: {
+          purchasedDate: {
             [Op.lte]: startDate
           }
         }
@@ -36,7 +37,7 @@ exports.createReport = async (req, res) => {
       const purchases = await Purchase.findAll({
         attributes: ['purchasePrice', 'purchaseQuantity'],
         where: {
-          createdAt: {
+          purchasedDate: {
             [Op.between]: [startDate, endDate]
           }
         }
@@ -50,7 +51,7 @@ exports.createReport = async (req, res) => {
       const endingInventory = await Product.findAll({
         attributes: ['purchasePrice', 'productQuantity'],
         where: {
-          createdAt: {
+          purchasedDate: {
             [Op.lte]: endDate
           }
         }
@@ -63,7 +64,7 @@ exports.createReport = async (req, res) => {
       // Calculate total revenue within the specified period
       const totalRevenue = await Sales.sum('revenue', {
         where: {
-          createdAt: {
+          soldDate: {
             [Op.between]: [startDate, endDate]
           }
         }
@@ -124,7 +125,7 @@ exports.updateReport = async (req, res) => {
     const beginningInventory = await Product.findAll({
       attributes: ['purchasePrice', 'productQuantity'],
       where: {
-        createdAt: {
+        purchasedDate: {
           [Op.lte]: startDate
         }
       }
@@ -138,7 +139,7 @@ exports.updateReport = async (req, res) => {
     const purchases = await Purchase.findAll({
       attributes: ['purchasePrice', 'purchaseQuantity'],
       where: {
-        createdAt: {
+        purchasedDate: {
           [Op.between]: [startDate, endDate]
         }
       }
@@ -152,7 +153,7 @@ exports.updateReport = async (req, res) => {
     const endingInventory = await Product.findAll({
       attributes: ['purchasePrice', 'productQuantity'],
       where: {
-        createdAt: {
+        purchasedDate: {
           [Op.lte]: endDate
         }
       }
@@ -165,7 +166,7 @@ exports.updateReport = async (req, res) => {
     // Calculate total revenue within the specified period
     const totalRevenue = await Sales.sum('revenue', {
       where: {
-        createdAt: {
+        soldDate: {
           [Op.between]: [startDate, endDate]
         }
       }

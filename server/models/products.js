@@ -66,19 +66,26 @@ const Product = db.define(
       },
     },
     manufacturedDate: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
     expiryDate: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
+    purchasedDate:{
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+        validate: {
+          notEmpty: true,
+        },
+    }
   },
   {
     timestamps: true,
