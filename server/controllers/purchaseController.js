@@ -1,6 +1,7 @@
 const Purchase = require("../models/purchase");
 const { Op } = require("sequelize");
 const Product = require("../models/products");
+const Stocks = require("../models/stocks");
 
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
@@ -18,8 +19,31 @@ exports.createPurchase = async (req, res) => {
           expiryDate,
           purchasedDate
               } = purchase;
+      
+       const product = await Product.findOne({
+          where: {
+            productName: productName,
+          },
+        });
 
-        const existingProduct = await Product.findOne({
+        if (!product) {
+          return res.status(404).json({
+            error: `Product '${productName}' not found`,
+          });
+        }
+        const totalCost = purchasePrice * purchaseQuantity;
+
+         const createdPurchase = await Purchase.create({
+          productID: product.productID,
+          purchaseVendor,
+          vendorContact,
+          purchaseQuantity,
+          purchasePrice,
+          COGP: totalCost,
+          purchasedDate
+        });      
+
+        const existingStock = await Stocks.findOne({
           where: {
             productName: productName,
             purchasePrice: purchasePrice,
@@ -29,48 +53,24 @@ exports.createPurchase = async (req, res) => {
           },
         });
 
-        if (existingProduct) {
+        if (existingStock) {
           // Update product quantity for the existing product
-          existingProduct.productQuantity += purchaseQuantity;
-          await existingProduct.save();
+          existingStock.productQuantity += purchaseQuantity;
+          await existingStock.save();
         }  else {
-          // Create a new product entry based on the existing product attributes
-          const product = await Product.findOne({
-            where: {
-              productName: productName,
-            },
-          });
-
-          if (!product) {
-            return res.status(404).json({
-              error: `Product '${productName}' not found`,
-            });
-          }
-          await Product.create({
+         
+          await Stocks.create({
             productName,
-            productID,
-            categoryID: product.categoryID,
-            categoryName: product.categoryName,
-            productDescription: product.productDescription,
+            productID:product.productID,
+            purchaseID:createdPurchase.purchaseID, 
             productQuantity: purchaseQuantity,
-            unitPrice: product.unitPrice,
             manufacturedDate: manufacturedDate,
             expiryDate: expiryDate,
             purchasePrice:purchasePrice,
             purchasedDate: purchasedDate
           });
         }
-        const calculatedTotalPrice = purchasePrice * purchaseQuantity;
-       
-        return await Purchase.create({
-          productName,
-          purchaseVendor,
-          vendorContact,
-          purchaseQuantity,
-          purchasePrice,
-          COGP: calculatedTotalPrice,
-          purchasedDate
-        });
+           
       })
     );
         
@@ -122,7 +122,7 @@ exports.updatePurchase = async (req, res) => {
     }
 
     // Find the old product associated with the existing purchase record
-    const oldProduct = await Product.findOne({
+    const oldProduct = await Stocks.findOne({
       where: {
         productID: existingPurchase.productID,
       },
@@ -135,7 +135,7 @@ exports.updatePurchase = async (req, res) => {
     }
 
     // Find the new product based on the provided productName
-    const newProduct = await Product.findOne({
+    const newProduct = await Stocks.findOne({
       where: {
         productName: productName,
       },

@@ -44,13 +44,7 @@ const Product = db.define(
         notEmpty: true,
       },
     },
-    productQuantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
+   
     unitPrice: {
       type: DataTypes.FLOAT,
       allowNull: false,
@@ -58,34 +52,7 @@ const Product = db.define(
         notEmpty: true,
       },
     },
-    purchasePrice: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    manufacturedDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    expiryDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    purchasedDate:{
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-        validate: {
-          notEmpty: true,
-        },
-    }
+   
   },
   {
     timestamps: true,

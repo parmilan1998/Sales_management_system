@@ -2,7 +2,7 @@ const { Op } = require("sequelize");
 const Reports = require("../models/reports");
 const Sales = require("../models/sales");
 const Purchase = require("../models/purchase");
-const Product = require("../models/products");
+const Stocks = require("../models/stocks")
 const SalesReport = require("../models/salesReport")
 
 exports.createReport = async (req, res) => {
@@ -20,7 +20,7 @@ exports.createReport = async (req, res) => {
     const endDate = new Date(periodEnd);
 
     // Calculate beginning inventory
-    const beginningInventory = await Product.findAll({
+    const beginningInventory = await Stocks.findAll({
         attributes: ['purchasePrice', 'productQuantity'],
         where: {
           purchasedDate: {
@@ -29,8 +29,8 @@ exports.createReport = async (req, res) => {
         }
       });
   
-      const beginningInventoryCost = beginningInventory.reduce((total, product) => {
-        return total + (product.purchasePrice * product.productQuantity);
+      const beginningInventoryCost = beginningInventory.reduce((total, stock) => {
+        return total + (stock.purchasePrice * stock.productQuantity);
       }, 0);
   
       // Calculate purchases cost during the period
@@ -48,7 +48,7 @@ exports.createReport = async (req, res) => {
       }, 0);
   
       // Calculate ending inventory cost
-      const endingInventory = await Product.findAll({
+      const endingInventory = await Stocks.findAll({
         attributes: ['purchasePrice', 'productQuantity'],
         where: {
           purchasedDate: {
@@ -122,7 +122,7 @@ exports.updateReport = async (req, res) => {
     }
 
     // Calculate beginning inventory cost
-    const beginningInventory = await Product.findAll({
+    const beginningInventory = await Stocks.findAll({
       attributes: ['purchasePrice', 'productQuantity'],
       where: {
         purchasedDate: {
@@ -131,8 +131,8 @@ exports.updateReport = async (req, res) => {
       }
     });
 
-    const beginningInventoryCost = beginningInventory.reduce((total, product) => {
-      return total + (product.purchasePrice * product.productQuantity);
+    const beginningInventoryCost = beginningInventory.reduce((total, stock) => {
+      return total + (stock.purchasePrice * stock.productQuantity);
     }, 0);
 
     // Calculate purchases cost during the period
@@ -150,7 +150,7 @@ exports.updateReport = async (req, res) => {
     }, 0);
 
     // Calculate ending inventory cost
-    const endingInventory = await Product.findAll({
+    const endingInventory = await Stocks.findAll({
       attributes: ['purchasePrice', 'productQuantity'],
       where: {
         purchasedDate: {
@@ -159,8 +159,8 @@ exports.updateReport = async (req, res) => {
       }
     });
 
-    const endingInventoryCost = endingInventory.reduce((total, product) => {
-      return total + (product.purchasePrice * product.productQuantity);
+    const endingInventoryCost = endingInventory.reduce((total, stock) => {
+      return total + (stock.purchasePrice * stock.productQuantity);
     }, 0);
 
     // Calculate total revenue within the specified period
