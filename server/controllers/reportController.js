@@ -2,14 +2,14 @@ const { Op } = require("sequelize");
 const Reports = require("../models/reports");
 const Sales = require("../models/sales");
 const Purchase = require("../models/purchase");
-const Stocks = require("../models/stocks")
-const SalesReport = require("../models/salesReport")
+const Stocks = require("../models/stocks");
+const SalesDetail = require("../models/salesDetails");
+const SalesReport = require("../models/salesReport");
 
 exports.createReport = async (req, res) => {
   try {
     const { periodStart, periodEnd } = req.body;
 
-    // Validate the input dates
     if (!periodStart || !periodEnd) {
       return res.status(400).json({
         message: "periodStart and periodEnd are required"
@@ -21,58 +21,62 @@ exports.createReport = async (req, res) => {
 
     // Calculate beginning inventory
     const beginningInventory = await Stocks.findAll({
-        attributes: ['purchasePrice', 'productQuantity'],
-        where: {
-          purchasedDate: {
-            [Op.lte]: startDate
-          }
+      attributes: ['purchasePrice', 'productQuantity'],
+      where: {
+        purchasedDate: {
+          [Op.lte]: startDate
         }
-      });
-  
-      const beginningInventoryCost = beginningInventory.reduce((total, stock) => {
-        return total + (stock.purchasePrice * stock.productQuantity);
-      }, 0);
-  
-      // Calculate purchases cost during the period
-      const purchases = await Purchase.findAll({
-        attributes: ['purchasePrice', 'purchaseQuantity'],
-        where: {
-          purchasedDate: {
-            [Op.between]: [startDate, endDate]
-          }
+      }
+    });
+
+    const beginningInventoryCost = beginningInventory.reduce((total, stock) => {
+      return total + (stock.purchasePrice * stock.productQuantity);
+    }, 0);
+
+    // Calculate purchases cost during the period
+    const purchases = await Purchase.findAll({
+      attributes: ['purchasePrice', 'purchaseQuantity'],
+      where: {
+        purchasedDate: {
+          [Op.between]: [startDate, endDate]
         }
-      });
-  
-      const purchasesCost = purchases.reduce((total, purchase) => {
-        return total + (purchase.purchasePrice * purchase.purchaseQuantity);
-      }, 0);
-  
-      // Calculate ending inventory cost
-      const endingInventory = await Stocks.findAll({
-        attributes: ['purchasePrice', 'productQuantity'],
-        where: {
-          purchasedDate: {
-            [Op.lte]: endDate
-          }
+      }
+    });
+
+    const purchasesCost = purchases.reduce((total, purchase) => {
+      return total + (purchase.purchasePrice * purchase.purchaseQuantity);
+    }, 0);
+
+    // Calculate ending inventory cost
+    const endingInventory = await Stocks.findAll({
+      attributes: ['purchasePrice', 'productQuantity'],
+      where: {
+        purchasedDate: {
+          [Op.lte]: endDate
         }
-      });
-  
-      const endingInventoryCost = endingInventory.reduce((total, product) => {
-        return total + (product.purchasePrice * product.productQuantity);
-      }, 0);
-  
-      // Calculate total revenue within the specified period
-      const totalRevenue = await Sales.sum('revenue', {
-        where: {
-          soldDate: {
-            [Op.between]: [startDate, endDate]
-          }
+      }
+    });
+
+    const endingInventoryCost = endingInventory.reduce((total, stock) => {
+      return total + (stock.purchasePrice * stock.productQuantity);
+    }, 0);
+
+    // Calculate total revenue within the specified period
+    const totalRevenue = await SalesDetail.sum('revenue', {
+      where: {
+        '$Sale.soldDate$': {
+          [Op.between]: [startDate, endDate]
         }
-      });
-  
-      // Calculate total COGS (Cost of Goods Sold)
-      const totalCOGS = beginningInventoryCost + purchasesCost - endingInventoryCost;
-  
+      },
+      include: [{
+        model: Sales,
+        as: 'Sale'
+      }]
+    });
+
+    // Calculate total COGS (Cost of Goods Sold)
+    const totalCOGS = beginningInventoryCost + purchasesCost - endingInventoryCost;
+
     // Calculate gross profit
     const grossProfit = totalRevenue - totalCOGS;
 
@@ -114,12 +118,12 @@ exports.createReport = async (req, res) => {
   }
 };
 
+
 exports.updateReport = async (req, res) => {
   try {
     const { reportId } = req.params;
     const { periodStart, periodEnd } = req.body;
 
-    // Validate the input dates
     if (!periodStart || !periodEnd) {
       return res.status(400).json({
         message: "periodStart and periodEnd are required"
@@ -180,12 +184,16 @@ exports.updateReport = async (req, res) => {
     }, 0);
 
     // Calculate total revenue within the specified period
-    const totalRevenue = await Sales.sum('revenue', {
+    const totalRevenue = await SalesDetail.sum('revenue', {
       where: {
-        soldDate: {
+        '$Sale.soldDate$': {
           [Op.between]: [startDate, endDate]
         }
-      }
+      },
+      include: [{
+        model: Sales,
+        as: 'Sale'
+      }]
     });
 
     // Calculate total COGS (Cost of Goods Sold)
@@ -201,7 +209,6 @@ exports.updateReport = async (req, res) => {
     report.periodStart = startDate;
     report.periodEnd = endDate;
     await report.save();
-
 
     // Clear existing SalesReport entries for the report
     await SalesReport.destroy({
@@ -239,3 +246,4 @@ exports.updateReport = async (req, res) => {
     });
   }
 };
+

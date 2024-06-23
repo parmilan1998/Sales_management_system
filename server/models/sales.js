@@ -13,17 +13,7 @@ const sales = db.define(
                 notEmpty:true
             }
         },
-        categoryID:{
-            type: DataTypes.INTEGER,
-            allowNull:false,
-            references: {
-              model: "categories",
-              key: "categoryID",
-            },
-            validate: {
-              notEmpty: true,
-            },
-        },
+       
         productID:{
             type: DataTypes.INTEGER,
             allowNull:false,
@@ -35,28 +25,7 @@ const sales = db.define(
               notEmpty: true,
             },
         },
-        productName:{
-            type:DataTypes.STRING,
-            allowNull:false,
-            validate:{
-                notEmpty:true
-            }
-        },
-        salesQuantity:{
-            type:DataTypes.INTEGER,
-            allowNull:false,
-            validate:{
-                notEmpty:true
-            }
-        },
-        unitPrice:{
-            type:DataTypes.FLOAT,
-            allowNull:false,
-            validate:{
-                notEmpty:true
-            }
-        },
-        revenue:{
+       revenue:{
             type:DataTypes.FLOAT,
             allowNull:false,
             validate:{
