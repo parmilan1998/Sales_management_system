@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const Sales = require("../models/sales");
 const Product = require("../models/products");
+const Stocks = require("../models/stocks")
 
 // POST -> localhost:5000/api/v1/sales
 exports.createSales = async (req, res) => {
@@ -8,8 +9,9 @@ exports.createSales = async (req, res) => {
     const sales = req.body;
     const createdSales = await Promise.all(
       sales.map(async (sale) => {
-        const { productName, salesQuantity, custName, customerContact,soldDate } = sale;
+        const { productName, salesQuantity, custName, customerContact, soldDate } = sale;
 
+        // Find the product in the Product table
         const product = await Product.findOne({
           where: {
             productName: productName,
@@ -18,34 +20,55 @@ exports.createSales = async (req, res) => {
 
         if (!product) {
           return res.status(404).json({
-            error: `Product '${productName}' in category '${categoryName}' not found`,
+            error: `Product '${productName}' not found`,
           });
         }
 
-        const { unitPrice: productUnitPrice, productQuantity } = product;
+        const { unitPrice: productUnitPrice } = product;
 
-        if (productQuantity < salesQuantity) {
+        // Calculate the total price
+        const calculatedTotalPrice = productUnitPrice * salesQuantity;
+
+        // Find stock entries for the product
+        const stocks = await Stocks.findAll({
+          where: {
+            productID: product.productID,
+          },
+          order: [['purchasedDate', 'ASC']], // Order by purchase date to use older stock first (FIFO)
+        });
+
+        let remainingQuantity = salesQuantity;
+        for (const stock of stocks) {
+          if (remainingQuantity <= 0) break;
+          if (stock.productQuantity >= remainingQuantity) {
+            stock.productQuantity -= remainingQuantity;
+            await stock.save();
+            remainingQuantity = 0;
+          } else {
+            remainingQuantity -= stock.productQuantity;
+            stock.productQuantity = 0;
+            await stock.save();
+          }
+        }
+
+        if (remainingQuantity > 0) {
           return res.status(404).json({
             error: `Insufficient quantity available for product '${productName}'`,
           });
         }
 
-        const calculatedTotalPrice = productUnitPrice * salesQuantity;
-
+        // Create the sale record in the Sales table
         const newSale = await Sales.create({
           productID: product.productID,
           categoryID: product.categoryID,
-          categoryName: product.categoryName,
           productName: productName,
           salesQuantity: salesQuantity,
           unitPrice: productUnitPrice,
           revenue: calculatedTotalPrice,
           custName: custName,
           customerContact: customerContact,
-          soldDate:soldDate
+          soldDate: soldDate,
         });
-        product.productQuantity -= salesQuantity;
-        await product.save();
 
         return newSale;
       })
@@ -57,9 +80,10 @@ exports.createSales = async (req, res) => {
     });
   } catch (e) {
     console.error("Error creating sales:", e);
-    res.status(500).json({ message: "Error carryingOut sales", e: e.message });
+    res.status(500).json({ message: "Error carrying out sales", e: e.message });
   }
 };
+
 
 // GET -> localhost:5000/api/v1/sales/list
 exports.getAllSales = async (req, res) => {
@@ -75,14 +99,12 @@ exports.getAllSales = async (req, res) => {
 exports.updateSales = async (req, res) => {
   try {
     const { id } = req.params;
-    const { productName, salesQuantity, custName, customerContact,soldDate } = req.body;
+    const { productName, salesQuantity, custName, customerContact, soldDate } = req.body;
 
     const existingSale = await Sales.findByPk(id);
 
     if (!existingSale) {
-      return res
-        .status(404)
-        .json({ error: `Sales record with ID '${id}' not found` });
+      return res.status(404).json({ error: `Sales record with ID '${id}' not found` });
     }
 
     const currentProduct = await Product.findByPk(existingSale.productID);
@@ -92,6 +114,8 @@ exports.updateSales = async (req, res) => {
         error: `Product with ID '${existingSale.productID}' not found`,
       });
     }
+
+    const quantityDifference = salesQuantity - existingSale.salesQuantity;
 
     // If product name is changing, adjust quantities in old and new products
     if (productName !== existingSale.productName) {
@@ -103,39 +127,89 @@ exports.updateSales = async (req, res) => {
       });
 
       if (!newProduct) {
-        return res
-          .status(404)
-          .json({ error: `Product '${productName}' not found` });
+        return res.status(404).json({ error: `Product '${productName}' not found` });
       }
 
-      // Restore quantity in the current product
-      currentProduct.productQuantity += existingSale.salesQuantity;
-      await currentProduct.save();
+      // Find stock entries for the old product
+      const oldStocks = await Stocks.findAll({
+        where: {
+          productID: currentProduct.productID,
+        },
+        order: [['purchasedDate', 'ASC']], // Order by purchase date to use older stock first (FIFO)
+      });
 
-      // Deduct quantity from the new product
-      if (newProduct.productQuantity < salesQuantity) {
-        return res.status(404).json({
-          error: `Insufficient quantity available for product '${productName}'`,
-        });
+      // Restore quantity in the old product's stock
+      let remainingOldQuantity = existingSale.salesQuantity;
+      for (const stock of oldStocks) {
+        if (remainingOldQuantity <= 0) break;
+
+        const addQuantity = Math.min(remainingOldQuantity, stock.productQuantity);
+        stock.productQuantity += addQuantity;
+        remainingOldQuantity -= addQuantity;
+        await stock.save();
       }
-      newProduct.productQuantity -= salesQuantity;
-      await newProduct.save();
+
+      // Find stock entries for the new product
+      const newStocks = await Stocks.findAll({
+        where: {
+          productID: newProduct.productID,
+        },
+        order: [['purchasedDate', 'ASC']], // Order by purchase date to use older stock first (FIFO)
+      });
+
+      let remainingNewQuantity = salesQuantity;
+      for (const stock of newStocks) {
+        if (remainingNewQuantity <= 0) break;
+
+        if (stock.productQuantity < remainingNewQuantity) {
+          return res.status(404).json({
+            error: `Insufficient quantity available for product '${productName}'`,
+          });
+        }
+
+        const deductQuantity = Math.min(remainingNewQuantity, stock.productQuantity);
+        stock.productQuantity -= deductQuantity;
+        remainingNewQuantity -= deductQuantity;
+        await stock.save();
+      }
 
       // Update the sales record with new product details
       existingSale.productID = newProduct.productID;
       existingSale.categoryID = newProduct.categoryID;
       existingSale.productName = newProduct.productName;
     } else {
-      const quantityDifference = salesQuantity - existingSale.salesQuantity;
+      // Adjust quantity in the same product's stock
+      const stocks = await Stocks.findAll({
+        where: {
+          productID: currentProduct.productID,
+        },
+        order: [['purchasedDate', 'ASC']], // Order by purchase date to use older stock first (FIFO)
+      });
+
       if (quantityDifference !== 0) {
-        if (quantityDifference > 0) {
-          // Decrease product quantity if salesQuantity is increased
-          currentProduct.productQuantity -= Math.abs(quantityDifference);
-        } else {
-          // Increase product quantity if salesQuantity is decreased
-          currentProduct.productQuantity += Math.abs(quantityDifference);
+        let remainingQuantity = Math.abs(quantityDifference);
+
+        for (const stock of stocks) {
+          if (remainingQuantity <= 0) break;
+
+          if (quantityDifference > 0) {
+            // Decrease product quantity if salesQuantity is increased
+            const deductQuantity = Math.min(remainingQuantity, stock.productQuantity);
+            stock.productQuantity -= deductQuantity;
+            remainingQuantity -= deductQuantity;
+          } else {
+            // Increase product quantity if salesQuantity is decreased
+            stock.productQuantity += remainingQuantity;
+            remainingQuantity = 0;
+          }
+          await stock.save();
         }
-        await currentProduct.save();
+
+        if (quantityDifference > 0 && remainingQuantity > 0) {
+          return res.status(404).json({
+            error: `Insufficient quantity available for product '${productName}'`,
+          });
+        }
       }
     }
 
@@ -143,7 +217,7 @@ exports.updateSales = async (req, res) => {
     existingSale.salesQuantity = salesQuantity;
     existingSale.custName = custName;
     existingSale.customerContact = customerContact;
-    existingSale.soldDate = soldDate
+    existingSale.soldDate = soldDate;
 
     // Calculate the new total price
     const { unitPrice: productUnitPrice } = currentProduct;
@@ -162,6 +236,7 @@ exports.updateSales = async (req, res) => {
     res.status(500).json({ message: "Error updating sales", e: e.message });
   }
 };
+
 
 // DELETE -> localhost:5000/api/v1/sales/:id
 exports.deleteSales = async (req, res) => {

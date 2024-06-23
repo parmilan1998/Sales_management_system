@@ -85,6 +85,22 @@ exports.createReport = async (req, res) => {
       periodEnd: endDate,   
     });
 
+    const salesInPeriod = await Sales.findAll({
+      where: {
+        soldDate: {
+          [Op.between]: [startDate, endDate]
+        }
+      }
+    });
+
+    // Create entries in SalesReport to link the sales to the new report
+    const salesReportEntries = salesInPeriod.map(sale => ({
+      reportID: newReport.reportID,
+      salesID: sale.salesID
+    }));
+
+    await SalesReport.bulkCreate(salesReportEntries);
+
     res.status(201).json({
       message: "Report created successfully",
       report: newReport
@@ -185,6 +201,31 @@ exports.updateReport = async (req, res) => {
     report.periodStart = startDate;
     report.periodEnd = endDate;
     await report.save();
+
+
+    // Clear existing SalesReport entries for the report
+    await SalesReport.destroy({
+      where: {
+        reportID: reportId
+      }
+    });
+
+    // Retrieve sales within the new period
+    const salesInPeriod = await Sales.findAll({
+      where: {
+        soldDate: {
+          [Op.between]: [startDate, endDate]
+        }
+      }
+    });
+
+    // Create new entries in SalesReport to link the sales to the updated report
+    const salesReportEntries = salesInPeriod.map(sale => ({
+      reportID: reportId,
+      salesID: sale.salesID
+    }));
+
+    await SalesReport.bulkCreate(salesReportEntries);
 
     res.status(200).json({
       message: "Report updated successfully",
