@@ -9,12 +9,8 @@ exports.createProduct = async (req, res) => {
   try {
     const createdProduct = await Promise.all(
       products.map(async (product) => {
-        const {
-          productName,
-          categoryName,
-          productDescription,
-          unitPrice
-        } = product;
+        const { productName, categoryName, productDescription, unitPrice } =
+          product;
 
         const category = await Category.findOne({
           where: { categoryName: categoryName },
@@ -32,7 +28,6 @@ exports.createProduct = async (req, res) => {
           categoryName: category.categoryName,
           productDescription,
           unitPrice,
-         
         });
 
         return newProduct;
@@ -81,12 +76,7 @@ exports.getProduct = async (req, res) => {
 // PUT -> localhost:5000/api/v1/product:id
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const {
-    productName,
-    categoryName,
-    productDescription,
-    unitPrice,
-  } = req.body;
+  const { productName, categoryName, productDescription, unitPrice } = req.body;
 
   try {
     const product = await Product.findByPk(id);
@@ -133,9 +123,9 @@ exports.deleteProduct = async (req, res) => {
     }
 
     await product.destroy();
-    res.status(200).send("Product deleted successfully");
+    res.status(200).json("Product deleted successfully");
   } catch (error) {
-    res.status(500).send("Error deleting product");
+    res.status(500).json("Error deleting product");
   }
 };
 
