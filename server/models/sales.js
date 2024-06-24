@@ -15,18 +15,7 @@ const sales = db.define(
       },
     },
 
-    productID: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "products",
-        key: "productID",
-      },
-      validate: {
-        notEmpty: true,
-      },
-    },
-    revenue: {
+    totalRevenue: {
       type: DataTypes.FLOAT,
       allowNull: false,
       validate: {
@@ -62,14 +51,5 @@ const sales = db.define(
   }
 );
 
-sales.belongsTo(Category, {
-  foreignKey: "categoryID",
-  targetKey: "categoryID",
-});
-
-sales.belongsTo(Product, {
-  foreignKey: "productID",
-  targetKey: "productID",
-});
 
 module.exports = sales;
