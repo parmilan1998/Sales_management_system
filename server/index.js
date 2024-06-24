@@ -8,17 +8,20 @@ const salesRoute = require("./routes/salesRoute");
 const userRoute = require("./routes/userRoute");
 const reportRoute = require("./routes/reportRoute");
 const cookieParser = require("cookie-parser");
-
+const http = require("http");
+const socketIo = require("socket.io");
 const bodyParser = require("body-parser");
 const db = require("./database/db.js");
 
 dotenv.config();
 
 const app = express();
-const http = require('http');
 const server = http.createServer(app);
-const { Server } = require('socket.io');
-const io = new Server(server);
+const io = socketIo(server, {
+  cors: {
+    origin: "*",
+  },
+});
 
 //Middleware for parse JSON bodies
 app.use(cors());
@@ -40,10 +43,21 @@ const PORT = process.env.PORT || 5000;
 db.sync()
   .then(() => {
     console.log("Database synced successfully");
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   })
   .catch((error) => {
     console.error("Error syncing Purchase table:", error);
   });
+
+// Instance
+io.on("connection", (socket) => {
+  console.log("New client connected");
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+});
+
+module.exports = io;

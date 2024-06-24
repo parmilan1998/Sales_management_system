@@ -3,6 +3,7 @@ const Reports = require("../models/reports");
 const Sales = require("../models/sales");
 const Purchase = require("../models/purchase");
 const Product = require("../models/products");
+const SalesReport = require("../models/salesReport");
 
 exports.createReport = async (req, res) => {
   try {
@@ -11,7 +12,7 @@ exports.createReport = async (req, res) => {
     // Validate the input dates
     if (!periodStart || !periodEnd) {
       return res.status(400).json({
-        message: "periodStart and periodEnd are required"
+        message: "periodStart and periodEnd are required",
       });
     }
 
@@ -20,58 +21,62 @@ exports.createReport = async (req, res) => {
 
     // Calculate beginning inventory
     const beginningInventory = await Product.findAll({
-        attributes: ['purchasePrice', 'productQuantity'],
-        where: {
-          createdAt: {
-            [Op.lte]: startDate
-          }
-        }
-      });
-  
-      const beginningInventoryCost = beginningInventory.reduce((total, product) => {
-        return total + (product.purchasePrice * product.productQuantity);
-      }, 0);
-  
-      // Calculate purchases cost during the period
-      const purchases = await Purchase.findAll({
-        attributes: ['purchasePrice', 'purchaseQuantity'],
-        where: {
-          createdAt: {
-            [Op.between]: [startDate, endDate]
-          }
-        }
-      });
-  
-      const purchasesCost = purchases.reduce((total, purchase) => {
-        return total + (purchase.purchasePrice * purchase.purchaseQuantity);
-      }, 0);
-  
-      // Calculate ending inventory cost
-      const endingInventory = await Product.findAll({
-        attributes: ['purchasePrice', 'productQuantity'],
-        where: {
-          createdAt: {
-            [Op.lte]: endDate
-          }
-        }
-      });
-  
-      const endingInventoryCost = endingInventory.reduce((total, product) => {
-        return total + (product.purchasePrice * product.productQuantity);
-      }, 0);
-  
-      // Calculate total revenue within the specified period
-      const totalRevenue = await Sales.sum('revenue', {
-        where: {
-          createdAt: {
-            [Op.between]: [startDate, endDate]
-          }
-        }
-      });
-  
-      // Calculate total COGS (Cost of Goods Sold)
-      const totalCOGS = beginningInventoryCost + purchasesCost - endingInventoryCost;
-  
+      attributes: ["purchasePrice", "productQuantity"],
+      where: {
+        createdAt: {
+          [Op.lte]: startDate,
+        },
+      },
+    });
+
+    const beginningInventoryCost = beginningInventory.reduce(
+      (total, product) => {
+        return total + product.purchasePrice * product.productQuantity;
+      },
+      0
+    );
+
+    // Calculate purchases cost during the period
+    const purchases = await Purchase.findAll({
+      attributes: ["purchasePrice", "purchaseQuantity"],
+      where: {
+        createdAt: {
+          [Op.between]: [startDate, endDate],
+        },
+      },
+    });
+
+    const purchasesCost = purchases.reduce((total, purchase) => {
+      return total + purchase.purchasePrice * purchase.purchaseQuantity;
+    }, 0);
+
+    // Calculate ending inventory cost
+    const endingInventory = await Product.findAll({
+      attributes: ["purchasePrice", "productQuantity"],
+      where: {
+        createdAt: {
+          [Op.lte]: endDate,
+        },
+      },
+    });
+
+    const endingInventoryCost = endingInventory.reduce((total, product) => {
+      return total + product.purchasePrice * product.productQuantity;
+    }, 0);
+
+    // Calculate total revenue within the specified period
+    const totalRevenue = await Sales.sum("revenue", {
+      where: {
+        createdAt: {
+          [Op.between]: [startDate, endDate],
+        },
+      },
+    });
+
+    // Calculate total COGS (Cost of Goods Sold)
+    const totalCOGS =
+      beginningInventoryCost + purchasesCost - endingInventoryCost;
+
     // Calculate gross profit
     const grossProfit = totalRevenue - totalCOGS;
 
@@ -81,18 +86,18 @@ exports.createReport = async (req, res) => {
       totalCOGS: totalCOGS,
       grossProfit: grossProfit,
       periodStart: startDate,
-      periodEnd: endDate,   
+      periodEnd: endDate,
     });
 
     res.status(201).json({
       message: "Report created successfully",
-      report: newReport
+      report: newReport,
     });
   } catch (error) {
-    console.error('Error creating report:', error);
+    console.error("Error creating report:", error);
     res.status(500).json({
       message: "An error occurred while creating the report",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -105,7 +110,7 @@ exports.updateReport = async (req, res) => {
     // Validate the input dates
     if (!periodStart || !periodEnd) {
       return res.status(400).json({
-        message: "periodStart and periodEnd are required"
+        message: "periodStart and periodEnd are required",
       });
     }
 
@@ -116,63 +121,67 @@ exports.updateReport = async (req, res) => {
     const report = await Reports.findByPk(reportId);
     if (!report) {
       return res.status(404).json({
-        message: "Report not found"
+        message: "Report not found",
       });
     }
 
     // Calculate beginning inventory cost
     const beginningInventory = await Product.findAll({
-      attributes: ['purchasePrice', 'productQuantity'],
+      attributes: ["purchasePrice", "productQuantity"],
       where: {
         createdAt: {
-          [Op.lte]: startDate
-        }
-      }
+          [Op.lte]: startDate,
+        },
+      },
     });
 
-    const beginningInventoryCost = beginningInventory.reduce((total, product) => {
-      return total + (product.purchasePrice * product.productQuantity);
-    }, 0);
+    const beginningInventoryCost = beginningInventory.reduce(
+      (total, product) => {
+        return total + product.purchasePrice * product.productQuantity;
+      },
+      0
+    );
 
     // Calculate purchases cost during the period
     const purchases = await Purchase.findAll({
-      attributes: ['purchasePrice', 'purchaseQuantity'],
+      attributes: ["purchasePrice", "purchaseQuantity"],
       where: {
         createdAt: {
-          [Op.between]: [startDate, endDate]
-        }
-      }
+          [Op.between]: [startDate, endDate],
+        },
+      },
     });
 
     const purchasesCost = purchases.reduce((total, purchase) => {
-      return total + (purchase.purchasePrice * purchase.purchaseQuantity);
+      return total + purchase.purchasePrice * purchase.purchaseQuantity;
     }, 0);
 
     // Calculate ending inventory cost
     const endingInventory = await Product.findAll({
-      attributes: ['purchasePrice', 'productQuantity'],
+      attributes: ["purchasePrice", "productQuantity"],
       where: {
         createdAt: {
-          [Op.lte]: endDate
-        }
-      }
+          [Op.lte]: endDate,
+        },
+      },
     });
 
     const endingInventoryCost = endingInventory.reduce((total, product) => {
-      return total + (product.purchasePrice * product.productQuantity);
+      return total + product.purchasePrice * product.productQuantity;
     }, 0);
 
     // Calculate total revenue within the specified period
-    const totalRevenue = await Sales.sum('revenue', {
+    const totalRevenue = await Sales.sum("revenue", {
       where: {
         createdAt: {
-          [Op.between]: [startDate, endDate]
-        }
-      }
+          [Op.between]: [startDate, endDate],
+        },
+      },
     });
 
     // Calculate total COGS (Cost of Goods Sold)
-    const totalCOGS = beginningInventoryCost + purchasesCost - endingInventoryCost;
+    const totalCOGS =
+      beginningInventoryCost + purchasesCost - endingInventoryCost;
 
     // Calculate gross profit
     const grossProfit = totalRevenue - totalCOGS;
@@ -187,13 +196,13 @@ exports.updateReport = async (req, res) => {
 
     res.status(200).json({
       message: "Report updated successfully",
-      report: report
+      report: report,
     });
   } catch (error) {
-    console.error('Error updating report:', error);
+    console.error("Error updating report:", error);
     res.status(500).json({
       message: "An error occurred while updating the report",
-      error: error.message
+      error: error.message,
     });
   }
 };
