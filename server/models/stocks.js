@@ -75,6 +75,12 @@ const Stocks = db.define(
         notEmpty: true,
       },
     },
+    relatedPurchaseIDs:{
+      type: DataTypes.TEXT,
+      validate: {
+        notEmpty: true,
+      },
+    }
   },
   {
     timestamps: true,
