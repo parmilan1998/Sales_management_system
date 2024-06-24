@@ -18,6 +18,7 @@ exports.createProduct = async (req, res) => {
           purchasePrice,
           manufacturedDate,
           expiryDate,
+          purchasedDate
         } = product;
 
         const category = await Category.findOne({
@@ -33,15 +34,32 @@ exports.createProduct = async (req, res) => {
           where: { productName: productName },
         });
 
-        if (!unitPrice && !purchasePrice) {
+        if (!unitPrice) {
           if (!purchase) {
             return res
               .status(404)
               .json({ error: `Purchase price for ${productName} not found` });
           }
-
           const unitPrice = purchase.purchasePrice * 1.1;
+         
+        }
+
+        if(!purchasePrice){
+          if (!purchase) {
+            return res
+              .status(404)
+              .json({ error: `Purchase price for ${productName} not found` });
+          }
           const purchasePrice = purchase.purchasePrice
+        }
+
+        if(!purchasedDate){
+          if (!purchase) {
+            return res
+              .status(404)
+              .json({ error: `Purchase price for ${productName} not found` });
+          }
+          const purchasedDate = purchase.purchasedDate
         }
 
         const newProduct = await Product.create({
@@ -54,6 +72,7 @@ exports.createProduct = async (req, res) => {
           purchasePrice,
           manufacturedDate,
           expiryDate,
+          purchasedDate
         });
 
         return newProduct;
@@ -110,6 +129,7 @@ exports.updateProduct = async (req, res) => {
     purchasePrice,
     manufacturedDate,
     expiryDate,
+    purchasedDate
   } = req.body;
 
   try {
@@ -140,6 +160,7 @@ exports.updateProduct = async (req, res) => {
       purchasePrice,
       manufacturedDate,
       expiryDate,
+      purchasedDate,
       categoryID: category ? category.categoryID : null,
     });
 

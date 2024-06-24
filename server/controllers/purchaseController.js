@@ -1,6 +1,7 @@
 const Purchase = require("../models/purchase");
 const { Op } = require("sequelize");
 const Product = require("../models/products");
+const Stocks = require("../models/stocks");
 
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
@@ -14,54 +15,62 @@ exports.createPurchase = async (req, res) => {
           vendorContact,
           purchaseQuantity,
           purchasePrice,
-        } = purchase;
-
-        const existingProduct = await Product.findOne({
+          manufacturedDate,
+          expiryDate,
+          purchasedDate
+              } = purchase;
+      
+       const product = await Product.findOne({
           where: {
             productName: productName,
-            purchasePrice: purchasePrice
           },
         });
 
-        if (existingProduct) {
-          // Update product quantity for the existing product
-          existingProduct.productQuantity += purchaseQuantity;
-          await existingProduct.save();
-        }  else {
-          // Create a new product entry based on the existing product attributes
-          const product = await Product.findOne({
-            where: {
-              productName: productName,
-            },
-          });
-
-          if (!product) {
-            return res.status(404).json({
-              error: `Product '${productName}' not found`,
-            });
-          }
-          await Product.create({
-            productName,
-            categoryID: product.categoryID,
-            categoryName: product.categoryName,
-            productDescription: product.productDescription,
-            manufacturedDate: product.manufacturedDate,
-            expiryDate: product.expiryDate,
-            productQuantity: purchaseQuantity,
-            unitPrice: product.unitPrice,
-            purchasePrice:purchasePrice
+        if (!product) {
+          return res.status(404).json({
+            error: `Product '${productName}' not found`,
           });
         }
-        const calculatedTotalPrice = purchasePrice * purchaseQuantity;
-       
-        return await Purchase.create({
-          productName,
+        const totalCost = purchasePrice * purchaseQuantity;
+
+         const createdPurchase = await Purchase.create({
+          productID: product.productID,
           purchaseVendor,
           vendorContact,
           purchaseQuantity,
           purchasePrice,
-          COGP: calculatedTotalPrice,
+          COGP: totalCost,
+          purchasedDate
+        });      
+
+        const existingStock = await Stocks.findOne({
+          where: {
+            productName: productName,
+            purchasePrice: purchasePrice,
+            manufacturedDate:manufacturedDate,
+            expiryDate:expiryDate,
+            purchasedDate: purchasedDate
+          },
         });
+
+        if (existingStock) {
+          // Update product quantity for the existing product
+          existingStock.productQuantity += purchaseQuantity;
+          await existingStock.save();
+        }  else {
+         
+          await Stocks.create({
+            productName,
+            productID:product.productID,
+            purchaseID:createdPurchase.purchaseID, 
+            productQuantity: purchaseQuantity,
+            manufacturedDate: manufacturedDate,
+            expiryDate: expiryDate,
+            purchasePrice:purchasePrice,
+            purchasedDate: purchasedDate
+          });
+        }
+           
       })
     );
         
@@ -100,6 +109,9 @@ exports.updatePurchase = async (req, res) => {
       purchasePrice,
       purchaseVendor,
       vendorContact,
+      purchasedDate,
+      manufacturedDate,
+      expiryDate
     } = req.body;
 
     // Find the existing purchase record
@@ -111,16 +123,17 @@ exports.updatePurchase = async (req, res) => {
         .json({ error: `Purchase record with ID '${id}' not found` });
     }
 
-    // Find the old product associated with the existing purchase record
-    const oldProduct = await Product.findOne({
+    // Find the stock entry for the old product associated with the existing purchase record
+    const oldStock = await Stocks.findOne({
       where: {
         productID: existingPurchase.productID,
+        purchaseID: existingPurchase.purchaseID,
       },
     });
 
-    if (!oldProduct) {
+    if (!oldStock) {
       return res.status(404).json({
-        error: `Original product with ID '${existingPurchase.productID}' not found`,
+        error: `Original stock entry for purchase ID '${existingPurchase.purchaseID}' not found`,
       });
     }
 
@@ -137,26 +150,45 @@ exports.updatePurchase = async (req, res) => {
         .json({ error: `Product '${productName}' not found` });
     }
 
-    const quantityDifference =
-      purchaseQuantity - existingPurchase.purchaseQuantity;
+    // Find or create the stock entry for the new product
+    let newStock = await Stocks.findOne({
+      where: {
+        productID: newProduct.productID,
+        purchasePrice: purchasePrice,
+        manufacturedDate: manufacturedDate,
+        expiryDate: expiryDate,
+        purchasedDate: purchasedDate
+      },
+    });
 
+    if (!newStock) {
+      newStock = await Stocks.create({
+        productID: newProduct.productID,
+        purchaseID: existingPurchase.purchaseID,
+        productQuantity: 0, 
+        purchasePrice: purchasePrice,
+        manufacturedDate: manufacturedDate,
+        expiryDate: expiryDate,
+        purchasedDate: purchasedDate
+      });
+    }
+
+    const quantityDifference = purchaseQuantity - existingPurchase.purchaseQuantity;
+
+    // Adjust quantities based on whether the product name is changing
     if (newProduct.productID !== existingPurchase.productID) {
-      oldProduct.productQuantity -= existingPurchase.purchaseQuantity; // Restore old product quantity
-      await oldProduct.save();
+      // Reduce quantity in the old stock entry
+      oldStock.productQuantity -= existingPurchase.purchaseQuantity;
+      await oldStock.save();
 
-      newProduct.productQuantity += purchaseQuantity; // Deduct new product quantity
-      await newProduct.save();
+      // Increase quantity in the new stock entry
+      newStock.productQuantity += purchaseQuantity;
+      await newStock.save();
     } else {
-      // Product name is not changing, adjust quantity based on purchaseQuantity change
+      // If product name is not changing, just update the quantity difference
       if (quantityDifference !== 0) {
-        if (quantityDifference > 0) {
-          // Increase product quantity if purchaseQuantity is increased
-          newProduct.productQuantity += quantityDifference;
-        } else {
-          // Decrease product quantity if purchaseQuantity is decreased
-          newProduct.productQuantity -= Math.abs(quantityDifference);
-        }
-        await newProduct.save();
+        newStock.productQuantity += quantityDifference;
+        await newStock.save();
       }
     }
 
@@ -172,6 +204,7 @@ exports.updatePurchase = async (req, res) => {
     }
     if (purchaseVendor) existingPurchase.purchaseVendor = purchaseVendor;
     if (vendorContact) existingPurchase.vendorContact = vendorContact;
+    existingPurchase.purchasedDate = purchasedDate;
 
     // Save the updated purchase record
     await existingPurchase.save();
@@ -185,6 +218,7 @@ exports.updatePurchase = async (req, res) => {
     res.status(500).json({ message: "Error updating purchase", e: e.message });
   }
 };
+
 
 // DELETE -> localhost:5000/api/v1/purchase
 exports.deletePurchase = async (req, res) => {

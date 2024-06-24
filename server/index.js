@@ -1,8 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+
 const categoryRoute = require("./routes/categoryRoute");
 const productRoute = require("./routes/productRoute");
+const stockRoute = require("./routes/stockroute.js");
 const purchaseRoute = require("./routes/purchaseRoute");
 const salesRoute = require("./routes/salesRoute");
 const userRoute = require("./routes/userRoute");
@@ -33,6 +35,7 @@ app.use(cookieParser());
 
 app.use("/api/v1/category", categoryRoute);
 app.use("/api/v1/product", productRoute);
+app.use("/api/v1/stocks", salesRoute);
 app.use("/api/v1/purchase", purchaseRoute);
 app.use("/api/v1/sales", salesRoute);
 app.use("/api/v1/user", userRoute);
