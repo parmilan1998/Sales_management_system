@@ -93,4 +93,4 @@ salesDetail.belongsTo(Sales,{
     targetKey:"salesID"
 })
 
-module.exports=salesReport
+module.exports=salesDetail
