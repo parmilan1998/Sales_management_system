@@ -57,6 +57,12 @@ exports.createPurchase = async (req, res) => {
         if (existingStock) {
           // Update product quantity for the existing product
           existingStock.productQuantity += purchaseQuantity;
+
+          if (existingStock.relatedPurchaseIDs) {
+            existingStock.relatedPurchaseIDs += `,${createdPurchase.purchaseID}`;
+          } else {
+            existingStock.relatedPurchaseIDs = `${createdPurchase.purchaseID}`;
+          }
           await existingStock.save();
         } else {
           await Stocks.create({
@@ -68,6 +74,7 @@ exports.createPurchase = async (req, res) => {
             expiryDate: expiryDate,
             purchasePrice: purchasePrice,
             purchasedDate: purchasedDate,
+            relatedPurchaseIDs: `${createdPurchase.purchaseID}`,
           });
         }
         return createdPurchase;
@@ -125,7 +132,9 @@ exports.updatePurchase = async (req, res) => {
     const oldStock = await Stocks.findOne({
       where: {
         productID: existingPurchase.productID,
-        purchaseID: existingPurchase.purchaseID,
+        relatedPurchaseIDs: {
+          [Op.substring]: `${existingPurchase.purchaseID}`,
+        },
       },
     });
 
@@ -169,6 +178,7 @@ exports.updatePurchase = async (req, res) => {
         manufacturedDate: manufacturedDate || oldStock.manufacturedDate,
         expiryDate: expiryDate || oldStock.expiryDate,
         purchasedDate: purchasedDate || oldStock.purchasedDate,
+        relatedPurchaseIDs: `${existingPurchase.purchaseID}`,
       });
     }
 
@@ -178,10 +188,18 @@ exports.updatePurchase = async (req, res) => {
         : existingPurchase.purchaseQuantity) -
       existingPurchase.purchaseQuantity;
 
-    // Adjust quantities based on whether the product name is changing
-    if (newProduct.productID !== existingPurchase.productID) {
+     // Adjust quantities and update purchase IDs based on whether the product name is changing
+     if (newProduct.productID !== existingPurchase.productID) {
       // Reduce quantity in the old stock entry
       oldStock.productQuantity -= existingPurchase.purchaseQuantity;
+
+      // Remove the existing purchase ID from relatedPurchaseIDs
+      const updatedRelatedPurchaseIDs = oldStock.relatedPurchaseIDs
+        .split(',')
+        .filter(id => id !== `${existingPurchase.purchaseID}`)
+        .join(',');
+
+      oldStock.relatedPurchaseIDs = updatedRelatedPurchaseIDs;
       await oldStock.save();
 
       // Increase quantity in the new stock entry
@@ -189,6 +207,13 @@ exports.updatePurchase = async (req, res) => {
         purchaseQuantity !== undefined
           ? purchaseQuantity
           : existingPurchase.purchaseQuantity;
+
+      // Add the existing purchase ID to the new stock's relatedPurchaseIDs
+      if (newStock.relatedPurchaseIDs) {
+        newStock.relatedPurchaseIDs += `,${existingPurchase.purchaseID}`;
+      } else {
+        newStock.relatedPurchaseIDs = `${existingPurchase.purchaseID}`;
+      }
       await newStock.save();
     } else {
       // If product name is not changing, just update the quantity difference
