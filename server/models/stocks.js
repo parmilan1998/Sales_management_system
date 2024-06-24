@@ -17,7 +17,6 @@ const Stocks = db.define(
     },
     purchaseID: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: "purchases",
         key: "purchaseID",

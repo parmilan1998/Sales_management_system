@@ -76,7 +76,7 @@ exports.createPurchase = async (req, res) => {
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
-      purchase: createdPurchase,
+      purchase: purchasedGoods,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
