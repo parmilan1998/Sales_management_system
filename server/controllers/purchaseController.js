@@ -17,10 +17,10 @@ exports.createPurchase = async (req, res) => {
           purchasePrice,
           manufacturedDate,
           expiryDate,
-          purchasedDate
-              } = purchase;
-      
-       const product = await Product.findOne({
+          purchasedDate,
+        } = purchase;
+
+        const product = await Product.findOne({
           where: {
             productName: productName,
           },
@@ -33,7 +33,7 @@ exports.createPurchase = async (req, res) => {
         }
         const totalCost = purchasePrice * purchaseQuantity;
 
-         const createdPurchase = await Purchase.create({
+        const createdPurchase = await Purchase.create({
           productID: product.productID,
           productName:product.productName,
           purchaseVendor,
@@ -41,16 +41,16 @@ exports.createPurchase = async (req, res) => {
           purchaseQuantity,
           purchasePrice,
           COGP: totalCost,
-          purchasedDate
-        });      
+          purchasedDate,
+        });
 
         const existingStock = await Stocks.findOne({
           where: {
             productID: product.productID,
             purchasePrice: purchasePrice,
-            manufacturedDate:manufacturedDate,
-            expiryDate:expiryDate,
-            purchasedDate: purchasedDate
+            manufacturedDate: manufacturedDate,
+            expiryDate: expiryDate,
+            purchasedDate: purchasedDate,
           },
         });
 
@@ -58,23 +58,20 @@ exports.createPurchase = async (req, res) => {
           // Update product quantity for the existing product
           existingStock.productQuantity += purchaseQuantity;
           await existingStock.save();
-        }  else {
-         
+        } else {
           await Stocks.create({
             productName,
-            productID:product.productID,
-            purchaseID:createdPurchase.purchaseID, 
+            productID: product.productID,
+            purchaseID: createdPurchase.purchaseID,
             productQuantity: purchaseQuantity,
             manufacturedDate: manufacturedDate,
             expiryDate: expiryDate,
-            purchasePrice:purchasePrice,
-            purchasedDate: purchasedDate
+            purchasePrice: purchasePrice,
+            purchasedDate: purchasedDate,
           });
         }
-           
       })
     );
-        
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
@@ -112,7 +109,7 @@ exports.updatePurchase = async (req, res) => {
       vendorContact,
       purchasedDate,
       manufacturedDate,
-      expiryDate
+      expiryDate,
     } = req.body;
 
     // Find the existing purchase record
@@ -158,7 +155,7 @@ exports.updatePurchase = async (req, res) => {
         purchasePrice: purchasePrice,
         manufacturedDate: manufacturedDate,
         expiryDate: expiryDate,
-        purchasedDate: purchasedDate
+        purchasedDate: purchasedDate,
       },
     });
 
@@ -167,15 +164,16 @@ exports.updatePurchase = async (req, res) => {
         productID: newProduct.productID,
         productName:newProduct.productName,
         purchaseID: existingPurchase.purchaseID,
-        productQuantity: 0, 
+        productQuantity: 0,
         purchasePrice: purchasePrice,
         manufacturedDate: manufacturedDate,
         expiryDate: expiryDate,
-        purchasedDate: purchasedDate
+        purchasedDate: purchasedDate,
       });
     }
 
-    const quantityDifference = purchaseQuantity - existingPurchase.purchaseQuantity;
+    const quantityDifference =
+      purchaseQuantity - existingPurchase.purchaseQuantity;
 
     // Adjust quantities based on whether the product name is changing
     if (newProduct.productID !== existingPurchase.productID) {
@@ -220,7 +218,6 @@ exports.updatePurchase = async (req, res) => {
     res.status(500).json({ message: "Error updating purchase", e: e.message });
   }
 };
-
 
 // DELETE -> localhost:5000/api/v1/purchase
 exports.deletePurchase = async (req, res) => {

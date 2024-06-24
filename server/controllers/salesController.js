@@ -264,7 +264,10 @@ exports.querySales = async (req, res) => {
     // Search condition
     const searchCondition = keyword
       ? {
-          [Op.or]: [{ productName: { [Op.like]: `%${keyword}%` } }],
+          [Op.or]: [
+            { productName: { [Op.like]: `%${keyword}%` } },
+            { custName: { [Op.like]: `%${keyword}%` } },
+          ],
         }
       : {};
 
@@ -272,7 +275,7 @@ exports.querySales = async (req, res) => {
     const sortOrder = sort === "desc" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
-    const { count, rows: purchases } = await Purchase.findAndCountAll({
+    const { count, rows: sales } = await Sales.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
@@ -283,7 +286,7 @@ exports.querySales = async (req, res) => {
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      purchases,
+      sales,
       pagination: {
         currentPage: parsedPage,
         totalPages,
