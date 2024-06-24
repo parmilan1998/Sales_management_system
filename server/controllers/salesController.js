@@ -18,9 +18,13 @@ exports.createSales = async (req, res) => {
           custName: custName,
           customerContact: customerContact,
           soldDate: soldDate,
+          totalRevenue: 0, // Initial total revenue
         });
 
-        const saleDetails = await Promise.all(
+        let totalRevenue = 0;
+
+        // Process each product in the sale
+        await Promise.all(
           products.map(async (productSale) => {
             const { productName, salesQuantity } = productSale;
 
@@ -33,34 +37,30 @@ exports.createSales = async (req, res) => {
               throw new Error(`Product '${productName}' not found`);
             }
 
-            const { unitPrice } = product;
-            const calculatedTotalPrice = unitPrice * salesQuantity;
+            const { productID, unitPrice } = product;
+            const revenue = unitPrice * salesQuantity;
 
             // Find stock entries for the product
             const stocks = await Stocks.findAll({
-              where: { productID: product.productID },
+              where: { productID },
               order: [['purchasedDate', 'ASC']],
             });
 
             let remainingQuantity = salesQuantity;
             let stockDetails = [];
 
+            // Deduct sales quantity from available stock
             for (const stock of stocks) {
               if (remainingQuantity <= 0) break;
-              let usedQuantity = 0;
 
-              if (stock.productQuantity >= remainingQuantity) {
-                usedQuantity = remainingQuantity;
-                stock.productQuantity -= remainingQuantity;
-                remainingQuantity = 0;
-              } else {
-                usedQuantity = stock.productQuantity;
-                remainingQuantity -= stock.productQuantity;
-                stock.productQuantity = 0;
-              }
+              let usedQuantity = Math.min(stock.productQuantity, remainingQuantity);
+              stock.productQuantity -= usedQuantity;
+              remainingQuantity -= usedQuantity;
 
+              // Save updated stock quantity
               await stock.save();
 
+              // Track stock details for SalesDetail creation
               stockDetails.push({ stockID: stock.stockID, usedQuantity });
             }
 
@@ -68,33 +68,22 @@ exports.createSales = async (req, res) => {
               throw new Error(`Insufficient quantity available for product '${productName}'`);
             }
 
-            // Create the sales details records
-            await Promise.all(
-              stockDetails.map(async (stockDetail) => {
-                await SalesDetail.create({
-                  salesID: newSale.salesID,
-                  productID: product.productID,
-                  stockID: stockDetail.stockID,
-                  salesQuantity: stockDetail.usedQuantity,
-                  unitPrice: unitPrice,
-                  revenue: unitPrice * stockDetail.usedQuantity,
-                });
-              })
-            );
-
-            return {
+            // Create SalesDetail record
+            const createdSalesDetail = await SalesDetail.create({
               salesID: newSale.salesID,
-              productID: product.productID,
-              productName: product.productName,
-              salesQuantity,
-              unitPrice,
-              revenue: calculatedTotalPrice,
-            };
+              productID: productID,
+              stockID: stockDetails[0].stockID, // Assuming first stock used for simplicity
+              salesQuantity: salesQuantity,
+              unitPrice: unitPrice,
+              revenue: revenue,
+              productName: productName,
+            });
+
+            totalRevenue += revenue; // Accumulate revenue for the sale
           })
         );
 
-        // Calculate total revenue for the sale
-        const totalRevenue = saleDetails.reduce((total, detail) => total + detail.revenue, 0);
+        // Update total revenue for the sale
         newSale.totalRevenue = totalRevenue;
         await newSale.save();
 
@@ -104,14 +93,14 @@ exports.createSales = async (req, res) => {
 
     res.status(201).json({
       message: "Sales added successfully",
-      result: createdSales.flat(),
+      sales: createdSales.flat(),
+
     });
-  } catch (e) {
-    console.error("Error creating sales:", e);
-    res.status(500).json({ message: "Error carrying out sales", e: e.message });
+  } catch (error) {
+    console.error("Error creating sales:", error);
+    res.status(500).json({ message: "Error carrying out sales", error: error.message });
   }
 };
-
 
 // GET -> localhost:5000/api/v1/sales/list
 exports.getAllSales = async (req, res) => {
@@ -226,9 +215,6 @@ exports.updateSales = async (req, res) => {
     res.status(500).json({ message: "Error updating sales", e: e.message });
   }
 };
-
-
-
 
 // DELETE -> localhost:5000/api/v1/sales/:id
 exports.deleteSales = async (req, res) => {
