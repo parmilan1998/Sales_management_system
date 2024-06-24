@@ -13,12 +13,7 @@ exports.createProduct = async (req, res) => {
           productName,
           categoryName,
           productDescription,
-          productQuantity,
-          unitPrice,
-          purchasePrice,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate
+          unitPrice
         } = product;
 
         const category = await Category.findOne({
@@ -30,49 +25,14 @@ exports.createProduct = async (req, res) => {
             .status(404)
             .json({ error: `Category ${categoryName} not found` });
         }
-        const purchase = await Purchase.findOne({
-          where: { productName: productName },
-        });
-
-        if (!unitPrice) {
-          if (!purchase) {
-            return res
-              .status(404)
-              .json({ error: `Purchase price for ${productName} not found` });
-          }
-          const unitPrice = purchase.purchasePrice * 1.1;
-         
-        }
-
-        if(!purchasePrice){
-          if (!purchase) {
-            return res
-              .status(404)
-              .json({ error: `Purchase price for ${productName} not found` });
-          }
-          const purchasePrice = purchase.purchasePrice
-        }
-
-        if(!purchasedDate){
-          if (!purchase) {
-            return res
-              .status(404)
-              .json({ error: `Purchase price for ${productName} not found` });
-          }
-          const purchasedDate = purchase.purchasedDate
-        }
 
         const newProduct = await Product.create({
           productName,
           categoryID: category.categoryID,
           categoryName: category.categoryName,
           productDescription,
-          productQuantity,
           unitPrice,
-          purchasePrice,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate
+         
         });
 
         return newProduct;
@@ -126,10 +86,6 @@ exports.updateProduct = async (req, res) => {
     categoryName,
     productDescription,
     unitPrice,
-    purchasePrice,
-    manufacturedDate,
-    expiryDate,
-    purchasedDate
   } = req.body;
 
   try {
@@ -157,10 +113,6 @@ exports.updateProduct = async (req, res) => {
       categoryName,
       productDescription,
       unitPrice,
-      purchasePrice,
-      manufacturedDate,
-      expiryDate,
-      purchasedDate,
       categoryID: category ? category.categoryID : null,
     });
 
