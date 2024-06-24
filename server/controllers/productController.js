@@ -1,7 +1,8 @@
-const { Op } = require("sequelize");
+const { Op, fn, col } = require("sequelize");
+const sequelize = require("../database/db");
 const Product = require("../models/products");
 const Category = require("../models/category");
-const Purchase = require("../models/purchase");
+const Stocks = require("../models/stocks");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
@@ -45,20 +46,43 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// GET -> localhost:5000/api/v1/product
+// GET -> localhost:5000/api/v1/product/list
 exports.getAllProduct = async (req, res) => {
   try {
     const products = await Product.findAll();
+    const productIDs = products.map(product => product.productID);
+
+    const stockQuantities = await Stocks.findAll({
+      attributes: ['productID', [fn('sum', col('productQuantity')), 'totalQuantity']],
+      where: {
+        productID: {
+          [Op.in]: productIDs
+        }
+      },
+      group: ['productID']
+    });
+
+    const stockQuantityMap = stockQuantities.reduce((acc, stock) => {
+      acc[stock.productID] = stock.dataValues.totalQuantity;
+      return acc;
+    }, {});
+
+    const productWithQuantities = products.map(product => ({
+      ...product.dataValues,
+      totalQuantity: stockQuantityMap[product.productID] || 0
+    }));
+
     res.status(200).json({
-      count: products.length,
-      product: products,
+      count: productWithQuantities.length,
+      product: productWithQuantities,
     });
   } catch (error) {
-    res.status(500).send("Error retrieving products");
+    res.status(500).json({ message: "Error retrieving products", error: error.message });
   }
 };
 
-// GET -> localhost:5000/api/v1/product:id
+
+// GET -> localhost:5000/api/v1/product/:id
 exports.getProduct = async (req, res) => {
   const { id } = req.params;
   try {
@@ -66,12 +90,26 @@ exports.getProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    res.status(200).json(product);
+
+    const stockQuantity = await Stocks.findOne({
+      attributes: [[fn('sum', col('productQuantity')), 'totalQuantity']],
+      where: {
+        productID: id
+      },
+      group: ['productID']
+    });
+
+    const totalQuantity = stockQuantity ? stockQuantity.dataValues.totalQuantity : 0;
+
+    res.status(200).json({
+      ...product.dataValues,
+      totalQuantity
+    });
   } catch (error) {
-    console.error("Error retrieving product:", error);
-    res.status(500).send("Error retrieving product");
+    res.status(500).json({ message: "Error retrieving product", error: error.message });
   }
 };
+
 
 // PUT -> localhost:5000/api/v1/product:id
 exports.updateProduct = async (req, res) => {
@@ -167,8 +205,34 @@ exports.queryProducts = async (req, res) => {
       order: [["productName", sortBy]],
     });
 
+    // Get product IDs from the products found
+    const productIDs = products.map(product => product.productID);
+
+    // Find total quantities for the found products
+    const stockQuantities = await Stocks.findAll({
+      attributes: ['productID', [fn('sum', col('productQuantity')), 'totalQuantity']],
+      where: {
+        productID: {
+          [Op.in]: productIDs
+        }
+      },
+      group: ['productID']
+    });
+
+    // Create a map of productID to totalQuantity
+    const stockQuantityMap = stockQuantities.reduce((acc, stock) => {
+      acc[stock.productID] = stock.dataValues.totalQuantity;
+      return acc;
+    }, {});
+
+    // Add totalQuantity to each product
+    const productWithQuantities = products.map(product => ({
+      ...product.dataValues,
+      totalQuantity: stockQuantityMap[product.productID] || 0
+    }));
+
     res.status(200).json({
-      products: products,
+      products:  productWithQuantities,
       pagination: {
         totalPages: Math.ceil(count / parsedLimit),
         totalCount: count,
