@@ -25,7 +25,7 @@ exports.createProduct = async (req, res) => {
         const newProduct = await Product.create({
           productName,
           categoryID: category.categoryID,
-          categoryName:category.CategoryName,
+          categoryName,
           productDescription,
           unitPrice,
         });
@@ -114,7 +114,6 @@ exports.updateProduct = async (req, res) => {
     res.status(500).json({ message: "Error updating product" });
   }
 };
-
 
 // DELETE -> localhost:5000/api/v1/product:id
 exports.deleteProduct = async (req, res) => {

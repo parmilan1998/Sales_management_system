@@ -35,7 +35,7 @@ exports.createPurchase = async (req, res) => {
 
         const createdPurchase = await Purchase.create({
           productID: product.productID,
-          productName:product.productName,
+          productName,
           purchaseVendor,
           vendorContact,
           purchaseQuantity,
@@ -75,10 +75,9 @@ exports.createPurchase = async (req, res) => {
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
-      result: purchasedGoods,
+      purchase: createdPurchase,
     });
   } catch (err) {
-    console.error("Error creating purchase:", err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -162,7 +161,7 @@ exports.updatePurchase = async (req, res) => {
     if (!newStock) {
       newStock = await Stocks.create({
         productID: newProduct.productID,
-        productName:newProduct.productName,
+        productName: newProduct.productName,
         purchaseID: existingPurchase.purchaseID,
         productQuantity: 0,
         purchasePrice: purchasePrice,

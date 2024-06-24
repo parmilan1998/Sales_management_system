@@ -1,87 +1,87 @@
-const {DataTypes} = require("sequelize")
-const db = require("../database/db")
-const Purchase = require("./purchase")
-const Product = require("./products")
-
+const { DataTypes } = require("sequelize");
+const db = require("../database/db");
+const Purchase = require("./purchase");
+const Product = require("./products");
 
 const Stocks = db.define(
-"Stocks",{
-  stockID: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-    unique: true,
-    validate: {
-      notEmpty: true,
+  "Stocks",
+  {
+    stockID: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+      unique: true,
+      validate: {
+        notEmpty: true,
+      },
     },
-  },
-  purchaseID: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: "purchases",
-      key: "purchaseID",
+    purchaseID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "purchases",
+        key: "purchaseID",
+      },
+      validate: {
+        notEmpty: true,
+      },
     },
-    validate: {
-      notEmpty: true,
+    productID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "products",
+        key: "productID",
+      },
+      validate: {
+        notEmpty: true,
+      },
     },
-  },
-  productID: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: "products",
-      key: "productID",
+    productName: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    validate: {
-      notEmpty: true,
+    productQuantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
-  },
-  productName: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-productQuantity: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    validate: {
-      notEmpty: true,
+    purchasePrice: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
-  },
-  purchasePrice: {
-    type: DataTypes.FLOAT,
-    allowNull: false,
-    validate: {
-      notEmpty: true,
-    },
-  },
-  manufacturedDate: {
-    type: DataTypes.DATEONLY,
-    allowNull: false,
-    validate: {
-      notEmpty: true,
-    },
-  },
-  expiryDate: {
-    type: DataTypes.DATEONLY,
-    allowNull: false,
-    validate: {
-      notEmpty: true,
-    },
-  },
-  purchasedDate:{
+    manufacturedDate: {
       type: DataTypes.DATEONLY,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
+    },
+    expiryDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    purchasedDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+  },
+  {
+    timestamps: true,
+    tableName: "stocks",
   }
-},{
-  timestamps: true,
-  tableName: "stocks",
-}
-)
-
+);
 
 Stocks.belongsTo(Product, {
   foreignKey: "productID",
@@ -92,4 +92,4 @@ Stocks.belongsTo(Purchase, {
   targetKey: "purchaseID",
 });
 
-module.exports =Stocks
+module.exports = Stocks;
