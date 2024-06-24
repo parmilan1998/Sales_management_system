@@ -24,6 +24,7 @@ const Product = db.define(
     },
     categoryID: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
         model: "categories",
         key: "categoryID",

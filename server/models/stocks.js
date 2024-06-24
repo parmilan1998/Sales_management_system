@@ -17,6 +17,7 @@ const Stocks = db.define(
   },
   purchaseID: {
     type: DataTypes.INTEGER,
+    allowNull: false,
     references: {
       model: "purchases",
       key: "purchaseID",
@@ -27,17 +28,11 @@ const Stocks = db.define(
   },
   productID: {
     type: DataTypes.INTEGER,
+    allowNull: false,
     references: {
       model: "products",
       key: "productID",
     },
-    validate: {
-      notEmpty: true,
-    },
-  },
-  productName: {
-    type: DataTypes.STRING,
-    allowNull: false,
     validate: {
       notEmpty: true,
     },
