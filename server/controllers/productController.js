@@ -25,7 +25,7 @@ exports.createProduct = async (req, res) => {
         const newProduct = await Product.create({
           productName,
           categoryID: category.categoryID,
-          categoryName: category.categoryName,
+          categoryName:category.CategoryName,
           productDescription,
           unitPrice,
         });
@@ -85,9 +85,10 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    let category;
+    let categoryID = product.categoryID; // Default to current categoryID
+
     if (categoryName) {
-      category = await Category.findOne({
+      const category = await Category.findOne({
         where: { categoryName: categoryName },
       });
 
@@ -96,14 +97,16 @@ exports.updateProduct = async (req, res) => {
           .status(404)
           .json({ message: `Category ${categoryName} not found.` });
       }
+
+      categoryID = category.categoryID; // Update categoryID if categoryName is provided
     }
 
     await product.update({
       productName,
-      categoryName,
       productDescription,
+      categoryName,
       unitPrice,
-      categoryID: category ? category.categoryID : null,
+      categoryID,
     });
 
     res.status(200).json({ message: "Product updated successfully" });
@@ -111,6 +114,7 @@ exports.updateProduct = async (req, res) => {
     res.status(500).json({ message: "Error updating product" });
   }
 };
+
 
 // DELETE -> localhost:5000/api/v1/product:id
 exports.deleteProduct = async (req, res) => {

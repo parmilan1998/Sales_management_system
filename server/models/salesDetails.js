@@ -51,6 +51,10 @@ salesDetail = db.define(
             },
 
         },
+        productName: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
         salesQuantity:{
             type:DataTypes.INTEGER,
             allowNull:false,

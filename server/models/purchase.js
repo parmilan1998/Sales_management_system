@@ -24,7 +24,12 @@ const Purchase = db.define(
       validate: {
         notEmpty: true,
       },
+  },
+    productName: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
+    
 
     purchaseVendor: {
       type: DataTypes.STRING,

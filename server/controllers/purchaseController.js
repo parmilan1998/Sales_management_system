@@ -35,6 +35,7 @@ exports.createPurchase = async (req, res) => {
 
         const createdPurchase = await Purchase.create({
           productID: product.productID,
+          productName:product.productName,
           purchaseVendor,
           vendorContact,
           purchaseQuantity,
@@ -161,6 +162,7 @@ exports.updatePurchase = async (req, res) => {
     if (!newStock) {
       newStock = await Stocks.create({
         productID: newProduct.productID,
+        productName:newProduct.productName,
         purchaseID: existingPurchase.purchaseID,
         productQuantity: 0,
         purchasePrice: purchasePrice,
