@@ -35,7 +35,7 @@ exports.createPurchase = async (req, res) => {
 
         const createdPurchase = await Purchase.create({
           productID: product.productID,
-          productName:product.productName,
+          productName,
           purchaseVendor,
           vendorContact,
           purchaseQuantity,
@@ -43,7 +43,7 @@ exports.createPurchase = async (req, res) => {
           COGP: totalCost,
           purchasedDate,
         });
-
+       
         const existingStock = await Stocks.findOne({
           where: {
             productID: product.productID,
@@ -70,12 +70,15 @@ exports.createPurchase = async (req, res) => {
             purchasedDate: purchasedDate,
           });
         }
+        return createdPurchase
       })
+
+      
     );
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
-      result: purchasedGoods,
+      purchase: purchasedGoods,
     });
   } catch (err) {
     console.error("Error creating purchase:", err);
@@ -152,28 +155,28 @@ exports.updatePurchase = async (req, res) => {
     let newStock = await Stocks.findOne({
       where: {
         productID: newProduct.productID,
-        purchasePrice: purchasePrice,
-        manufacturedDate: manufacturedDate,
-        expiryDate: expiryDate,
-        purchasedDate: purchasedDate,
+        purchasePrice: purchasePrice || oldStock.purchasePrice,
+        manufacturedDate: manufacturedDate || oldStock.manufacturedDate,
+        expiryDate: expiryDate || oldStock.expiryDate,
+        purchasedDate: purchasedDate || oldStock.purchasedDate,
       },
     });
 
     if (!newStock) {
       newStock = await Stocks.create({
         productID: newProduct.productID,
-        productName:newProduct.productName,
+        productName: newProduct.productName,
         purchaseID: existingPurchase.purchaseID,
         productQuantity: 0,
-        purchasePrice: purchasePrice,
-        manufacturedDate: manufacturedDate,
-        expiryDate: expiryDate,
-        purchasedDate: purchasedDate,
+        purchasePrice: purchasePrice || oldStock.purchasePrice,
+        manufacturedDate: manufacturedDate || oldStock.manufacturedDate,
+        expiryDate: expiryDate || oldStock.expiryDate,
+        purchasedDate: purchasedDate || oldStock.purchasedDate,
       });
     }
 
     const quantityDifference =
-      purchaseQuantity - existingPurchase.purchaseQuantity;
+      (purchaseQuantity !== undefined ? purchaseQuantity : existingPurchase.purchaseQuantity) - existingPurchase.purchaseQuantity;
 
     // Adjust quantities based on whether the product name is changing
     if (newProduct.productID !== existingPurchase.productID) {
@@ -182,7 +185,7 @@ exports.updatePurchase = async (req, res) => {
       await oldStock.save();
 
       // Increase quantity in the new stock entry
-      newStock.productQuantity += purchaseQuantity;
+      newStock.productQuantity += purchaseQuantity !== undefined ? purchaseQuantity : existingPurchase.purchaseQuantity;
       await newStock.save();
     } else {
       // If product name is not changing, just update the quantity difference
@@ -202,9 +205,9 @@ exports.updatePurchase = async (req, res) => {
       existingPurchase.COGP =
         purchasePrice * (purchaseQuantity || existingPurchase.purchaseQuantity);
     }
-    if (purchaseVendor) existingPurchase.purchaseVendor = purchaseVendor;
-    if (vendorContact) existingPurchase.vendorContact = vendorContact;
-    existingPurchase.purchasedDate = purchasedDate;
+    if (purchaseVendor !== undefined) existingPurchase.purchaseVendor = purchaseVendor;
+    if (vendorContact !== undefined) existingPurchase.vendorContact = vendorContact;
+    if (purchasedDate !== undefined) existingPurchase.purchasedDate = purchasedDate;
 
     // Save the updated purchase record
     await existingPurchase.save();
@@ -218,6 +221,7 @@ exports.updatePurchase = async (req, res) => {
     res.status(500).json({ message: "Error updating purchase", e: e.message });
   }
 };
+
 
 // DELETE -> localhost:5000/api/v1/purchase
 exports.deletePurchase = async (req, res) => {
