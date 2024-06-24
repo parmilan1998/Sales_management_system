@@ -45,7 +45,7 @@ exports.createPurchase = async (req, res) => {
 
         const existingStock = await Stocks.findOne({
           where: {
-            productName: productName,
+            productID: product.productID,
             purchasePrice: purchasePrice,
             manufacturedDate:manufacturedDate,
             expiryDate:expiryDate,
