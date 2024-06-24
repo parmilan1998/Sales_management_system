@@ -37,6 +37,10 @@ const Stocks = db.define(
       notEmpty: true,
     },
   },
+  productName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 productQuantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
