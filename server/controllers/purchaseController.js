@@ -43,7 +43,7 @@ exports.createPurchase = async (req, res) => {
           COGP: totalCost,
           purchasedDate,
         });
-       
+
         const existingStock = await Stocks.findOne({
           where: {
             productID: product.productID,
@@ -70,18 +70,15 @@ exports.createPurchase = async (req, res) => {
             purchasedDate: purchasedDate,
           });
         }
-        return createdPurchase
+        return createdPurchase;
       })
-
-      
     );
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
-      purchase: purchasedGoods,
+      purchase: createdPurchase,
     });
   } catch (err) {
-    console.error("Error creating purchase:", err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -176,7 +173,10 @@ exports.updatePurchase = async (req, res) => {
     }
 
     const quantityDifference =
-      (purchaseQuantity !== undefined ? purchaseQuantity : existingPurchase.purchaseQuantity) - existingPurchase.purchaseQuantity;
+      (purchaseQuantity !== undefined
+        ? purchaseQuantity
+        : existingPurchase.purchaseQuantity) -
+      existingPurchase.purchaseQuantity;
 
     // Adjust quantities based on whether the product name is changing
     if (newProduct.productID !== existingPurchase.productID) {
@@ -185,7 +185,10 @@ exports.updatePurchase = async (req, res) => {
       await oldStock.save();
 
       // Increase quantity in the new stock entry
-      newStock.productQuantity += purchaseQuantity !== undefined ? purchaseQuantity : existingPurchase.purchaseQuantity;
+      newStock.productQuantity +=
+        purchaseQuantity !== undefined
+          ? purchaseQuantity
+          : existingPurchase.purchaseQuantity;
       await newStock.save();
     } else {
       // If product name is not changing, just update the quantity difference
@@ -205,9 +208,12 @@ exports.updatePurchase = async (req, res) => {
       existingPurchase.COGP =
         purchasePrice * (purchaseQuantity || existingPurchase.purchaseQuantity);
     }
-    if (purchaseVendor !== undefined) existingPurchase.purchaseVendor = purchaseVendor;
-    if (vendorContact !== undefined) existingPurchase.vendorContact = vendorContact;
-    if (purchasedDate !== undefined) existingPurchase.purchasedDate = purchasedDate;
+    if (purchaseVendor !== undefined)
+      existingPurchase.purchaseVendor = purchaseVendor;
+    if (vendorContact !== undefined)
+      existingPurchase.vendorContact = vendorContact;
+    if (purchasedDate !== undefined)
+      existingPurchase.purchasedDate = purchasedDate;
 
     // Save the updated purchase record
     await existingPurchase.save();
@@ -221,7 +227,6 @@ exports.updatePurchase = async (req, res) => {
     res.status(500).json({ message: "Error updating purchase", e: e.message });
   }
 };
-
 
 // DELETE -> localhost:5000/api/v1/purchase
 exports.deletePurchase = async (req, res) => {
