@@ -121,4 +121,53 @@ exports.deleteStocks = async (req, res) => {
 };
 
 // GET -> localhost:5000/api/v1/stocks/query
-exports.queryStocks = async (req, res) => {};
+exports.queryStocks = async (req, res) => {
+  try {
+    // Query parameters
+    const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
+    // console.log("Query Params:", { keyword, page, limit, sort });
+
+    // Pagination
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+    const offset = (parsedPage - 1) * parsedLimit;
+    // console.log("Pagination:", { parsedPage, parsedLimit, offset });
+
+    // Search condition
+    const searchCondition = keyword
+      ? {
+          [Op.or]: [
+            { purchaseVendor: { [Op.like]: `%${keyword}%` } },
+            { productName: { [Op.like]: `%${keyword}%` } },
+          ],
+        }
+      : {};
+    // console.log("Where Clause:", searchCondition);
+
+    // Sorting by ASC or DESC
+    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    // console.log(sortOrder);
+
+    // search, pagination, and sorting
+    const { count, rows: purchases } = await Purchase.findAndCountAll({
+      where: searchCondition,
+      offset: offset,
+      limit: parsedLimit,
+      order: [["createdAt", sortOrder]],
+    });
+
+    // Total pages
+    const totalPages = Math.ceil(count / parsedLimit);
+
+    res.status(200).json({
+      purchases,
+      pagination: {
+        currentPage: parsedPage,
+        totalPages,
+        totalCount: count,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

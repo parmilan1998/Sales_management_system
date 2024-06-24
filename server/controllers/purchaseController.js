@@ -28,7 +28,7 @@ exports.createPurchase = async (req, res) => {
 
         if (!product) {
           return res.status(404).json({
-            error: `Product '${productName}' not found`,
+            message: `Product '${productName}' not found`,
           });
         }
         const totalCost = purchasePrice * purchaseQuantity;
@@ -252,31 +252,24 @@ exports.queryPurchase = async (req, res) => {
   try {
     // Query parameters
     const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
-    // console.log("Query Params:", { keyword, page, limit, sort });
 
     // Pagination
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
     const offset = (parsedPage - 1) * parsedLimit;
-    // console.log("Pagination:", { parsedPage, parsedLimit, offset });
 
     // Search condition
     const searchCondition = keyword
       ? {
-          [Op.or]: [
-            { purchaseVendor: { [Op.like]: `%${keyword}%` } },
-            { productName: { [Op.like]: `%${keyword}%` } },
-          ],
+          [Op.or]: [{ productName: { [Op.like]: `%${keyword}%` } }],
         }
       : {};
-    // console.log("Where Clause:", searchCondition);
 
     // Sorting by ASC or DESC
     const sortOrder = sort === "desc" ? "DESC" : "ASC";
-    // console.log(sortOrder);
 
     // search, pagination, and sorting
-    const { count, rows: purchases } = await Purchase.findAndCountAll({
+    const { count, rows: stocks } = await Stocks.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
@@ -287,7 +280,7 @@ exports.queryPurchase = async (req, res) => {
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      purchases,
+      stocks,
       pagination: {
         currentPage: parsedPage,
         totalPages,

@@ -50,16 +50,19 @@ exports.createProduct = async (req, res) => {
 exports.getAllProduct = async (req, res) => {
   try {
     const products = await Product.findAll();
-    const productIDs = products.map(product => product.productID);
+    const productIDs = products.map((product) => product.productID);
 
     const stockQuantities = await Stocks.findAll({
-      attributes: ['productID', [fn('sum', col('productQuantity')), 'totalQuantity']],
+      attributes: [
+        "productID",
+        [fn("sum", col("productQuantity")), "totalQuantity"],
+      ],
       where: {
         productID: {
-          [Op.in]: productIDs
-        }
+          [Op.in]: productIDs,
+        },
       },
-      group: ['productID']
+      group: ["productID"],
     });
 
     const stockQuantityMap = stockQuantities.reduce((acc, stock) => {
@@ -67,9 +70,9 @@ exports.getAllProduct = async (req, res) => {
       return acc;
     }, {});
 
-    const productWithQuantities = products.map(product => ({
+    const productWithQuantities = products.map((product) => ({
       ...product.dataValues,
-      totalQuantity: stockQuantityMap[product.productID] || 0
+      totalQuantity: stockQuantityMap[product.productID] || 0,
     }));
 
     res.status(200).json({
@@ -77,10 +80,11 @@ exports.getAllProduct = async (req, res) => {
       product: productWithQuantities,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving products", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error retrieving products", error: error.message });
   }
 };
-
 
 // GET -> localhost:5000/api/v1/product/:id
 exports.getProduct = async (req, res) => {
@@ -92,24 +96,27 @@ exports.getProduct = async (req, res) => {
     }
 
     const stockQuantity = await Stocks.findOne({
-      attributes: [[fn('sum', col('productQuantity')), 'totalQuantity']],
+      attributes: [[fn("sum", col("productQuantity")), "totalQuantity"]],
       where: {
-        productID: id
+        productID: id,
       },
-      group: ['productID']
+      group: ["productID"],
     });
 
-    const totalQuantity = stockQuantity ? stockQuantity.dataValues.totalQuantity : 0;
+    const totalQuantity = stockQuantity
+      ? stockQuantity.dataValues.totalQuantity
+      : 0;
 
     res.status(200).json({
       ...product.dataValues,
-      totalQuantity
+      totalQuantity,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving product", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error retrieving product", error: error.message });
   }
 };
-
 
 // PUT -> localhost:5000/api/v1/product:id
 exports.updateProduct = async (req, res) => {
@@ -123,7 +130,7 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    let categoryID = product.categoryID; // Default to current categoryID
+    let categoryID = product.categoryID;
 
     if (categoryName) {
       const category = await Category.findOne({
@@ -136,7 +143,7 @@ exports.updateProduct = async (req, res) => {
           .json({ message: `Category ${categoryName} not found.` });
       }
 
-      categoryID = category.categoryID; // Update categoryID if categoryName is provided
+      categoryID = category.categoryID;
     }
 
     await product.update({
@@ -205,17 +212,20 @@ exports.queryProducts = async (req, res) => {
     });
 
     // Get product IDs from the products found
-    const productIDs = products.map(product => product.productID);
+    const productIDs = products.map((product) => product.productID);
 
     // Find total quantities for the found products
     const stockQuantities = await Stocks.findAll({
-      attributes: ['productID', [fn('sum', col('productQuantity')), 'totalQuantity']],
+      attributes: [
+        "productID",
+        [fn("sum", col("productQuantity")), "totalQuantity"],
+      ],
       where: {
         productID: {
-          [Op.in]: productIDs
-        }
+          [Op.in]: productIDs,
+        },
       },
-      group: ['productID']
+      group: ["productID"],
     });
 
     // Create a map of productID to totalQuantity
@@ -225,13 +235,13 @@ exports.queryProducts = async (req, res) => {
     }, {});
 
     // Add totalQuantity to each product
-    const productWithQuantities = products.map(product => ({
+    const productWithQuantities = products.map((product) => ({
       ...product.dataValues,
-      totalQuantity: stockQuantityMap[product.productID] || 0
+      totalQuantity: stockQuantityMap[product.productID] || 0,
     }));
 
     res.status(200).json({
-      products:  productWithQuantities,
+      products: productWithQuantities,
       pagination: {
         totalPages: Math.ceil(count / parsedLimit),
         totalCount: count,
