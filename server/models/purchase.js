@@ -24,7 +24,7 @@ const Purchase = db.define(
       validate: {
         notEmpty: true,
       },
-  },
+    },
 
     purchaseVendor: {
       type: DataTypes.STRING,
@@ -61,16 +61,14 @@ const Purchase = db.define(
         notEmpty: true,
       },
     },
-    purchasedDate:{
+    purchasedDate: {
       type: DataTypes.DATEONLY,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
-  }
-   
-
-},
+    },
+  },
   {
     timestamps: true,
   }

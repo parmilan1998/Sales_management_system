@@ -75,62 +75,43 @@ exports.deleteCategory = async (req, res) => {
   }
 };
 
-// GET -> localhost:5000/api/v1/category/paginated-list
-exports.categoryPagination = async (req, res) => {
+// GET -> localhost:5000/api/v1/category/query
+exports.queryCategory = async (req, res) => {
   try {
-    let { page, limit } = req.query;
+    // Query parameters
+    const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
 
-    page = parseInt(page);
-    limit = parseInt(limit);
+    // Pagination
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
-      return res
-        .status(400)
-        .json({ error: "Invalid page or limit parameters" });
-    }
+    // Search condition
+    const searchCondition = keyword
+      ? { categoryName: { [Op.like]: `%${keyword}%` } }
+      : {};
 
-    const offset = (page - 1) * limit;
+    // Sorting by ASC or DESC
+    const sortOrder = sort === "desc" ? "DESC" : "ASC";
 
-    const categories = await Category.findAndCountAll({
+    // search, pagination, and sorting
+    const { count, rows: categories } = await Category.findAndCountAll({
+      where: searchCondition,
       offset: offset,
-      limit: limit,
+      limit: parsedLimit,
+      order: [["createdAt", sortOrder]],
     });
-    res.status(200).json({
-      categories: categories.rows,
-      totalPages: Math.ceil(categories.count / limit),
-      totalCount: categories.count,
-      currentPage: page,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-// GET -> localhost:5000/api/v1/category/search
-exports.searchCategory = async (req, res) => {
-  try {
-    const { keyword } = req.query;
-    if (!keyword) {
-      return res.status(400).json({ message: "Search keyword is required" });
-    }
-    const searchOutputs = await Category.findAll({
-      where: {
-        [Op.or]: [
-          {
-            categoryName: {
-              [Op.like]: `%${keyword}%`,
-            },
-          },
-          {
-            categoryDescription: {
-              [Op.like]: `%${keyword}%`,
-            },
-          },
-        ],
-      },
-    });
+    // Total pages
+    const totalPages = Math.ceil(count / parsedLimit);
+
     res.status(200).json({
-      searchOutputs: searchOutputs,
+      categories,
+      pagination: {
+        currentPage: parsedPage,
+        totalPages,
+        totalCount: count,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
