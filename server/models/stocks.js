@@ -68,7 +68,7 @@ const Stocks = db.define(
     purchasedDate: {
       type: DataTypes.DATEONLY,
     },
-    relatedPurchaseIDs:{
+    relatedPurchaseIDs: {
       type: DataTypes.TEXT,
     }
   },

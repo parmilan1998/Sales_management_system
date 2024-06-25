@@ -28,7 +28,7 @@ exports.createPurchase = async (req, res) => {
 
         if (!product) {
           return res.status(404).json({
-            error: `Product '${productName}' not found`,
+            message: `Product '${productName}' not found`,
           });
         }
         const totalCost = purchasePrice * purchaseQuantity;
@@ -188,16 +188,16 @@ exports.updatePurchase = async (req, res) => {
         : existingPurchase.purchaseQuantity) -
       existingPurchase.purchaseQuantity;
 
-     // Adjust quantities and update purchase IDs based on whether the product name is changing
-     if (newProduct.productID !== existingPurchase.productID) {
+    // Adjust quantities and update purchase IDs based on whether the product name is changing
+    if (newProduct.productID !== existingPurchase.productID) {
       // Reduce quantity in the old stock entry
       oldStock.productQuantity -= existingPurchase.purchaseQuantity;
 
       // Remove the existing purchase ID from relatedPurchaseIDs
       const updatedRelatedPurchaseIDs = oldStock.relatedPurchaseIDs
-        .split(',')
-        .filter(id => id !== `${existingPurchase.purchaseID}`)
-        .join(',');
+        .split(",")
+        .filter((id) => id !== `${existingPurchase.purchaseID}`)
+        .join(",");
 
       oldStock.relatedPurchaseIDs = updatedRelatedPurchaseIDs;
       await oldStock.save();
@@ -298,28 +298,21 @@ exports.queryPurchase = async (req, res) => {
   try {
     // Query parameters
     const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
-    // console.log("Query Params:", { keyword, page, limit, sort });
 
     // Pagination
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
     const offset = (parsedPage - 1) * parsedLimit;
-    // console.log("Pagination:", { parsedPage, parsedLimit, offset });
 
     // Search condition
     const searchCondition = keyword
       ? {
-          [Op.or]: [
-            { purchaseVendor: { [Op.like]: `%${keyword}%` } },
-            { productName: { [Op.like]: `%${keyword}%` } },
-          ],
+          [Op.or]: [{ productName: { [Op.like]: `%${keyword}%` } }],
         }
       : {};
-    // console.log("Where Clause:", searchCondition);
 
     // Sorting by ASC or DESC
     const sortOrder = sort === "desc" ? "DESC" : "ASC";
-    // console.log(sortOrder);
 
     // search, pagination, and sorting
     const { count, rows: purchases } = await Purchase.findAndCountAll({
