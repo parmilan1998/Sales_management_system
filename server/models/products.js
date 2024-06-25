@@ -46,7 +46,7 @@ const Product = db.define(
         notEmpty: true,
       },
     },
-   
+
     unitPrice: {
       type: DataTypes.FLOAT,
       allowNull: false,
@@ -54,7 +54,6 @@ const Product = db.define(
         notEmpty: true,
       },
     },
-   
   },
   {
     timestamps: true,

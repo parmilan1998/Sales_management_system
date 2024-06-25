@@ -79,7 +79,7 @@ exports.createReport = async (req, res) => {
         {
           model: Sales,
           as: "sale",
-          attributes: []
+          attributes: [],
         },
       ],
     });
@@ -214,7 +214,7 @@ exports.updateReport = async (req, res) => {
           attributes: [],
         },
       ],
-      group: ["sale.salesID"], 
+      group: ["sale.salesID"],
     });
 
     // Calculate total COGS (Cost of Goods Sold)
@@ -295,7 +295,9 @@ exports.deleteReport = async (req, res) => {
     });
   } catch (error) {
     console.error("Error deleting report:", error);
-    res.status(500).json({ message: "An error occurred while deleting the report" });
+    res
+      .status(500)
+      .json({ message: "An error occurred while deleting the report" });
   }
 };
 
@@ -309,46 +311,24 @@ exports.getAllReport = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+};
 
 // GET -> localhost:5000/api/v1/reports/query
 exports.queryReport = async (req, res) => {
   try {
     // Query parameters
-    const { page = 1, limit = 6, sort = "ASC", startDate, endDate } = req.query;
+    const { page = 1, limit = 6, sort = "ASC" } = req.query;
 
     // Pagination
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
     const offset = (parsedPage - 1) * parsedLimit;
 
-    // Search condition
-    const searchCondition = {};
-    
-    if (startDate && endDate) {
-     
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-
-      if (start > end) {
-        return res.status(400).json({
-          message: "startDate must be less than or equal to endDate",
-        });
-      }
-      start.setHours(0, 0, 0, 0);
-      end.setHours(23, 59, 59, 999); // Set the end date to the end of the day
-      
-      searchCondition.createdAt = {
-        [Op.between]: [start, end]
-      };
-    }
-
     // Sorting by ASC or DESC
     const sortOrder = sort === "desc" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: reports } = await Reports.findAndCountAll({
-      where: searchCondition,
       offset: offset,
       limit: parsedLimit,
       order: [["createdAt", sortOrder]],
@@ -369,8 +349,3 @@ exports.queryReport = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-
-
-
-

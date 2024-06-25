@@ -141,12 +141,13 @@ exports.updateSales = async (req, res) => {
     if (!existingSale) {
       return res
         .status(404)
-        .json({ error: `Sales record with ID '${id}' not found` });
+        .json({ message: `Sales record with ID '${id}' not found` });
     }
 
     // Update basic sale details
-    existingSale.custName = custName ||  existingSale.custName  ;
-    existingSale.customerContact = customerContact || existingSale.customerContact ;
+    existingSale.custName = custName || existingSale.custName;
+    existingSale.customerContact =
+      customerContact || existingSale.customerContact;
     existingSale.soldDate = soldDate || existingSale.soldDate;
 
     // Remove old sales details and restore quantities
