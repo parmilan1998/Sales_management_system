@@ -90,7 +90,7 @@ exports.createPurchase = async (req, res) => {
   }
 };
 
-// GET -> localhost:5000/api/v1/purchase
+// GET -> localhost:5000/api/v1/purchase/list
 exports.getAllPurchases = async (req, res) => {
   try {
     const purchases = await Purchase.findAll();
@@ -104,7 +104,7 @@ exports.getAllPurchases = async (req, res) => {
   }
 };
 
-// PUT -> localhost:5000/api/v1/purchase
+// PUT -> localhost:5000/api/v1/purchase/:id
 exports.updatePurchase = async (req, res) => {
   try {
     const { id } = req.params;
@@ -253,7 +253,7 @@ exports.updatePurchase = async (req, res) => {
   }
 };
 
-// DELETE -> localhost:5000/api/v1/purchase
+// DELETE -> localhost:5000/api/v1/purchase/:id
 exports.deletePurchase = async (req, res) => {
   try {
     const { id } = req.params;
@@ -261,12 +261,33 @@ exports.deletePurchase = async (req, res) => {
     if (!purchase) {
       return res.status(404).json({ message: "Purchase not found" });
     }
+
+    // Remove related purchaseID from purchaseID in Stocks table
+    const stockEntries = await Stocks.findAll({
+      where: {
+        relatedPurchaseIDs: {
+          [Op.like]: `%${id}%`,
+        },
+      },
+    });
+
+    for (const stock of stockEntries) {
+
+
+      if(purchase.purchaseID == stock.purchaseID){
+        stock.purchaseID = null;
+        }
+
+      await stock.save();
+    
     const destroyPurchase = await purchase.destroy();
+    
     res.status(200).json({
       message: "Purchase deleted successfully",
       deletePurchase: destroyPurchase,
     });
-  } catch (error) {
+  }
+      } catch (error) {
     console.error("Error deleting purchase:", error);
     res.status(500).send("Error deleting purchase");
   }
@@ -305,7 +326,7 @@ exports.queryPurchase = async (req, res) => {
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
-      order: [["createdAt", sortOrder]],
+      order: [["purchasedDate", sortOrder]],
     });
 
     // Total pages

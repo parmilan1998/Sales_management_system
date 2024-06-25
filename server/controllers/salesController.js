@@ -105,9 +105,13 @@ exports.createSales = async (req, res) => {
 // GET -> localhost:5000/api/v1/sales/list
 exports.getAllSales = async (req, res) => {
   try {
-    const sales = await Sales.findAll();
+    const sales = await Sales.findAll({
+    order: [['soldDate', 'DESC']],
+    });
+
     res.status(200).json(sales);
   } catch (e) {
+    console.log(e)
     res.status(500).json({ message: "Error retrieving sales" });
   }
 };
@@ -116,7 +120,7 @@ exports.getAllSales = async (req, res) => {
 exports.updateSales = async (req, res) => {
   try {
     const { id } = req.params;
-    const { custName, customerContact, soldDate, products } = req.body;
+    const {custName, customerContact, soldDate, products } = req.body;
 
     const existingSale = await Sales.findByPk(id);
     if (!existingSale) {
@@ -128,7 +132,13 @@ exports.updateSales = async (req, res) => {
     existingSale.customerContact = customerContact;
     existingSale.soldDate = soldDate;
 
-    // Remove old sales details
+    // Remove old sales details and restore quantities
+    const oldSalesDetails = await SalesDetail.findAll({ where: { salesID: id } });
+    for (const detail of oldSalesDetails) {
+      const stock = await Stocks.findByPk(detail.stockID);
+      stock.productQuantity += detail.salesQuantity;
+      await stock.save();
+    }
     await SalesDetail.destroy({ where: { salesID: id } });
 
     const saleDetails = await Promise.all(
@@ -183,6 +193,7 @@ exports.updateSales = async (req, res) => {
               salesID: existingSale.salesID,
               productID: product.productID,
               stockID: stockDetail.stockID,
+              productName: product.productName,
               salesQuantity: stockDetail.usedQuantity,
               unitPrice: unitPrice,
               revenue: unitPrice * stockDetail.usedQuantity,
@@ -212,7 +223,7 @@ exports.updateSales = async (req, res) => {
     });
   } catch (e) {
     console.error("Error updating sales:", e);
-    res.status(500).json({ message: "Error updating sales", e: e.message });
+    res.status(500).json({ message: "Error updating sales", error: e.message });
   }
 };
 
@@ -226,10 +237,19 @@ exports.deleteSales = async (req, res) => {
       return res.status(404).json({ message: "Sale not found" });
     }
 
-    const salesDelete = await sale.destroy();
+    // Find associated SalesDetail entries
+    const salesDetails = await SalesDetail.findAll({ where: { salesID: id } });
+
+     // Delete associated SalesDetail entries
+     for (const detail of salesDetails) {
+      await detail.destroy();
+    }
+    // Delete the main sale record
+    await sale.destroy();
+
     res.status(200).json({
       message: `Sales deleted successfully`,
-      deletedSale: salesDelete,
+      deletedSale: sale,
     });
   } catch (error) {
     res.status(500).json({ message: "Error deleting product" });
@@ -247,25 +267,32 @@ exports.querySales = async (req, res) => {
     const parsedLimit = parseInt(limit);
     const offset = (parsedPage - 1) * parsedLimit;
 
-    // Search condition
-    const searchCondition = keyword
-      ? {
-          [Op.or]: [
-            { productName: { [Op.like]: `%${keyword}%` } },
-            { custName: { [Op.like]: `%${keyword}%` } },
-          ],
-        }
-      : {};
+   // Search condition
+   const searchCondition = {};
+    
+  // Define the keyword search based on query parameters
+  if (keyword) {
+    keyword = `%${keyword}%`; 
 
-    // Sorting by ASC or DESC
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    searchCondition[Op.or] = [
+      { custName: { [Op.like]: keyword } },
+      { '$SalesDetail.productName$': { [Op.like]: keyword } }, // Using '$' to access associated model's attribute
+    ];
+  }
 
-    // search, pagination, and sorting
-    const { count, rows: sales } = await Sales.findAndCountAll({
-      where: searchCondition,
+  // Sorting order
+  const sortOrder = sort === "desc" ? "DESC" : "ASC";
+
+  // Querying Sales with included SalesDetail
+  const { count, rows: sales } = await Sales.findAndCountAll({
+    where: searchCondition,
+    include: {
+      model: SalesDetail,
+      attributes: ['productName', 'salesQuantity'],
+      },
       offset: offset,
       limit: parsedLimit,
-      order: [["createdAt", sortOrder]],
+      order: [["soldDate", sortOrder]],
     });
 
     // Total pages
