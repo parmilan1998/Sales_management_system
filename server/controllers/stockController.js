@@ -21,28 +21,42 @@ exports.createStocks = async (req, res) => {
 
         try {
           const product = await Product.findOne({
-            where: {
-              productName: productName,
-            },
+            where: { productName },
           });
 
           if (!product) {
-            errors.push(`Product '${productName}' not found`);
-            return null;
+            res.status(404).json(`Product '${productName}' not found`);
           }
 
-          const createdStock = await Stocks.create({
-            productID: product.productID,
-            productName,
-            productQuantity,
-            purchasePrice,
-            manufacturedDate,
-            expiryDate,
-            purchasedDate,
-            purchaseID: null,
+          const existingStock = await Stocks.findOne({
+            where: {
+              productID: product.productID,
+              productName,
+              purchasePrice,
+              manufacturedDate,
+              expiryDate,
+            },
           });
 
-          return createdStock;
+          if (existingStock) {
+            const updatedStock = await existingStock.update({
+              productQuantity: (existingStock.productQuantity +=
+                parseInt(productQuantity)),
+            });
+            return updatedStock;
+          } else {
+            const createdStock = await Stocks.create({
+              productID: product.productID,
+              productName,
+              productQuantity,
+              purchasePrice,
+              manufacturedDate,
+              expiryDate,
+              purchasedDate,
+              purchaseID: null,
+            });
+            return createdStock;
+          }
         } catch (err) {
           res.status(500).json({ message: err.message });
           return null;
@@ -52,7 +66,7 @@ exports.createStocks = async (req, res) => {
 
     res.status(201).json({
       message: "Stocks Created Successfully!",
-      stocks: stocksItems.filter((stock) => stock !== null),
+      stocks: stocksItems,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -81,6 +95,7 @@ exports.updateStocks = async (req, res) => {
       expiryDate,
       purchasedDate,
     } = req.body;
+
     const stocks = await Stocks.findByPk(id);
     if (!stocks) {
       return res.status(404).json({ message: "Stock not found" });
@@ -121,4 +136,46 @@ exports.deleteStocks = async (req, res) => {
 };
 
 // GET -> localhost:5000/api/v1/stocks/query
-exports.queryStocks = async (req, res) => {};
+exports.queryStocks = async (req, res) => {
+  try {
+    // Query parameters
+    const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
+
+    // Pagination
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    // Search condition
+    const searchCondition = keyword
+      ? {
+          [Op.or]: [{ productName: { [Op.like]: `%${keyword}%` } }],
+        }
+      : {};
+
+    // Sorting by ASC or DESC
+    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+
+    // search, pagination, and sorting
+    const { count, rows: stocks } = await Stocks.findAndCountAll({
+      where: searchCondition,
+      offset: offset,
+      limit: parsedLimit,
+      order: [["createdAt", sortOrder]],
+    });
+
+    // Total pages
+    const totalPages = Math.ceil(count / parsedLimit);
+
+    res.status(200).json({
+      stocks,
+      pagination: {
+        currentPage: parsedPage,
+        totalPages,
+        totalCount: count,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
