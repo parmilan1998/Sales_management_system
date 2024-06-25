@@ -188,16 +188,16 @@ exports.updatePurchase = async (req, res) => {
         : existingPurchase.purchaseQuantity) -
       existingPurchase.purchaseQuantity;
 
-     // Adjust quantities and update purchase IDs based on whether the product name is changing
-     if (newProduct.productID !== existingPurchase.productID) {
+    // Adjust quantities and update purchase IDs based on whether the product name is changing
+    if (newProduct.productID !== existingPurchase.productID) {
       // Reduce quantity in the old stock entry
       oldStock.productQuantity -= existingPurchase.purchaseQuantity;
 
       // Remove the existing purchase ID from relatedPurchaseIDs
       const updatedRelatedPurchaseIDs = oldStock.relatedPurchaseIDs
-        .split(',')
-        .filter(id => id !== `${existingPurchase.purchaseID}`)
-        .join(',');
+        .split(",")
+        .filter((id) => id !== `${existingPurchase.purchaseID}`)
+        .join(",");
 
       oldStock.relatedPurchaseIDs = updatedRelatedPurchaseIDs;
       await oldStock.save();
@@ -294,7 +294,7 @@ exports.queryPurchase = async (req, res) => {
     const sortOrder = sort === "desc" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
-    const { count, rows: stocks } = await Stocks.findAndCountAll({
+    const { count, rows: purchases } = await Purchase.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
@@ -305,7 +305,7 @@ exports.queryPurchase = async (req, res) => {
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      stocks,
+      purchases,
       pagination: {
         currentPage: parsedPage,
         totalPages,
