@@ -6,6 +6,7 @@ const Stocks = require("../models/stocks");
 const SalesDetail = require("../models/salesDetails");
 const SalesReport = require("../models/salesReport");
 
+// POST -> localhost:5000/api/v1/reports
 exports.createReport = async (req, res) => {
   try {
     const { periodStart, periodEnd } = req.body;
@@ -71,9 +72,11 @@ exports.createReport = async (req, res) => {
       include: [
         {
           model: Sales,
-          as: "Sale",
+          as: "sale",
+          attributes: []
         },
       ],
+      group: ['sale.salesID'],
     });
 
     // Calculate total COGS (Cost of Goods Sold)
@@ -83,11 +86,15 @@ exports.createReport = async (req, res) => {
     // Calculate gross profit
     const grossProfit = totalRevenue - totalCOGS;
 
+    const roundedTotalRevenue = parseFloat(totalRevenue.toFixed(2)) ;
+    const roundedTotalCOGS = parseFloat(totalCOGS.toFixed(2));
+    const roundedGrossProfit = parseFloat(grossProfit.toFixed(2));
+
     // Create a new report
     const newReport = await Reports.create({
-      totalRevenue: totalRevenue,
-      totalCOGS: totalCOGS,
-      grossProfit: grossProfit,
+      totalRevenue: roundedTotalRevenue,
+      totalCOGS: roundedTotalCOGS,
+      grossProfit: roundedGrossProfit,
       periodStart: startDate,
       periodEnd: endDate,
     });
@@ -121,9 +128,10 @@ exports.createReport = async (req, res) => {
   }
 };
 
+// PUT -> localhost:5000/api/v1/reports/:id
 exports.updateReport = async (req, res) => {
   try {
-    const { reportId } = req.params;
+    const { id } = req.params;
     const { periodStart, periodEnd } = req.body;
 
     if (!periodStart || !periodEnd) {
@@ -136,7 +144,7 @@ exports.updateReport = async (req, res) => {
     const endDate = new Date(periodEnd);
 
     // Fetch the report to be updated
-    const report = await Reports.findByPk(reportId);
+    const report = await Reports.findByPk(id);
     if (!report) {
       return res.status(404).json({
         message: "Report not found",
@@ -195,9 +203,11 @@ exports.updateReport = async (req, res) => {
       include: [
         {
           model: Sales,
-          as: "Sale",
+          as: "sale",
+          attributes: [], 
         },
       ],
+      group: ["Sale.salesID"], 
     });
 
     // Calculate total COGS (Cost of Goods Sold)
@@ -208,9 +218,9 @@ exports.updateReport = async (req, res) => {
     const grossProfit = totalRevenue - totalCOGS;
 
     // Update the report
-    report.totalRevenue = totalRevenue;
-    report.totalCOGS = totalCOGS;
-    report.grossProfit = grossProfit;
+    report.totalRevenue = parseFloat(totalRevenue.toFixed(2));
+    report.totalCOGS = parseFloat(totalCOGS.toFixed(2));
+    report.grossProfit = parseFloat(grossProfit.toFixed(2));
     report.periodStart = startDate;
     report.periodEnd = endDate;
     await report.save();
@@ -218,7 +228,7 @@ exports.updateReport = async (req, res) => {
     // Clear existing SalesReport entries for the report
     await SalesReport.destroy({
       where: {
-        reportID: reportId,
+        reportID: id,
       },
     });
 
@@ -233,7 +243,7 @@ exports.updateReport = async (req, res) => {
 
     // Create new entries in SalesReport to link the sales to the updated report
     const salesReportEntries = salesInPeriod.map((sale) => ({
-      reportID: reportId,
+      reportID: id,
       salesID: sale.salesID,
     }));
 
