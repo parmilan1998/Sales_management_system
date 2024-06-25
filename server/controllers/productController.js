@@ -1,156 +1,254 @@
-import db from "../database/db.js";
-import { validationResult} from 'express-validator'
+const { Op, fn, col } = require("sequelize");
+const sequelize = require("../database/db");
+const Product = require("../models/products");
+const Category = require("../models/category");
+const Stocks = require("../models/stocks");
 
-export const createProduct = (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
+// POST -> localhost:5000/api/v1/product
+exports.createProduct = async (req, res) => {
+  const products = req.body;
+  try {
+    const createdProduct = await Promise.all(
+      products.map(async (product) => {
+        const { productName, categoryName, productDescription, unitPrice } =
+          product;
 
-    const products = req.body; 
-
-    const insertionPromises = products.map(product => {
-        const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } = product;
-
-        const q = `
-            INSERT INTO products (ProductName, CategoryID, PDescription, UnitPrice, M_Date, E_Date)
-            SELECT ?, c.CategoryID, ?, ?, ?, ?
-            FROM category c
-            WHERE c.CategoryName = ?`;
-
-        return new Promise((resolve, reject) => {
-            db.execute(q, [ProductName, PDescription, UnitPrice, M_Date, E_Date, CategoryName], (err, result) => {
-                if (err) {
-                    console.error('Error executing query:', err.stack);
-                    reject(err);
-                } else {
-                    resolve('Product added successfully');
-                }
-            });
+        const category = await Category.findOne({
+          where: { categoryName: categoryName },
         });
+
+        if (!category) {
+          return res
+            .status(404)
+            .json({ error: `Category ${categoryName} not found` });
+        }
+
+        const newProduct = await Product.create({
+          productName,
+          categoryID: category.categoryID,
+          categoryName,
+          productDescription,
+          unitPrice,
+        });
+
+        return newProduct;
+      })
+    );
+
+    res.status(201).json({
+      message: "Product added successfully",
+      result: createdProduct,
     });
-
-    Promise.all(insertionPromises)
-        .then(results => {
-            res.status(201).json({ message: 'Products added successfully', results });
-        })
-        .catch(err => {
-            console.error('Error adding products:', err);
-            res.status(500).send('Error adding products');
-        });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error adding product", error: error.message });
+  }
 };
 
-export const getAllProduct =(req,res)=>{ 
-    const q = 'SELECT * FROM products';
-    db.query(q, (err, data) => {
-        if (err) {
-            console.error('Error executing query:', err.stack);
-            return res.status(500).send('Error executing query');
-        }
-        res.json(data);
-    });}
+// GET -> localhost:5000/api/v1/product/list
+exports.getAllProduct = async (req, res) => {
+  try {
+    const products = await Product.findAll();
+    const productIDs = products.map((product) => product.productID);
 
-    export const getProduct =(req,res)=>{ 
-        const { id } = req.params;
-        const q = 'SELECT * FROM products WHERE ProductID = ?';
-  
-        db.query(q,[id], (err, data) => {
-            if (err) {
-                console.error('Error executing query:', err.stack);
-                return res.status(500).send('Error executing query');
-            }
-            res.json(data);
-        });}
-        
-       
-export const updateProduct = [
-        (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
+    const stockQuantities = await Stocks.findAll({
+      attributes: [
+        "productID",
+        [fn("sum", col("productQuantity")), "totalQuantity"],
+      ],
+      where: {
+        productID: {
+          [Op.in]: productIDs,
+        },
+      },
+      group: ["productID"],
+    });
 
-        const { id } = req.params;
-        const { ProductName, CategoryName, PDescription, UnitPrice, M_Date, E_Date } = req.body;
+    const stockQuantityMap = stockQuantities.reduce((acc, stock) => {
+      acc[stock.productID] = stock.dataValues.totalQuantity;
+      return acc;
+    }, {});
 
-        let query = 'UPDATE products SET';
-        let values = [];
+    const productWithQuantities = products.map((product) => ({
+      ...product.dataValues,
+      totalQuantity: stockQuantityMap[product.productID] || 0,
+    }));
 
-        if (ProductName) {
-            query += ' ProductName = ?,';
-            values.push(ProductName);
-        }
-        if (PDescription) {
-            query += ' PDescription = ?,';
-            values.push(PDescription);
-        }
-        if (UnitPrice) {
-            query += ' UnitPrice = ?,';
-            values.push(UnitPrice);
-        }
-        if (M_Date) {
-            query += ' M_Date = ?,';
-            values.push(M_Date);
-        }
-        if (E_Date) {
-            query += ' E_Date = ?,';
-            values.push(E_Date);
-        }
+    res.status(200).json({
+      count: productWithQuantities.length,
+      product: productWithQuantities,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error retrieving products", error: error.message });
+  }
+};
 
-        if (CategoryName) {
-            query += ' CategoryID = (SELECT CategoryID FROM category WHERE CategoryName = ?),';
-            values.push(CategoryName);
-        }
-
-        query = query.slice(0, -1) + ' WHERE ProductID = ?';
-        values.push(id);
-
-        db.execute(query, values, (err, result) => {
-            if (err) {
-                console.error('Error executing query:', err.stack);
-                return res.status(500).send('Error executing query');
-            }
-            res.status(200).send('Product updated successfully');
-        });
+// GET -> localhost:5000/api/v1/product/:id
+exports.getProduct = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const product = await Product.findByPk(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
-];
-        export const deleteProduct =(req, res) => {
-            const { id } = req.params;
-            const q = 'DELETE FROM products WHERE ProductID = ?';
-            db.execute(q, [id], (err, result) => {
-                if (err) {
-                    console.error('Error executing query:', err.stack);
-                    return res.status(500).send('Error executing query');
-                }
-                res.status(200).send('Product deleted successfully');
-            });
-        };       
 
-        export const searchProduct = (req, res) => {
-            const { ProductName,CategoryName } = req.query;
-            
-            let query = `
-                SELECT p.ProductID, p.ProductName, c.CategoryName, p.PDescription, p.UnitPrice, p.M_Date, p.E_Date
-                FROM products p
-                JOIN category c ON p.CategoryID = c.CategoryID
-            `;
-            let values = [];
-        
-            if (ProductName) {
-                query += ' AND ProductName LIKE ?';
-                values.push(`%${ProductName}%`);
-            }
-            if (CategoryName) {
-                query += ' AND c.CategoryName LIKE ?';
-                values.push(`%${CategoryName}%`);
-            }
-        
-            db.query(query, values, (err, data) => {
-                if (err) {
-                    console.error('Error executing query:', err);
-                    return res.status(500).send('Error executing query: ' + err.message);
-                }
-                res.json(data);
-            });
-        };
-        
+    const stockQuantity = await Stocks.findOne({
+      attributes: [[fn("sum", col("productQuantity")), "totalQuantity"]],
+      where: {
+        productID: id,
+      },
+      group: ["productID"],
+    });
+
+    const totalQuantity = stockQuantity
+      ? stockQuantity.dataValues.totalQuantity
+      : 0;
+
+    res.status(200).json({
+      ...product.dataValues,
+      totalQuantity,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error retrieving product", error: error.message });
+  }
+};
+
+// PUT -> localhost:5000/api/v1/product:id
+exports.updateProduct = async (req, res) => {
+  const { id } = req.params;
+  const { productName, categoryName, productDescription, unitPrice } = req.body;
+
+  try {
+    const product = await Product.findByPk(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    let categoryID = product.categoryID;
+
+    if (categoryName) {
+      const category = await Category.findOne({
+        where: { categoryName: categoryName },
+      });
+
+      if (!category) {
+        return res
+          .status(404)
+          .json({ message: `Category ${categoryName} not found.` });
+      }
+
+      categoryID = category.categoryID;
+    }
+
+    await product.update({
+      productName,
+      productDescription,
+      categoryName,
+      unitPrice,
+      categoryID,
+    });
+
+    res.status(200).json({ message: "Product updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating product" });
+  }
+};
+
+// DELETE -> localhost:5000/api/v1/product:id
+exports.deleteProduct = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const product = await Product.findByPk(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    await product.destroy();
+    res.status(200).json("Product deleted successfully");
+  } catch (error) {
+    res.status(500).json("Error deleting product");
+  }
+};
+
+// GET -> localhost:5000/api/v1/product/query
+exports.queryProducts = async (req, res) => {
+  try {
+    const { page = 1, limit = 8, sort = "ASC", keyword } = req.query;
+
+    // Pagination
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    if (
+      isNaN(parsedPage) ||
+      parsedPage < 1 ||
+      isNaN(parsedLimit) ||
+      parsedLimit < 1
+    ) {
+      return res.status(400).json({ message: "Invalid parameter" });
+    }
+
+    // Sorting by ProductName
+    const sortBy = sort.toLowerCase() === "desc" ? "DESC" : "ASC";
+
+    // Search condition
+    const searchCondition = keyword
+      ? { productName: { [Op.like]: `%${keyword}%` } }
+      : {};
+
+    const { count, rows: products } = await Product.findAndCountAll({
+      where: searchCondition,
+      offset: offset,
+      limit: parsedLimit,
+      order: [["productName", sortBy]],
+    });
+
+    // Get product IDs from the products found
+    const productIDs = products.map((product) => product.productID);
+
+    // Find total quantities for the found products
+    const stockQuantities = await Stocks.findAll({
+      attributes: [
+        "productID",
+        [fn("sum", col("productQuantity")), "totalQuantity"],
+      ],
+      where: {
+        productID: {
+          [Op.in]: productIDs,
+        },
+      },
+      group: ["productID"],
+    });
+
+    // Create a map of productID to totalQuantity
+    const stockQuantityMap = stockQuantities.reduce((acc, stock) => {
+      acc[stock.productID] = stock.dataValues.totalQuantity;
+      return acc;
+    }, {});
+
+    // Add totalQuantity to each product
+    const productWithQuantities = products.map((product) => ({
+      ...product.dataValues,
+      totalQuantity: stockQuantityMap[product.productID] || 0,
+    }));
+
+    res.status(200).json({
+      products: productWithQuantities,
+      pagination: {
+        totalPages: Math.ceil(count / parsedLimit),
+        totalCount: count,
+        currentPage: parsedPage,
+      },
+    });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
