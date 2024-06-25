@@ -1,7 +1,6 @@
 const { DataTypes } = require("sequelize");
 const db = require("../database/db");
-const Category = require("./category");
-const Product = require("./products");
+
 
 const sales = db.define(
   "sales",
@@ -50,6 +49,7 @@ const sales = db.define(
     tableName: "sales",
   }
 );
+
 
 
 module.exports = sales;

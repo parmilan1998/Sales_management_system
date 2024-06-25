@@ -21,9 +21,6 @@ const Stocks = db.define(
         model: "purchases",
         key: "purchaseID",
       },
-      validate: {
-        notEmpty: true,
-      },
     },
     productID: {
       type: DataTypes.INTEGER,
@@ -70,14 +67,10 @@ const Stocks = db.define(
     },
     purchasedDate: {
       type: DataTypes.DATEONLY,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
     },
     relatedPurchaseIDs: {
       type: DataTypes.TEXT,
-    },
+    }
   },
   {
     timestamps: true,

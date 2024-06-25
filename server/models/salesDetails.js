@@ -43,7 +43,7 @@ salesDetail = db.define(
             type:DataTypes.INTEGER,
             allowNull:false,
             references: {
-              model: "sales",
+              model: Sales,
               key: "salesID",
             },
             validate: {
@@ -59,7 +59,8 @@ salesDetail = db.define(
             type:DataTypes.INTEGER,
             allowNull:false,
             validate:{
-                notEmpty:true
+                notEmpty:true,
+                min: 1,
             }
         },
         revenue:{
@@ -73,7 +74,8 @@ salesDetail = db.define(
             type:DataTypes.FLOAT,
             allowNull:false,
             validate:{
-                notEmpty:true
+                notEmpty:true,
+                min: 0,
             }
         },
     },{
