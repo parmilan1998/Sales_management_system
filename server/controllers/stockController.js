@@ -20,12 +20,21 @@ exports.createStocks = async (req, res) => {
         } = stock;
 
         try {
+          if (
+            !productName ||
+            !productQuantity ||
+            !purchasePrice ||
+            !manufacturedDate ||
+            !expiryDate
+          ) {
+            res.status(400).json({ message: "Fill all the required fields!" });
+          }
           const product = await Product.findOne({
             where: { productName },
           });
 
           if (!product) {
-            res.status(404).json(`Product '${productName}' not found`);
+            res.status(404).json({ message: "Product not found" });
           }
 
           const existingStock = await Stocks.findOne({
@@ -49,7 +58,7 @@ exports.createStocks = async (req, res) => {
               productID: product.productID,
               productName,
               productQuantity,
-              purchasePrice,
+              purchasePrice: null,
               manufacturedDate,
               expiryDate,
               purchasedDate,
@@ -77,7 +86,7 @@ exports.createStocks = async (req, res) => {
 exports.getAllStocks = async (req, res) => {
   try {
     const stocks = await Stocks.findAll();
-    res.status(200).json(stocks);
+    res.status(200).json({ message: "Fetch stocks details", stocks });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

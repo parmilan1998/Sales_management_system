@@ -39,7 +39,7 @@ exports.createSales = async (req, res) => {
             // Find stock entries for the product
             const stocks = await Stocks.findAll({
               where: { productID: product.productID },
-              order: [['purchasedDate', 'ASC']],
+              order: [["purchasedDate", "ASC"]],
             });
 
             let remainingQuantity = salesQuantity;
@@ -65,7 +65,9 @@ exports.createSales = async (req, res) => {
             }
 
             if (remainingQuantity > 0) {
-              throw new Error(`Insufficient quantity available for product '${productName}'`);
+              throw new Error(
+                `Insufficient quantity available for product '${productName}'`
+              );
             }
 
             // Create the sales details records
@@ -94,7 +96,10 @@ exports.createSales = async (req, res) => {
         );
 
         // Calculate total revenue for the sale
-        const totalRevenue = saleDetails.reduce((total, detail) => total + detail.revenue, 0);
+        const totalRevenue = saleDetails.reduce(
+          (total, detail) => total + detail.revenue,
+          0
+        );
         newSale.totalRevenue = totalRevenue;
         await newSale.save();
 
@@ -111,7 +116,6 @@ exports.createSales = async (req, res) => {
     res.status(500).json({ message: "Error carrying out sales", e: e.message });
   }
 };
-
 
 // GET -> localhost:5000/api/v1/sales/list
 exports.getAllSales = async (req, res) => {
@@ -131,7 +135,9 @@ exports.updateSales = async (req, res) => {
 
     const existingSale = await Sales.findByPk(id);
     if (!existingSale) {
-      return res.status(404).json({ error: `Sales record with ID '${id}' not found` });
+      return res
+        .status(404)
+        .json({ error: `Sales record with ID '${id}' not found` });
     }
 
     // Update basic sale details
@@ -158,7 +164,7 @@ exports.updateSales = async (req, res) => {
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
           where: { productID: product.productID },
-          order: [['purchasedDate', 'ASC']],
+          order: [["purchasedDate", "ASC"]],
         });
 
         let remainingQuantity = salesQuantity;
@@ -184,7 +190,9 @@ exports.updateSales = async (req, res) => {
         }
 
         if (remainingQuantity > 0) {
-          throw new Error(`Insufficient quantity available for product '${productName}'`);
+          throw new Error(
+            `Insufficient quantity available for product '${productName}'`
+          );
         }
 
         // Create the sales details records
@@ -213,7 +221,10 @@ exports.updateSales = async (req, res) => {
     );
 
     // Calculate total revenue for the sale
-    const totalRevenue = saleDetails.reduce((total, detail) => total + detail.revenue, 0);
+    const totalRevenue = saleDetails.reduce(
+      (total, detail) => total + detail.revenue,
+      0
+    );
     existingSale.totalRevenue = totalRevenue;
     await existingSale.save();
 
@@ -226,9 +237,6 @@ exports.updateSales = async (req, res) => {
     res.status(500).json({ message: "Error updating sales", e: e.message });
   }
 };
-
-
-
 
 // DELETE -> localhost:5000/api/v1/sales/:id
 exports.deleteSales = async (req, res) => {
