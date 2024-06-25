@@ -3,6 +3,6 @@ const router = express.Router()
 const {createReport,updateReport} = require("../controllers/reportController")
 
 router.post("/", createReport)
-router.post("/:id", updateReport)
+router.put("/:id", updateReport)
 
 module.exports= router
