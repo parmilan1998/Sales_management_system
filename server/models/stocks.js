@@ -70,7 +70,7 @@ const Stocks = db.define(
     },
     relatedPurchaseIDs: {
       type: DataTypes.TEXT,
-    }
+    },
   },
   {
     timestamps: true,

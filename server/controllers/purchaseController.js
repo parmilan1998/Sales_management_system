@@ -272,22 +272,20 @@ exports.deletePurchase = async (req, res) => {
     });
 
     for (const stock of stockEntries) {
-
-
-      if(purchase.purchaseID == stock.purchaseID){
+      if (purchase.purchaseID == stock.purchaseID) {
         stock.purchaseID = null;
-        }
+      }
 
       await stock.save();
-    
-    const destroyPurchase = await purchase.destroy();
-    
-    res.status(200).json({
-      message: "Purchase deleted successfully",
-      deletePurchase: destroyPurchase,
-    });
-  }
-      } catch (error) {
+
+      const destroyPurchase = await purchase.destroy();
+
+      res.status(200).json({
+        message: "Purchase deleted successfully",
+        deletePurchase: destroyPurchase,
+      });
+    }
+  } catch (error) {
     console.error("Error deleting purchase:", error);
     res.status(500).send("Error deleting purchase");
   }
