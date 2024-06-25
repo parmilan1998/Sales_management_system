@@ -21,6 +21,8 @@ exports.createSales = async (req, res) => {
           totalRevenue: 0, // Initial total revenue
         });
 
+        let totalRevenue = 0;
+
         // Process each product in the sale
         await Promise.all(
           products.map(async (productSale) => {
@@ -74,20 +76,19 @@ exports.createSales = async (req, res) => {
             // Create SalesDetail record
             const createdSalesDetail = await SalesDetail.create({
               salesID: newSale.salesID,
-              productID: product.productID,
-              productName: product.productName,
-              salesQuantity,
-              unitPrice,
-              revenue: calculatedTotalPrice,
+              productID: productID,
+              stockID: stockDetails[0].stockID, // Assuming first stock used for simplicity
+              salesQuantity: salesQuantity,
+              unitPrice: unitPrice,
+              revenue: revenue,
+              productName: productName,
             });
+
+            totalRevenue += revenue; // Accumulate revenue for the sale
           })
         );
 
-        // Calculate total revenue for the sale
-        const totalRevenue = saleDetails.reduce(
-          (total, detail) => total + detail.revenue,
-          0
-        );
+        // Update total revenue for the sale
         newSale.totalRevenue = totalRevenue;
         await newSale.save();
 
@@ -111,13 +112,22 @@ exports.createSales = async (req, res) => {
 exports.getAllSales = async (req, res) => {
   try {
     const sales = await Sales.findAll({
+      include: [
+        {
+          model: SalesDetail,
+          as: "details",
+          attributes: ["productName", "salesQuantity"],
+        },
+      ],
       order: [["soldDate", "DESC"]],
     });
 
     res.status(200).json(sales);
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({ message: "Error retrieving sales" });
+  } catch (error) {
+    console.error("Error retrieving sales:", error.message);
+    res
+      .status(500)
+      .json({ message: "Error retrieving sales", error: error.message });
   }
 };
 
@@ -277,34 +287,28 @@ exports.querySales = async (req, res) => {
     const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
 
     // Pagination
-    const parsedPage = parseInt(page);
-    const parsedLimit = parseInt(limit);
+    const parsedPage = parseInt(page, 10);
+    const parsedLimit = parseInt(limit, 10);
     const offset = (parsedPage - 1) * parsedLimit;
 
     // Search condition
     const searchCondition = {};
-
-    // Define the keyword search based on query parameters
     if (keyword) {
-      keyword = `%${keyword}%`;
-
-      searchCondition[Op.or] = [
-        { custName: { [Op.like]: keyword } },
-        { "$SalesDetail.productName$": { [Op.like]: keyword } }, // Using '$' to access associated model's attribute
-      ];
+      searchCondition[Op.or] = [{ custName: { [Op.like]: `%${keyword}%` } }];
     }
 
     // Sorting order
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    const sortOrder = sort.toUpperCase() === "DESC" ? "DESC" : "ASC";
 
     // Querying Sales with included SalesDetail
     const { count, rows: sales } = await Sales.findAndCountAll({
-      where: searchCondition,
       include: {
         model: SalesDetail,
+        as: "details",
         attributes: ["productName", "salesQuantity"],
       },
-      offset: offset,
+      where: searchCondition,
+      offset,
       limit: parsedLimit,
       order: [["soldDate", sortOrder]],
     });
@@ -321,6 +325,9 @@ exports.querySales = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.log("Error querying sales:", error.message);
+    res
+      .status(500)
+      .json({ message: "Error querying sales", error: error.message });
   }
 };
