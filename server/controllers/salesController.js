@@ -145,9 +145,9 @@ exports.updateSales = async (req, res) => {
     }
 
     // Update basic sale details
-    existingSale.custName = custName;
-    existingSale.customerContact = customerContact;
-    existingSale.soldDate = soldDate;
+    existingSale.custName = custName ||  existingSale.custName  ;
+    existingSale.customerContact = customerContact || existingSale.customerContact ;
+    existingSale.soldDate = soldDate || existingSale.soldDate;
 
     // Remove old sales details and restore quantities
     const oldSalesDetails = await SalesDetail.findAll({
