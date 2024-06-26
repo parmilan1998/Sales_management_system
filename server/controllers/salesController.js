@@ -1,50 +1,96 @@
 const { Op } = require("sequelize");
 const Sales = require("../models/sales");
 const Product = require("../models/products");
+const Stocks = require("../models/stocks");
+const SalesDetail = require("../models/salesDetails");
 
 // POST -> localhost:5000/api/v1/sales
 exports.createSales = async (req, res) => {
   try {
     const sales = req.body;
+
     const createdSales = await Promise.all(
       sales.map(async (sale) => {
-        const { productName, salesQuantity, custName, customerContact } = sale;
+        const { custName, customerContact, soldDate, products } = sale;
 
-        const product = await Product.findOne({
-          where: {
-            productName: productName,
-          },
-        });
-
-        if (!product) {
-          return res.status(404).json({
-            error: `Product '${productName}' in category '${categoryName}' not found`,
-          });
-        }
-
-        const { unitPrice: productUnitPrice, productQuantity } = product;
-
-        if (productQuantity < salesQuantity) {
-          return res.status(404).json({
-            error: `Insufficient quantity available for product '${productName}'`,
-          });
-        }
-
-        const calculatedTotalPrice = productUnitPrice * salesQuantity;
-
+        // Create the main sales record
         const newSale = await Sales.create({
-          productID: product.productID,
-          categoryID: product.categoryID,
-          categoryName: product.categoryName,
-          productName: productName,
-          salesQuantity: salesQuantity,
-          unitPrice: productUnitPrice,
-          revenue: calculatedTotalPrice,
           custName: custName,
           customerContact: customerContact,
+          soldDate: soldDate,
+          totalRevenue: 0, // Initial total revenue
         });
-        product.productQuantity -= salesQuantity;
-        await product.save();
+
+        let totalRevenue = 0;
+
+        // Process each product in the sale
+        await Promise.all(
+          products.map(async (productSale) => {
+            const { productName, salesQuantity } = productSale;
+
+            // Find the product in the Product table
+            const product = await Product.findOne({
+              where: { productName },
+            });
+
+            if (!product) {
+              throw new Error(`Product '${productName}' not found`);
+            }
+
+            const { productID, unitPrice } = product;
+            const revenue = unitPrice * salesQuantity;
+
+            // Find stock entries for the product
+            const stocks = await Stocks.findAll({
+              where: { productID },
+              order: [["purchasedDate", "ASC"]],
+            });
+
+            let remainingQuantity = salesQuantity;
+            let stockDetails = [];
+
+            // Deduct sales quantity from available stock
+            for (const stock of stocks) {
+              if (remainingQuantity <= 0) break;
+
+              let usedQuantity = Math.min(
+                stock.productQuantity,
+                remainingQuantity
+              );
+              stock.productQuantity -= usedQuantity;
+              remainingQuantity -= usedQuantity;
+
+              // Save updated stock quantity
+              await stock.save();
+
+              // Track stock details for SalesDetail creation
+              stockDetails.push({ stockID: stock.stockID, usedQuantity });
+            }
+
+            if (remainingQuantity > 0) {
+              throw new Error(
+                `Insufficient quantity available for product '${productName}'`
+              );
+            }
+
+            // Create SalesDetail record
+            const createdSalesDetail = await SalesDetail.create({
+              salesID: newSale.salesID,
+              productID: productID,
+              stockID: stockDetails[0].stockID, // Assuming first stock used for simplicity
+              salesQuantity: salesQuantity,
+              unitPrice: unitPrice,
+              revenue: revenue,
+              productName: productName,
+            });
+
+            totalRevenue += revenue; // Accumulate revenue for the sale
+          })
+        );
+
+        // Update total revenue for the sale
+        newSale.totalRevenue = totalRevenue;
+        await newSale.save();
 
         return newSale;
       })
@@ -52,21 +98,36 @@ exports.createSales = async (req, res) => {
 
     res.status(201).json({
       message: "Sales added successfully",
-      result: createdSales,
+      sales: createdSales.flat(),
     });
-  } catch (e) {
-    console.error("Error creating sales:", e);
-    res.status(500).json({ message: "Error carryingOut sales", e: e.message });
+  } catch (error) {
+    console.error("Error creating sales:", error);
+    res
+      .status(500)
+      .json({ message: "Error carrying out sales", error: error.message });
   }
 };
 
 // GET -> localhost:5000/api/v1/sales/list
 exports.getAllSales = async (req, res) => {
   try {
-    const sales = await Sales.findAll();
+    const sales = await Sales.findAll({
+      include: [
+        {
+          model: SalesDetail,
+          as: "details",
+          attributes: ["productName", "salesQuantity"],
+        },
+      ],
+      order: [["soldDate", "DESC"]],
+    });
+
     res.status(200).json(sales);
-  } catch (e) {
-    res.status(500).json({ message: "Error retrieving sales" });
+  } catch (error) {
+    console.error("Error retrieving sales:", error.message);
+    res
+      .status(500)
+      .json({ message: "Error retrieving sales", error: error.message });
   }
 };
 
@@ -74,81 +135,111 @@ exports.getAllSales = async (req, res) => {
 exports.updateSales = async (req, res) => {
   try {
     const { id } = req.params;
-    const { productName, salesQuantity, custName, customerContact } = req.body;
+    const { custName, customerContact, soldDate, products } = req.body;
 
     const existingSale = await Sales.findByPk(id);
-
     if (!existingSale) {
       return res
         .status(404)
-        .json({ error: `Sales record with ID '${id}' not found` });
+        .json({ message: `Sales record with ID '${id}' not found` });
     }
 
-    const currentProduct = await Product.findByPk(existingSale.productID);
+    // Update basic sale details
+    existingSale.custName = custName || existingSale.custName;
+    existingSale.customerContact =
+      customerContact || existingSale.customerContact;
+    existingSale.soldDate = soldDate || existingSale.soldDate;
 
-    if (!currentProduct) {
-      return res.status(404).json({
-        error: `Product with ID '${existingSale.productID}' not found`,
-      });
+    // Remove old sales details and restore quantities
+    const oldSalesDetails = await SalesDetail.findAll({
+      where: { salesID: id },
+    });
+    for (const detail of oldSalesDetails) {
+      const stock = await Stocks.findByPk(detail.stockID);
+      stock.productQuantity += detail.salesQuantity;
+      await stock.save();
     }
+    await SalesDetail.destroy({ where: { salesID: id } });
 
-    // If product name is changing, adjust quantities in old and new products
-    if (productName !== existingSale.productName) {
-      // Find the new product by name
-      const newProduct = await Product.findOne({
-        where: {
-          productName: productName,
-        },
-      });
+    const saleDetails = await Promise.all(
+      products.map(async (productSale) => {
+        const { productName, salesQuantity } = productSale;
 
-      if (!newProduct) {
-        return res
-          .status(404)
-          .json({ error: `Product '${productName}' not found` });
-      }
-
-      // Restore quantity in the current product
-      currentProduct.productQuantity += existingSale.salesQuantity;
-      await currentProduct.save();
-
-      // Deduct quantity from the new product
-      if (newProduct.productQuantity < salesQuantity) {
-        return res.status(404).json({
-          error: `Insufficient quantity available for product '${productName}'`,
-        });
-      }
-      newProduct.productQuantity -= salesQuantity;
-      await newProduct.save();
-
-      // Update the sales record with new product details
-      existingSale.productID = newProduct.productID;
-      existingSale.categoryID = newProduct.categoryID;
-      existingSale.productName = newProduct.productName;
-    } else {
-      const quantityDifference = salesQuantity - existingSale.salesQuantity;
-      if (quantityDifference !== 0) {
-        if (quantityDifference > 0) {
-          // Decrease product quantity if salesQuantity is increased
-          currentProduct.productQuantity -= Math.abs(quantityDifference);
-        } else {
-          // Increase product quantity if salesQuantity is decreased
-          currentProduct.productQuantity += Math.abs(quantityDifference);
+        // Find the product in the Product table
+        const product = await Product.findOne({ where: { productName } });
+        if (!product) {
+          throw new Error(`Product '${productName}' not found`);
         }
-        await currentProduct.save();
-      }
-    }
 
-    // Update sales record details
-    existingSale.salesQuantity = salesQuantity;
-    existingSale.custName = custName;
-    existingSale.customerContact = customerContact;
+        const { unitPrice } = product;
+        const calculatedTotalPrice = unitPrice * salesQuantity;
 
-    // Calculate the new total price
-    const { unitPrice: productUnitPrice } = currentProduct;
-    const calculatedTotalPrice = productUnitPrice * salesQuantity;
-    existingSale.revenue = calculatedTotalPrice;
+        // Find stock entries for the product
+        const stocks = await Stocks.findAll({
+          where: { productID: product.productID },
+          order: [["purchasedDate", "ASC"]],
+        });
 
-    // Save the updated sales record
+        let remainingQuantity = salesQuantity;
+        let stockDetails = [];
+
+        for (const stock of stocks) {
+          if (remainingQuantity <= 0) break;
+          let usedQuantity = 0;
+
+          if (stock.productQuantity >= remainingQuantity) {
+            usedQuantity = remainingQuantity;
+            stock.productQuantity -= remainingQuantity;
+            remainingQuantity = 0;
+          } else {
+            usedQuantity = stock.productQuantity;
+            remainingQuantity -= stock.productQuantity;
+            stock.productQuantity = 0;
+          }
+
+          await stock.save();
+
+          stockDetails.push({ stockID: stock.stockID, usedQuantity });
+        }
+
+        if (remainingQuantity > 0) {
+          throw new Error(
+            `Insufficient quantity available for product '${productName}'`
+          );
+        }
+
+        // Create the sales details records
+        await Promise.all(
+          stockDetails.map(async (stockDetail) => {
+            await SalesDetail.create({
+              salesID: existingSale.salesID,
+              productID: product.productID,
+              stockID: stockDetail.stockID,
+              productName: product.productName,
+              salesQuantity: stockDetail.usedQuantity,
+              unitPrice: unitPrice,
+              revenue: unitPrice * stockDetail.usedQuantity,
+            });
+          })
+        );
+
+        return {
+          salesID: existingSale.salesID,
+          productID: product.productID,
+          productName: product.productName,
+          salesQuantity,
+          unitPrice,
+          revenue: calculatedTotalPrice,
+        };
+      })
+    );
+
+    // Calculate total revenue for the sale
+    const totalRevenue = saleDetails.reduce(
+      (total, detail) => total + detail.revenue,
+      0
+    );
+    existingSale.totalRevenue = totalRevenue;
     await existingSale.save();
 
     res.status(200).json({
@@ -157,7 +248,7 @@ exports.updateSales = async (req, res) => {
     });
   } catch (e) {
     console.error("Error updating sales:", e);
-    res.status(500).json({ message: "Error updating sales", e: e.message });
+    res.status(500).json({ message: "Error updating sales", error: e.message });
   }
 };
 
@@ -171,10 +262,19 @@ exports.deleteSales = async (req, res) => {
       return res.status(404).json({ message: "Sale not found" });
     }
 
-    const salesDelete = await sale.destroy();
+    // Find associated SalesDetail entries
+    const salesDetails = await SalesDetail.findAll({ where: { salesID: id } });
+
+    // Delete associated SalesDetail entries
+    for (const detail of salesDetails) {
+      await detail.destroy();
+    }
+    // Delete the main sale record
+    await sale.destroy();
+
     res.status(200).json({
       message: `Sales deleted successfully`,
-      deletedSale: salesDelete,
+      deletedSale: sale,
     });
   } catch (error) {
     res.status(500).json({ message: "Error deleting product" });
@@ -188,33 +288,37 @@ exports.querySales = async (req, res) => {
     const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
 
     // Pagination
-    const parsedPage = parseInt(page);
-    const parsedLimit = parseInt(limit);
+    const parsedPage = parseInt(page, 10);
+    const parsedLimit = parseInt(limit, 10);
     const offset = (parsedPage - 1) * parsedLimit;
 
     // Search condition
-    const searchCondition = keyword
-      ? {
-          [Op.or]: [{ productName: { [Op.like]: `%${keyword}%` } }],
-        }
-      : {};
+    const searchCondition = {};
+    if (keyword) {
+      searchCondition[Op.or] = [{ custName: { [Op.like]: `%${keyword}%` } }];
+    }
 
-    // Sorting by ASC or DESC
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    // Sorting order
+    const sortOrder = sort.toUpperCase() === "DESC" ? "DESC" : "ASC";
 
-    // search, pagination, and sorting
-    const { count, rows: purchases } = await Purchase.findAndCountAll({
+    // Querying Sales with included SalesDetail
+    const { count, rows: sales } = await Sales.findAndCountAll({
+      include: {
+        model: SalesDetail,
+        as: "details",
+        attributes: ["productName", "salesQuantity"],
+      },
       where: searchCondition,
-      offset: offset,
+      offset,
       limit: parsedLimit,
-      order: [["createdAt", sortOrder]],
+      order: [["soldDate", sortOrder]],
     });
 
     // Total pages
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      purchases,
+      sales,
       pagination: {
         currentPage: parsedPage,
         totalPages,
@@ -222,6 +326,9 @@ exports.querySales = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.log("Error querying sales:", error.message);
+    res
+      .status(500)
+      .json({ message: "Error querying sales", error: error.message });
   }
 };

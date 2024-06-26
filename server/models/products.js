@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const db = require("../database/db");
 const Category = require("./category");
+const io = require("../index");
 
 const Product = db.define(
   "Product",
@@ -23,6 +24,7 @@ const Product = db.define(
     },
     categoryID: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
         model: "categories",
         key: "categoryID",
@@ -44,36 +46,9 @@ const Product = db.define(
         notEmpty: true,
       },
     },
-    productQuantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
+
     unitPrice: {
       type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    purchasePrice: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    manufacturedDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    expiryDate: {
-      type: DataTypes.DATE,
       allowNull: false,
       validate: {
         notEmpty: true,

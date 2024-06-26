@@ -1,17 +1,25 @@
 const { DataTypes } = require("sequelize");
 const db = require("../database/db");
+const Purchase = require("./purchase");
 const Product = require("./products");
 
-const Purchase = db.define(
-  "Purchase",
+const Stocks = db.define(
+  "Stocks",
   {
-    purchaseID: {
+    stockID: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       unique: true,
       validate: {
         notEmpty: true,
+      },
+    },
+    purchaseID: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: "purchases",
+        key: "purchaseID",
       },
     },
     productID: {
@@ -29,22 +37,7 @@ const Purchase = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-
-    purchaseVendor: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    vendorContact: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    purchaseQuantity: {
+    productQuantity: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
@@ -58,8 +51,15 @@ const Purchase = db.define(
         notEmpty: true,
       },
     },
-    COGP: {
-      type: DataTypes.FLOAT,
+    manufacturedDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    expiryDate: {
+      type: DataTypes.DATEONLY,
       allowNull: false,
       validate: {
         notEmpty: true,
@@ -67,20 +67,24 @@ const Purchase = db.define(
     },
     purchasedDate: {
       type: DataTypes.DATEONLY,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+    },
+    relatedPurchaseIDs: {
+      type: DataTypes.TEXT,
     },
   },
   {
     timestamps: true,
+    tableName: "stocks",
   }
 );
 
-Purchase.belongsTo(Product, {
+Stocks.belongsTo(Product, {
   foreignKey: "productID",
   targetKey: "productID",
 });
+Stocks.belongsTo(Purchase, {
+  foreignKey: "purchaseID",
+  targetKey: "purchaseID",
+});
 
-module.exports = Purchase;
+module.exports = Stocks;

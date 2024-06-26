@@ -1,17 +1,17 @@
 import React from "react";
 import Sidebar from "../Components/Sidebar";
 import { Outlet } from "react-router-dom";
-import Home from "../Components/Home";
-import Dashboard from "../Pages/Dashboard";
 import Navbar from "../Components/Navbar";
 
 const RootLayout = () => {
   return (
-    <div className="flex flex-row">
-      <Sidebar />
-      <div className="w-full bg-gray-200">
+    <div className="flex flex-row h-screen overflow-hidden">
+      <div className="fixed h-full">
+        <Sidebar />
+      </div>
+      <div className="flex-1 flex flex-col overflow-hidden lg:pl-60">
         <Navbar />
-        <div className="w-full px-10 py-5 font-poppins">
+        <div className="flex-1 overflow-y-auto bg-gray-200 p-4 ">
           <Outlet />
         </div>
       </div>

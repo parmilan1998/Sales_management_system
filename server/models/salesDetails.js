@@ -1,11 +1,13 @@
 const { DataTypes } = require("sequelize");
 const db = require("../database/db");
+const Stocks = require("./stocks");
+const Sales = require("./sales");
 const Product = require("./products");
 
-const Purchase = db.define(
-  "Purchase",
+salesDetail = db.define(
+  "salesDetail",
   {
-    purchaseID: {
+    salesDetailID: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -25,62 +27,74 @@ const Purchase = db.define(
         notEmpty: true,
       },
     },
+    stockID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "stocks",
+        key: "stockID",
+      },
+      validate: {
+        notEmpty: true,
+      },
+    },
+    salesID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Sales,
+        key: "salesID",
+      },
+      validate: {
+        notEmpty: true,
+      },
+    },
     productName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
-    purchaseVendor: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    vendorContact: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    purchaseQuantity: {
+    salesQuantity: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
         notEmpty: true,
+        min: 1,
       },
     },
-    purchasePrice: {
+    revenue: {
       type: DataTypes.FLOAT,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    COGP: {
+    unitPrice: {
       type: DataTypes.FLOAT,
       allowNull: false,
       validate: {
         notEmpty: true,
-      },
-    },
-    purchasedDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
+        min: 0,
       },
     },
   },
   {
-    timestamps: true,
+    timestamp: true,
+    tableName: "salesDetail",
   }
 );
-
-Purchase.belongsTo(Product, {
+salesDetail.belongsTo(Product, {
   foreignKey: "productID",
   targetKey: "productID",
 });
 
-module.exports = Purchase;
+salesDetail.belongsTo(Stocks, {
+  foreignKey: "stockID",
+  targetKey: "stockID",
+});
+
+salesDetail.belongsTo(Sales, {
+  foreignKey: "salesID",
+  targetKey: "salesID",
+});
+
+module.exports = salesDetail;
