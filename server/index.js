@@ -23,12 +23,6 @@ const Stocks = require("./models/stocks");
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: "*",
-  },
-});
 
 //Middleware for parse JSON bodies
 app.use(cors());
@@ -60,21 +54,10 @@ SalesDetail.belongsTo(Stocks, { foreignKey: "stockID", targetKey: "stockID" });
 db.sync()
   .then(() => {
     console.log("Database synced successfully");
-    server.listen(PORT, () => {
+    app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   })
   .catch((error) => {
     console.error("Error syncing Purchase table:", error);
   });
-
-// Instance
-io.on("connection", (socket) => {
-  console.log("New client connected");
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
-});
-
-module.exports = io;

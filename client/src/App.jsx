@@ -12,7 +12,6 @@ import Stocks from "./Pages/Stocks/Stocks";
 import Sales from "./Pages/Sales/Sales";
 import Purchase from "./Pages/Purchase/Purchase";
 import Report from "./Pages/Report/Report";
-import Notification from "./Pages/Notifications/Notification";
 
 const App = () => {
   return (
@@ -29,7 +28,6 @@ const App = () => {
             <Route path="/sales" element={<Sales />} />
             <Route path="/purchase" element={<Purchase />} />
             <Route path="/reports" element={<Report />} />
-            <Route path="/notification" element={<Notification />} />
             <Route path="/stocks" element={<Stocks />} />
             <Route path="*" element={<PageNotFound />} />
           </Route>
