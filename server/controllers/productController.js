@@ -38,6 +38,7 @@ exports.createProduct = async (req, res) => {
                     categoryName,
                     productDescription,
                     unitPrice,
+                    imageUrl: req.file ? req.file.path : null,
                 });
 
                 return newProduct;
