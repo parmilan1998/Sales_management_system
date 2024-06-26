@@ -6,48 +6,65 @@ const Stocks = require("../models/stocks");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
-    const products = req.body;
+    let products = req.body;
+
+    // Ensure products is an array
+    if (!Array.isArray(products)) {
+        products = [products];
+    }
+
     try {
-        const createdProduct = await Promise.all(
-            products.map(async (product) => {
-                const {productName, categoryName, productDescription, unitPrice} = product;
+        const createdProducts = [];
+        const errors = [];
 
-                // Check if the product already exists
-                const existingProduct = await Product.findOne({
-                    where: {productName: productName},
+        for (const product of products) {
+            const {productName, categoryName, productDescription, unitPrice} = product;
+
+            // Check if the product already exists
+            const existingProduct = await Product.findOne({
+                where: {productName: productName},
+            });
+
+            if (existingProduct) {
+                errors.push({
+                    message: `Product with name ${productName} already exists`,
+                    product: existingProduct,
                 });
+                continue;
+            }
 
-                if (existingProduct) {
-                    return {
-                        message: `Product with name ${productName} already exists`,
-                        product: existingProduct,
-                    };
-                }
+            const category = await Category.findOne({
+                where: {categoryName: categoryName},
+            });
 
-                const category = await Category.findOne({
-                    where: {categoryName: categoryName},
-                });
+            if (!category) {
+                errors.push({error: `Category ${categoryName} not found`});
+                continue;
+            }
 
-                if (!category) {
-                    return res.status(404).json({error: `Category ${categoryName} not found`});
-                }
+            const newProduct = await Product.create({
+                productName,
+                categoryID: category.categoryID,
+                categoryName,
+                productDescription,
+                unitPrice,
+                imageUrl: req.file ? req.file.path : null,
+            });
 
-                const newProduct = await Product.create({
-                    productName,
-                    categoryID: category.categoryID,
-                    categoryName,
-                    productDescription,
-                    unitPrice,
-                    imageUrl: req.file ? req.file.path : null,
-                });
+            createdProducts.push(newProduct);
+        }
 
-                return newProduct;
-            })
-        );
+        if (errors.length) {
+            return res.status(400).json({
+                message: "Some products could not be added",
+                errors: errors,
+                result: createdProducts,
+            });
+        }
 
         res.status(201).json({
-            message: "Product added successfully",
-            result: createdProduct,
+            message: "Product(s) added successfully",
+            result: createdProducts,
         });
     } catch (error) {
         res.status(500).json({message: "Error adding product", error: error.message});
