@@ -1,106 +1,164 @@
 import React, { useEffect, useState } from "react";
-import { FaRegEdit } from "react-icons/fa";
-import { MdDelete } from "react-icons/md";
-import axios from "axios";
+import { MdAdd } from "react-icons/md";
+import { Link } from "react-router-dom";
+import ProductList from "../../Components/ProductList";
+import { useForm } from "react-hook-form";
 
 const Products = () => {
-  const [products, setProducts] = useState([]);
-
-  const fetchProducts = async () => {
-    const res = await axios
-      .get("http://localhost:5000/api/v1/product/list")
-      .then((res) => {
-        setProducts(res.data);
-        console.log(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const [isOpen, setIsOpen] = useState(true);
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm();
+  const onSubmit = (data) => {
+    console.log(data);
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  const popUp = () => {
+    setIsOpen(!isOpen);
+  };
 
   return (
     <div className=" max-w-screen-xl mx-auto lg:px-4 font-poppins">
-      <h1 className="text-3xl font-semibold font-acme text-cyan-600 pb-5">
-        Products List
-      </h1>
-      <div className="bg-white rounded-lg">
-        <div className="w-full overflow-x-auto">
-          <table
-            className="w-full text-left border rounded-lg border-separate border-slate-200"
-            cellSpacing="0"
+      <div className="flex flex-row items-center justify-between py-5 relative">
+        <h1 className="text-3xl font-semibold font-acme text-cyan-600">
+          Products List
+        </h1>
+        <Link to="">
+          <button
+            onClick={popUp}
+            className="flex mr-4 justify-center items-center text-white text-2xl p-1 gap-1 font-medium rounded-full bg-cyan-500"
           >
-            <tbody>
-              <tr>
-                <th
-                  scope="col"
-                  className="h-12 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
-                >
-                  Product Name
-                </th>
-                <th
-                  scope="col"
-                  className="h-12 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
-                >
-                  Description
-                </th>
-                <th
-                  scope="col"
-                  className="h-12 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
-                >
-                  Category Name
-                </th>
-                <th
-                  scope="col"
-                  className="h-12 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
-                >
-                  Unit Price
-                </th>
-                <th
-                  scope="col"
-                  className="h-12 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
-                >
-                  Quantity
-                </th>
-                <th
-                  scope="col"
-                  className="h-12 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
-                >
-                  Actions
-                </th>
-              </tr>
-              {products.map((item, index) => (
-                <tr className="odd:bg-slate-50" key={index}>
-                  <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                    {item.productName}
-                  </td>
-                  <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                    {item.productDescription}
-                  </td>
-                  <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                    {item.categoryName}
-                  </td>
-                  <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                    Rs.{item.unitPrice}
-                  </td>
-                  <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                    {item.totalQuantity}
-                  </td>
+            <MdAdd />
+          </button>
+        </Link>
 
-                  <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                    <div className="flex flex-row gap-3">
-                      <FaRegEdit size={20} />
-                      <MdDelete size={20} />
+        {!isOpen && (
+          <div className="fixed inset-0 mx-auto flex items-center justify-center">
+            <div
+              className="rounded-2xl absolute z-50 border border-blue-100 bg-white p-4 shadow-lg sm:p-6 lg:p-8"
+              role="alert"
+            >
+              <div className="flex items-center justify-center gap-4 py-6 font-poppins">
+                <span className="shrink-0 rounded-full bg-blue-400 p-2 text-white">
+                  <svg
+                    className="h-4 w-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clipRule="evenodd"
+                      d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z"
+                      fillRule="evenodd"
+                    />
+                  </svg>
+                </span>
+                <p className="font-semibold sm:text-2xl text-gray-700">
+                  Add New Product!
+                </p>
+              </div>
+
+              <div>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="productName"
+                      className="flex pb-2 text-gray-600"
+                    >
+                      ProductName
+                    </label>
+                    <input
+                      {...register("productName", {
+                        required: "Email Address is required",
+                      })}
+                      type="text"
+                      name="productName"
+                      id="productName"
+                      className="w-[500px] py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                      placeholder="Ex - Memory Foam Pillow"
+                    />
+                  </div>
+                  <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
+                    <div className="mb-4">
+                      <label
+                        htmlFor="categoryName"
+                        className="flex pb-2 text-gray-600"
+                      >
+                        Category Name
+                      </label>
+                      <input
+                        type="text"
+                        name="categoryName"
+                        id="categoryName"
+                        className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                        placeholder="Ex - Home Essentials"
+                      />
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <div className="mb-4">
+                      <label
+                        htmlFor="unitPrice"
+                        className="flex pb-2 text-gray-600"
+                      >
+                        Unit Price
+                      </label>
+                      <input
+                        type="text"
+                        name="unitPrice"
+                        id="unitPrice"
+                        className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                        placeholder="Ex - Rs.59.99"
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="description"
+                      className="flex pb-2 text-gray-600"
+                    >
+                      Description
+                    </label>
+                    <textarea
+                      type="text"
+                      name="description"
+                      id="description"
+                      rows={5}
+                      className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                      placeholder="Ex - Ergonomically designed pillow for superior neck support and comfort."
+                    />
+                  </div>
+                </form>
+              </div>
+
+              <div className="mt-6 sm:flex sm:gap-4 flex justify-center">
+                <button
+                  onClick={popUp}
+                  className="mt-2 inline-block w-full rounded-lg bg-gray-100 px-5 py-3 text-center text-sm font-semibold text-gray-500 sm:mt-0 sm:w-auto"
+                  href="#"
+                >
+                  Close
+                </button>
+                <button
+                  // onClick={popUp}
+                  className="mt-2 inline-block w-full rounded-lg bg-blue-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
+                  href="#"
+                >
+                  Clear
+                </button>
+                <button
+                  className="inline-block w-full rounded-lg bg-green-500 px-5 py-3 text-center text-sm font-semibold text-white sm:w-auto"
+                  href="#"
+                >
+                  Add Product
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="bg-white rounded-lg">
+        <ProductList />
       </div>
     </div>
   );
