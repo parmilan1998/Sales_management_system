@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import PropTypes from "prop-types";
 
-const Products = ({ query, setQuery }) => {
+const Products = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [category, setCategory] = useState([]);
 
@@ -18,15 +18,24 @@ const Products = ({ query, setQuery }) => {
   } = useForm();
 
   const onSubmit = async (data) => {
+    const formData = new FormData();
+    formData.append("productName", data.productName);
+    formData.append("image", data.image[0]);
+    formData.append("categoryName", data.categoryName);
+    formData.append("unitPrice", data.unitPrice);
+    formData.append("description", data.description);
     const res = await axios
-      .post("http://localhost:5000/api/v1/product", data)
+      .post("http://localhost:5000/api/v1/product", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
       .then((res) => {
         console.log(res.data);
       })
       .catch((err) => {
         console.log(err.message);
       });
-    console.log(data);
   };
 
   const popUp = () => {
@@ -54,7 +63,7 @@ const Products = ({ query, setQuery }) => {
   }, []);
 
   return (
-    <div className=" max-w-screen-xl mx-auto lg:px-4 font-poppins">
+    <div className=" max-w-screen-xl mx-auto lg:px-4 font-poppins cursor-pointer">
       <div className="flex flex-row items-center justify-between py-5 relative">
         <h1 className="text-3xl font-semibold font-acme text-cyan-600">
           Products List
@@ -62,8 +71,8 @@ const Products = ({ query, setQuery }) => {
         <div className="flex gap-4">
           <input
             type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            // value={query}
+            // onChange={(e) => setQuery(e.target.value)}
             placeholder="Search here.."
             className="px-3 py-2 m-0 rounded-lg focus:outline-cyan-500"
           />
@@ -236,24 +245,25 @@ const Products = ({ query, setQuery }) => {
                   <div className="mt-6 sm:flex sm:gap-4 flex justify-center">
                     <button
                       onClick={popUp}
-                      className="mt-2 inline-block w-full rounded-lg bg-gray-100 px-5 py-3 text-center text-sm font-semibold text-gray-500 sm:mt-0 sm:w-auto"
+                      className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-100 px-5 py-3 text-center text-sm font-semibold text-gray-500 sm:mt-0 sm:w-auto"
                       href="#"
                     >
                       Close
                     </button>
                     <button
                       onClick={handleClear}
-                      className="mt-2 inline-block w-full rounded-lg bg-blue-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
+                      className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-blue-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
                       href="#"
                     >
                       Clear
                     </button>
-                    <input
+                    <button
                       type="submit"
-                      value="Add Product"
-                      className="inline-block w-full rounded-lg bg-green-500 px-5 py-3 text-center text-sm font-semibold text-white sm:w-auto"
+                      className="inline-block w-full cursor-pointer rounded-lg bg-green-500 px-5 py-3 text-center text-sm font-semibold text-white sm:w-auto"
                       href="#"
-                    />
+                    >
+                      Add Product
+                    </button>
                   </div>
                 </form>
               </div>
@@ -268,9 +278,9 @@ const Products = ({ query, setQuery }) => {
   );
 };
 
-Products.propTypes = {
-  query: PropTypes.string.isRequired,
-  setQuery: PropTypes.func.isRequired,
-};
+// Products.propTypes = {
+//   query: PropTypes.string.isRequired,
+//   setQuery: PropTypes.func.isRequired,
+// };
 
 export default Products;
