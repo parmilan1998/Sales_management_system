@@ -4,48 +4,51 @@ const multer = require("multer");
 const path = require("path");
 
 const {
-    createProduct,
-    getAllProduct,
-    updateProduct,
-    deleteProduct,
-    getProduct,
-    queryProducts,
+  createProduct,
+  getAllProduct,
+  updateProduct,
+  deleteProduct,
+  getProduct,
+  queryProducts,
 } = require("../controllers/productController");
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "./images");
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname));
-    },
+  destination: (req, file, cb) => {
+    cb(null, "./images");
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.fieldname + "_" + Date.now() + path.extname(file.originalname)
+    );
+  },
 });
 const maxSize = 5 * 1000 * 1000;
 const upload = multer({
-    storage: storage,
-    limits: {
-        fileSize: maxSize,
-    },
+  storage: storage,
+  limits: {
+    fileSize: maxSize,
+  },
 });
 
 let uploadHandler = upload.single("image");
 
 router.post("/", (req, res) => {
-    uploadHandler(req, res, function (err) {
-        if (err instanceof multer.MulterError) {
-            if ((err.code = "LIMIT_FILE_SIZE")) {
-                res.status(400).json({message: "Maximum file size is 5MB"});
-            }
-            return res.status(400).json({message: "File upload error"});
-        } else if (err) {
-            return res.status(500).json({message: "Internal server error"});
-        }
-        if (!req.file) {
-            res.status(400).json({message: "No file!"});
-        }
+  uploadHandler(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      if ((err.code = "LIMIT_FILE_SIZE")) {
+        res.status(400).json({ message: "Maximum file size is 5MB" });
+      }
+      return res.status(400).json({ message: "File upload error" });
+    } else if (err) {
+      return res.status(500).json({ message: "Internal server error" });
+    }
+    if (!req.file) {
+      res.status(400).json({ message: "No file!" });
+    }
 
-        createProduct(req, res);
-    });
+    createProduct(req, res);
+  });
 });
 
 router.get("/query", queryProducts);

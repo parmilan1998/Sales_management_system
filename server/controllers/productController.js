@@ -1,5 +1,4 @@
 const {Op, fn, col} = require("sequelize");
-const sequelize = require("../database/db");
 const Product = require("../models/products");
 const Category = require("../models/category");
 const Stocks = require("../models/stocks");
