@@ -75,10 +75,7 @@ exports.getAllProduct = async (req, res) => {
       totalQuantity: stockQuantityMap[product.productID] || 0,
     }));
 
-    res.status(200).json({
-      count: productWithQuantities.length,
-      product: productWithQuantities,
-    });
+    res.status(200).json(productWithQuantities);
   } catch (error) {
     res
       .status(500)
