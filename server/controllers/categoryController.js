@@ -59,7 +59,11 @@ exports.updateCategory = async (req, res) => {
 
       // Delete existing image if it exists
       if (category.imageUrl) {
-        const filePath = path.join(__dirname, "../images", category.imageUrl);
+        const filePath = path.join(
+          __dirname,
+          "../public/category",
+          category.imageUrl
+        );
         fs.access(filePath, fs.constants.F_OK, (err) => {
           if (err) {
             console.warn("File does not exist, cannot delete:", filePath);

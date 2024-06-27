@@ -14,7 +14,8 @@ const {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./images");
+    const uploadPath = path.resolve(__dirname, "../public/products");
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const uniqueName =
