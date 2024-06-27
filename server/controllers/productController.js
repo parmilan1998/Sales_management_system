@@ -2,6 +2,7 @@ const { Op, fn, col } = require("sequelize");
 const Product = require("../models/products");
 const Category = require("../models/category");
 const Stocks = require("../models/stocks");
+const fs = require("fs");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
@@ -36,7 +37,7 @@ exports.createProduct = async (req, res) => {
       categoryName,
       productDescription,
       unitPrice,
-      imageUrl: req.file ? req.file.path : null,
+      imageUrl: req.file ? req.file.filename : null,
     });
 
     res.status(201).json({
@@ -169,7 +170,7 @@ exports.updateProduct = async (req, res) => {
         categoryName,
         unitPrice,
         categoryID,
-        imageUrl: req.file.path, // Update imageUrl with the new file path
+        imageUrl: req.file.filename, // Update imageUrl with the new file path
       });
     } else {
       // Update product without changing the image
