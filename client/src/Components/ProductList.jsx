@@ -4,8 +4,9 @@ import { MdDelete } from "react-icons/md";
 import axios, { Axios } from "axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 
-const ProductList = () => {
+const ProductList = ({ productData, fetchProducts }) => {
   const [products, setProducts] = useState([]);
   // const [query, setQuery] = useState("");
 
@@ -21,22 +22,11 @@ const ProductList = () => {
   //     });
   // }, [query]);
 
-  const fetchProducts = async () => {
-    const res = await axios
-      .get("http://localhost:5000/api/v1/product/list")
-      .then((res) => {
-        setProducts(res.data);
-        console.log(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    setProducts(productData);
+  }, [productData]);
 
+  // Delete products
   const handleDelete = async (id) => {
     await axios
       .delete(`http://localhost:5000/api/v1/product/${id}`)
@@ -116,8 +106,12 @@ const ProductList = () => {
                 <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                   {item.productName}
                 </td>
-                <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                  {item.image}
+                <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.productName}
+                    className="w-16 h-16 object-cover rounded"
+                  />
                 </td>
                 <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                   {item.productDescription}
@@ -148,6 +142,11 @@ const ProductList = () => {
       </div>
     </div>
   );
+};
+
+ProductList.propTypes = {
+  productData: PropTypes.array.isRequired,
+  fetchProducts: PropTypes.func.isRequired,
 };
 
 export default ProductList;

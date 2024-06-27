@@ -12,7 +12,6 @@ import Stocks from "./Pages/Stocks/Stocks";
 import Sales from "./Pages/Sales/Sales";
 import Purchase from "./Pages/Purchase/Purchase";
 import Report from "./Pages/Report/Report";
-import AddProduct from "./Pages/Products/AddProduct";
 
 const App = () => {
   return (
@@ -26,7 +25,6 @@ const App = () => {
             <Route path="/category/add" element={<AddCategory />} />
             <Route path="/category/edit" element={<EditCategory />} />
             <Route path="/products" element={<Products />} />
-            <Route path="/products/add" element={<AddProduct />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/purchase" element={<Purchase />} />
             <Route path="/reports" element={<Report />} />
