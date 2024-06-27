@@ -157,7 +157,11 @@ exports.updateProduct = async (req, res) => {
 
       // Delete existing image if it exists
       if (product.imageUrl) {
-        const filePath = path.join(__dirname, "../images", product.imageUrl);
+        const filePath = path.join(
+          __dirname,
+          "../public/images",
+          product.imageUrl
+        );
         fs.access(filePath, fs.constants.F_OK, (err) => {
           if (err) {
             console.warn("File does not exist, cannot delete:", filePath);
