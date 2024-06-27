@@ -111,6 +111,8 @@ exports.updateProduct = async (req, res) => {
     const {id} = req.params;
     const {productName, categoryName, productDescription, unitPrice} = req.body;
 
+    console.log(req.file);
+
     try {
         const product = await Product.findByPk(id);
 
