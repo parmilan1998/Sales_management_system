@@ -4,8 +4,9 @@ import { MdDelete } from "react-icons/md";
 import axios, { Axios } from "axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 
-const ProductList = () => {
+const ProductList = ({ productData, fetchProducts }) => {
   const [products, setProducts] = useState([]);
   // const [query, setQuery] = useState("");
 
@@ -21,22 +22,13 @@ const ProductList = () => {
   //     });
   // }, [query]);
 
-  const fetchProducts = async () => {
-    const res = await axios
-      .get("http://localhost:5000/api/v1/product/list")
-      .then((res) => {
-        setProducts(res.data);
-        console.log(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+  const baseUrl = "http://localhost:5000/images";
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    setProducts(productData);
+  }, [productData]);
 
+  // Delete products
   const handleDelete = async (id) => {
     await axios
       .delete(`http://localhost:5000/api/v1/product/${id}`)
@@ -75,7 +67,7 @@ const ProductList = () => {
                 scope="col"
                 className="h-12 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
               >
-                Product Image
+                Image
               </th>
               <th
                 scope="col"
@@ -95,12 +87,12 @@ const ProductList = () => {
               >
                 Unit Price
               </th>
-              <th
+              {/* <th
                 scope="col"
                 className="h-16 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
               >
                 Quantity
-              </th>
+              </th> */}
               <th
                 scope="col"
                 className="h-16 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
@@ -116,8 +108,12 @@ const ProductList = () => {
                 <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                   {item.productName}
                 </td>
-                <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                  {item.image}
+                <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500">
+                  <img
+                    src={`${baseUrl}/${item.imageUrl}`}
+                    alt={item.productName}
+                    className="w-28 h-auto bg-cover object-fill"
+                  />
                 </td>
                 <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                   {item.productDescription}
@@ -128,12 +124,10 @@ const ProductList = () => {
                 <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                   Rs.{item.unitPrice}
                 </td>
-                <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                  {item.totalQuantity}
-                </td>
+
                 <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                   <div className="flex flex-row gap-3">
-                    <Link to={`/admin/edit/${item.productID}`}>
+                    <Link to={`/edit/${item.productID}`}>
                       <FaRegEdit size={20} color="green" />
                     </Link>
                     <button onClick={() => handleDelete(item.productID)}>
@@ -148,6 +142,11 @@ const ProductList = () => {
       </div>
     </div>
   );
+};
+
+ProductList.propTypes = {
+  productData: PropTypes.array.isRequired,
+  fetchProducts: PropTypes.func.isRequired,
 };
 
 export default ProductList;

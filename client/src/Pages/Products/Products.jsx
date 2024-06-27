@@ -5,10 +5,12 @@ import ProductList from "../../Components/ProductList";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import PropTypes from "prop-types";
+import toast from "react-hot-toast";
 
 const Products = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [category, setCategory] = useState([]);
+  const [products, setProducts] = useState([]);
 
   const {
     register,
@@ -17,13 +19,14 @@ const Products = () => {
     reset,
   } = useForm();
 
+  // Created products
   const onSubmit = async (data) => {
     const formData = new FormData();
     formData.append("productName", data.productName);
     formData.append("image", data.image[0]);
     formData.append("categoryName", data.categoryName);
     formData.append("unitPrice", data.unitPrice);
-    formData.append("description", data.description);
+    formData.append("productDescription", data.description);
     const res = await axios
       .post("http://localhost:5000/api/v1/product", formData, {
         headers: {
@@ -32,20 +35,27 @@ const Products = () => {
       })
       .then((res) => {
         console.log(res.data);
+        toast.success("Product created successfully!");
+        fetchProducts();
+        setIsOpen(true);
+        reset();
       })
       .catch((err) => {
         console.log(err.message);
       });
   };
 
+  // popUp
   const popUp = () => {
     setIsOpen(!isOpen);
   };
 
+  // Reset input fields
   const handleClear = () => {
     reset();
   };
 
+  // Fetch categories
   const fetchCategoryApi = async () => {
     const res = await axios
       .get("http://localhost:5000/api/v1/category/list")
@@ -60,6 +70,37 @@ const Products = () => {
 
   useEffect(() => {
     fetchCategoryApi();
+  }, []);
+
+  // const [query, setQuery] = useState("");
+
+  // useEffect(() => {
+  //   const res = axios
+  //     .get(`http://localhost:5000/api/v1/product/query?keyword=${query}`)
+  //     .then((res) => {
+  //       console.log(res.data);
+  //       setProducts(res.data);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // }, [query]);
+
+  // Fetch products
+  const fetchProducts = async () => {
+    const res = await axios
+      .get("http://localhost:5000/api/v1/product/list")
+      .then((res) => {
+        setProducts(res.data);
+        console.log(res.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  useEffect(() => {
+    fetchProducts();
   }, []);
 
   return (
@@ -272,7 +313,7 @@ const Products = () => {
         )}
       </div>
       <div className="bg-white rounded-lg">
-        <ProductList />
+        <ProductList productData={products} fetchProducts={fetchProducts} />
       </div>
     </div>
   );
