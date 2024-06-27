@@ -33,49 +33,53 @@ const CategoryList = ({ category, setCategory, fetchCategories }) => {
         <h1 className="text-3xl font-semibold font-acme text-cyan-600">
           Categories List
         </h1>
-        {category.map((item, index) => (
-          <article
-            className="relative overflow-hidden rounded-lg shadow transition hover:shadow-lg"
-            key={index}
-          >
-            <img
-              src={`${baseUrl}/${item.imageUrl}`}
-              alt={item.categoryName}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+        <div className="flex flex-wrap -mx-2">
+          {category.map((item, index) => (
+            <div
+              key={index}
+              className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4"
+            >
+              <article className="relative overflow-hidden rounded-lg shadow transition hover:shadow-lg">
+                <img
+                  src={`${baseUrl}/${item.imageUrl}`}
+                  alt={item.categoryName}
+                  className="absolute inset-0 h-auto object-cover"
+                />
 
-            <div className="relative bg-gradient-to-t from-gray-900/50 to-gray-900/25 pt-32 sm:pt-48 lg:pt-64">
-              <div className="p-4 sm:p-6">
-                <time
-                  dateTime="2022-10-10"
-                  className="block text-xs text-white/90"
-                >
-                  {" "}
-                  10th Oct 2022{" "}
-                </time>
+                <div className="relative bg-gradient-to-t from-gray-900/50 to-gray-900/25 pt-32 sm:pt-48 lg:pt-64">
+                  <div className="p-4 sm:p-6">
+                    <time
+                      dateTime="2022-10-10"
+                      className="block text-xs text-white/90"
+                    >
+                      {" "}
+                      10th Oct 2022{" "}
+                    </time>
 
-                <a href="#">
-                  <h3 className="mt-0.5 text-lg text-white">
-                    {item.categoryName}
-                  </h3>
-                </a>
+                    <a href="#">
+                      <h3 className="mt-0.5 text-lg text-white">
+                        {item.categoryName}
+                      </h3>
+                    </a>
 
-                <p className="mt-2 line-clamp-3 text-sm/relaxed text-white/95">
-                  {item.categoryDescription}
-                </p>
-              </div>
+                    <p className="mt-2 line-clamp-3 text-sm/relaxed text-white/95">
+                      {item.categoryDescription}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-row gap-3">
+                  <Link to={`/edit/${item.categoryID}`}>
+                    <FaRegEdit size={20} color="green" />
+                  </Link>
+                  <button onClick={() => handleDelete(item.categoryID)}>
+                    <MdDelete size={20} color="red" />
+                  </button>
+                </div>
+              </article>
             </div>
-
-            <div className="flex flex-row gap-3">
-              <Link to={`/edit/${item.categoryID}`}>
-                <FaRegEdit size={20} color="green" />
-              </Link>
-              <button onClick={() => handleDelete(item.categoryID)}>
-                <MdDelete size={20} color="red" />
-              </button>
-            </div>
-          </article>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
