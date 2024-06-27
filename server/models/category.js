@@ -27,6 +27,9 @@ const Category = db.define(
         notEmpty: true,
       },
     },
+    imageUrl: {
+      type: DataTypes.TEXT,
+    },
   },
   {
     // Other model options go here

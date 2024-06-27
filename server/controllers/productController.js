@@ -3,6 +3,7 @@ const Product = require("../models/products");
 const Category = require("../models/category");
 const Stocks = require("../models/stocks");
 const fs = require("fs");
+const path = require("path");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
@@ -156,9 +157,18 @@ exports.updateProduct = async (req, res) => {
 
       // Delete existing image if it exists
       if (product.imageUrl) {
-        fs.unlink(product.imageUrl, (err) => {
+        const filePath = path.join(__dirname, "../images", product.imageUrl);
+        fs.access(filePath, fs.constants.F_OK, (err) => {
           if (err) {
-            console.error("Error deleting file:", err);
+            console.warn("File does not exist, cannot delete:", filePath);
+          } else {
+            fs.unlink(filePath, (err) => {
+              if (err) {
+                console.error("Error deleting file:", err);
+              } else {
+                console.log("File deleted successfully:", filePath);
+              }
+            });
           }
         });
       }
