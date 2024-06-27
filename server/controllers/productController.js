@@ -159,7 +159,7 @@ exports.updateProduct = async (req, res) => {
       if (product.imageUrl) {
         const filePath = path.join(
           __dirname,
-          "../public/images",
+          "../public/products",
           product.imageUrl
         );
         fs.access(filePath, fs.constants.F_OK, (err) => {
