@@ -1,71 +1,47 @@
 const { Op, fn, col } = require("sequelize");
-const sequelize = require("../database/db");
 const Product = require("../models/products");
 const Category = require("../models/category");
 const Stocks = require("../models/stocks");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
-  let products = req.body;
-
-  // Ensure products is an array
-  if (!Array.isArray(products)) {
-    products = [products];
-  }
+  const { productName, categoryName, productDescription, unitPrice } = req.body;
 
   try {
-    const createdProducts = [];
-    const errors = [];
+    // Check if the product already exists
+    const existingProduct = await Product.findOne({
+      where: { productName: productName },
+    });
 
-    for (const product of products) {
-      const { productName, categoryName, productDescription, unitPrice } =
-        product;
-
-      // Check if the product already exists
-      const existingProduct = await Product.findOne({
-        where: { productName: productName },
-      });
-
-      if (existingProduct) {
-        errors.push({
-          message: `Product with name ${productName} already exists`,
-          product: existingProduct,
-        });
-        continue;
-      }
-
-      const category = await Category.findOne({
-        where: { categoryName: categoryName },
-      });
-
-      if (!category) {
-        errors.push({ error: `Category ${categoryName} not found` });
-        continue;
-      }
-
-      const newProduct = await Product.create({
-        productName,
-        categoryID: category.categoryID,
-        categoryName,
-        productDescription,
-        unitPrice,
-        imageUrl: req.file ? req.file.path : null,
-      });
-
-      createdProducts.push(newProduct);
-    }
-
-    if (errors.length) {
+    if (existingProduct) {
       return res.status(400).json({
-        message: "Some products could not be added",
-        errors: errors,
-        result: createdProducts,
+        message: `Product with name ${productName} already exists`,
+        product: existingProduct,
       });
     }
+
+    const category = await Category.findOne({
+      where: { categoryName: categoryName },
+    });
+
+    if (!category) {
+      return res
+        .status(404)
+        .json({ error: `Category ${categoryName} not found` });
+    }
+
+    const newProduct = await Product.create({
+      productName,
+      categoryID: category.categoryID,
+      categoryName,
+      productDescription,
+      unitPrice,
+      imageUrl: req.file ? req.file.path : null,
+    });
 
     res.status(201).json({
-      message: "Product(s) added successfully",
-      result: createdProducts,
+      message: "Product added successfully",
+      result: newProduct,
     });
   } catch (error) {
     res
@@ -148,6 +124,8 @@ exports.updateProduct = async (req, res) => {
   const { id } = req.params;
   const { productName, categoryName, productDescription, unitPrice } = req.body;
 
+  console.log(req.file);
+
   try {
     const product = await Product.findByPk(id);
 
@@ -171,17 +149,46 @@ exports.updateProduct = async (req, res) => {
       categoryID = category.categoryID;
     }
 
-    await product.update({
-      productName,
-      productDescription,
-      categoryName,
-      unitPrice,
-      categoryID,
-    });
+    // Handle image upload if a new file is provided
+    if (req.file) {
+      console.log("New file uploaded:", req.file);
 
-    res.status(200).json({ message: "Product updated successfully" });
+      // Delete existing image if it exists
+      if (product.imageUrl) {
+        fs.unlink(product.imageUrl, (err) => {
+          if (err) {
+            console.error("Error deleting file:", err);
+          }
+        });
+      }
+
+      // Update product with new image path
+      await product.update({
+        productName,
+        productDescription,
+        categoryName,
+        unitPrice,
+        categoryID,
+        imageUrl: req.file.path, // Update imageUrl with the new file path
+      });
+    } else {
+      // Update product without changing the image
+      await product.update({
+        productName,
+        productDescription,
+        categoryName,
+        unitPrice,
+        categoryID,
+      });
+    }
+
+    // Respond with success message
+    return res.status(200).json({
+      message: "Product updated successfully",
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error updating product" });
+    console.error("Error updating product:", error);
+    return res.status(500).json({ message: "Error updating product" });
   }
 };
 
