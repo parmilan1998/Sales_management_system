@@ -1,7 +1,6 @@
 const { Op } = require("sequelize");
 const Stocks = require("../models/stocks");
 const Product = require("../models/products");
-const Purchase = require("../models/purchase");
 
 // POST -> localhost:5000/api/v1/stocks
 exports.createStocks = async (req, res) => {
@@ -47,28 +46,31 @@ exports.createStocks = async (req, res) => {
       });
     } else {
       const existingProduct = await Product.findOne({
-        where: { productName: productName },
+        where: {
+          productName: productName,
+        },
       });
 
       if (!existingProduct) {
         return {
           message: `Product with name ${productName} not found`,
         };
+      } else {
+        const createdStock = await Stocks.create({
+          productID: product.productID,
+          productName,
+          productQuantity,
+          purchasePrice: purchasePrice || null,
+          manufacturedDate,
+          expiryDate,
+          purchasedDate,
+          purchaseID: null,
+        });
+        res.status(201).json({
+          message: "Stocks Created Successfully!",
+          stocks: createdStock,
+        });
       }
-      const createdStock = await Stocks.create({
-        productID: product.productID,
-        productName,
-        productQuantity,
-        purchasePrice: purchasePrice || null,
-        manufacturedDate,
-        expiryDate,
-        purchasedDate,
-        purchaseID: null,
-      });
-      res.status(201).json({
-        message: "Stocks Created Successfully!",
-        stocks: createdStock,
-      });
     }
   } catch (err) {
     res.status(500).json({ message: err.message });

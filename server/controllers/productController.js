@@ -12,7 +12,10 @@ exports.createProduct = async (req, res) => {
   try {
     // Check if the product already exists
     const existingProduct = await Product.findOne({
-      where: { productName: productName },
+      where: {
+        productName: productName,
+        categoryName: categoryName,
+      },
     });
 
     if (existingProduct) {
@@ -20,31 +23,31 @@ exports.createProduct = async (req, res) => {
         message: `Product with name ${productName} already exists`,
         product: existingProduct,
       });
+    } else {
+      const category = await Category.findOne({
+        where: { categoryName: categoryName },
+      });
+
+      if (!category) {
+        return res
+          .status(404)
+          .json({ error: `Category ${categoryName} not found` });
+      }
+
+      const newProduct = await Product.create({
+        productName,
+        categoryID: category.categoryID,
+        categoryName,
+        productDescription,
+        unitPrice,
+        imageUrl: req.file ? req.file.filename : null,
+      });
+
+      res.status(201).json({
+        message: "Product added successfully",
+        result: newProduct,
+      });
     }
-
-    const category = await Category.findOne({
-      where: { categoryName: categoryName },
-    });
-
-    if (!category) {
-      return res
-        .status(404)
-        .json({ error: `Category ${categoryName} not found` });
-    }
-
-    const newProduct = await Product.create({
-      productName,
-      categoryID: category.categoryID,
-      categoryName,
-      productDescription,
-      unitPrice,
-      imageUrl: req.file ? req.file.filename : null,
-    });
-
-    res.status(201).json({
-      message: "Product added successfully",
-      result: newProduct,
-    });
   } catch (error) {
     res
       .status(500)

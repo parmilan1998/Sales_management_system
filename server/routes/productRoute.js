@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
 const {
   createProduct,
@@ -12,9 +13,15 @@ const {
   queryProducts,
 } = require("../controllers/productController");
 
+const uploadPath = path.resolve(__dirname, "../public/products");
+
+// Ensure the directory exists
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.resolve(__dirname, "../public/products");
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {

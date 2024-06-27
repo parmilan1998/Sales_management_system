@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
 const CategoryList = ({ category, setCategory, fetchCategories }) => {
-  const baseUrl = "http://localhost:5000/images";
+  const baseUrl = "http://localhost:5000/public/category";
 
   useEffect(() => {
     setCategory(category);

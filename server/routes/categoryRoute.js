@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
 const {
   createCategory,
@@ -12,9 +13,15 @@ const {
 
 const router = express.Router();
 
+const uploadPath = path.resolve(__dirname, "../public/category");
+
+// Ensure the directory exists
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.resolve(__dirname, "../public/category");
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
