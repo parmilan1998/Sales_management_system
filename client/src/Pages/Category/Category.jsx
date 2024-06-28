@@ -110,7 +110,7 @@ const Category = () => {
   }, [popupRef]);
 
   return (
-    <div className=" max-w-screen-xl mx-auto lg:px-4 font-poppins cursor-pointer">
+    <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
       <div className="flex flex-row items-center justify-between py-5 relative">
         <h1 className="text-3xl font-semibold font-acme text-cyan-600">
           Category List
@@ -158,55 +158,57 @@ const Category = () => {
               </div>
               <div>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                  <div className="grid lg:grid-cols-1 grid-cols-1 gap-2">
-                    <div className="mb-3">
-                      <label
-                        htmlFor="categoryName"
-                        className="flex pb-2 text-gray-600"
-                      >
-                        CategoryName
-                      </label>
-                      <input
-                        {...register("categoryName", {
-                          required: "CategoryName is required",
-                        })}
-                        type="text"
-                        name="categoryName"
-                        id="categoryName"
-                        className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                        placeholder="Ex - Tech Gadgets"
-                      />
-                      {errors.categoryName && (
-                        <p className="text-red-500 py-1 text-sm">
-                          {errors.categoryName.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="mb-3">
-                      <label
-                        htmlFor="image"
-                        className="flex pb-2 text-gray-600"
-                      >
-                        Category Image
-                      </label>
-                      <input
-                        {...register("image", {
-                          required: "Image is required",
-                        })}
-                        type="file"
-                        name="image"
-                        id="image"
-                        className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                        placeholder="Ex - Rs.59.99"
-                      />
-                      {errors.image && (
-                        <p className="text-red-500 py-1 text-sm">
-                          {errors.image.message}
-                        </p>
-                      )}
+                  <div className="w-[500px]">
+                    <div className="grid lg:grid-cols-2 gap-2">
+                      <div className="mb-3 w-full">
+                        <label
+                          htmlFor="categoryName"
+                          className="flex pb-2 text-gray-600"
+                        >
+                          CategoryName
+                        </label>
+                        <input
+                          {...register("categoryName", {
+                            required: "CategoryName is required",
+                          })}
+                          type="text"
+                          name="categoryName"
+                          id="categoryName"
+                          className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                          placeholder="Ex - Memory Foam Pillow"
+                        />
+                        {errors.categoryName && (
+                          <p className="text-red-500 py-1 text-sm">
+                            {errors.categoryName.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="mb-3 w-full">
+                        <label
+                          htmlFor="image"
+                          className="flex pb-2 text-gray-600"
+                        >
+                          Category Image
+                        </label>
+                        <input
+                          {...register("image", {
+                            required: "Image is required",
+                          })}
+                          type="file"
+                          name="image"
+                          id="image"
+                          className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                          placeholder="Ex - Rs.59.99"
+                        />
+                        {errors.image && (
+                          <p className="text-red-500 py-1 text-sm">
+                            {errors.image.message}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="mb-2">
+                    <div className="mb-2 w-full">
                       <label
                         htmlFor="description"
                         className="flex pb-2 text-gray-600"
