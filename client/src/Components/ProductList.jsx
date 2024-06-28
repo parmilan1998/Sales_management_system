@@ -22,7 +22,7 @@ const ProductList = ({ productData, fetchProducts }) => {
   //     });
   // }, [query]);
 
-  const baseUrl = "http://localhost:5000/images";
+  const baseUrl = "http://localhost:5000/public/products";
 
   useEffect(() => {
     setProducts(productData);
