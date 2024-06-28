@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { MdAdd } from "react-icons/md";
-import { Link } from "react-router-dom";
 import ProductList from "../../Components/ProductList";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import PropTypes from "prop-types";
 import toast from "react-hot-toast";
 
 const Products = () => {
@@ -17,6 +15,7 @@ const Products = () => {
     formState: { errors },
     handleSubmit,
     reset,
+    setValue,
   } = useForm();
 
   // Created products
@@ -105,7 +104,7 @@ const Products = () => {
 
   return (
     <div className=" max-w-screen-xl mx-auto lg:px-4 font-poppins cursor-pointer">
-      <div className="flex flex-row items-center justify-between py-5 relative">
+      <div className="flex flex-row items-center justify-between pb-5 relative">
         <h1 className="text-3xl font-semibold font-acme text-cyan-600">
           Products List
         </h1>
@@ -119,7 +118,7 @@ const Products = () => {
           />
           <button
             onClick={popUp}
-            className="flex mr-4 justify-center items-center text-white text-2xl px-2 py-2.5  gap-1 font-medium rounded-full bg-cyan-500"
+            className="flex mr-4 justify-center items-center text-white text-2xl px-3 py-3  gap-1 font-medium rounded-full bg-cyan-500"
           >
             <MdAdd />
           </button>
@@ -318,10 +317,5 @@ const Products = () => {
     </div>
   );
 };
-
-// Products.propTypes = {
-//   query: PropTypes.string.isRequired,
-//   setQuery: PropTypes.func.isRequired,
-// };
 
 export default Products;

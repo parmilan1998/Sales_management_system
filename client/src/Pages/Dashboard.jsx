@@ -2,7 +2,7 @@ import React from "react";
 
 const Dashboard = () => {
   return (
-    <div className=" max-w-screen-xl font-poppins text-gray-700 w-full">
+    <div className=" max-w-screen-xl mx-auto lg:px-4 font-poppins cursor-pointer">
       <h1 className="text-2xl font-acme text-gray-700 pb-4">Dashboard</h1>
       <div className="grid grid-cols-2 gap-6 w-full">
         <div className="grid grid-cols-2 gap-6">

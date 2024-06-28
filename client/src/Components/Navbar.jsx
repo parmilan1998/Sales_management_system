@@ -6,7 +6,7 @@ const Navbar = () => {
   return (
     <header>
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 bg-gray-200 w-full font-poppins">
-        <div className="flex py-6 items-center justify-end">
+        <div className="flex py-4 items-center justify-end">
           <div className="flex items-center justify-end gap-4">
             <div className="sm:flex sm:gap-4 space-x-6 flex justify-end">
               <a href="#" className="text-gray-600">
