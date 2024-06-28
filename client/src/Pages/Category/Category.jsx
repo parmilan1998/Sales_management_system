@@ -175,7 +175,7 @@ const Category = () => {
                           name="categoryName"
                           id="categoryName"
                           className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                          placeholder="Ex - Memory Foam Pillow"
+                          placeholder="Ex - Tech Gadgets"
                         />
                         {errors.categoryName && (
                           <p className="text-red-500 py-1 text-sm">
