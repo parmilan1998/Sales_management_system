@@ -1,96 +1,76 @@
 const { Op } = require("sequelize");
 const Stocks = require("../models/stocks");
 const Product = require("../models/products");
-const Purchase = require("../models/purchase");
 
 // POST -> localhost:5000/api/v1/stocks
 exports.createStocks = async (req, res) => {
   try {
-    let stocks = req.body;
-    console.log(req.body);
+    const {
+      productName,
+      productQuantity,
+      purchasePrice,
+      manufacturedDate,
+      expiryDate,
+      purchasedDate,
+    } = req.body;
 
-    // Ensure sales is an arrays
-    if (!Array.isArray(stocks)) {
-      stocks = [stocks];
+    if (!productName || !productQuantity || !manufacturedDate || !expiryDate) {
+      res.status(400).json({ message: "Fill all the required fields!" });
+    }
+    const product = await Product.findOne({
+      where: { productName },
+    });
+
+    if (!product) {
+      res.status(404).json({ message: "Product not found" });
     }
 
-    const stocksItems = await Promise.all(
-      stocks.map(async (stock) => {
-        const {
-          productName,
-          productQuantity,
-          purchasePrice,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate,
-        } = stock;
-
-        try {
-          if (
-            !productName ||
-            !productQuantity ||
-            !manufacturedDate ||
-            !expiryDate
-          ) {
-            res.status(400).json({ message: "Fill all the required fields!" });
-          }
-          const product = await Product.findOne({
-            where: { productName },
-          });
-
-          if (!product) {
-            res.status(404).json({ message: "Product not found" });
-          }
-
-          const existingStock = await Stocks.findOne({
-            where: {
-              productID: product.productID,
-              productName,
-              purchasePrice,
-              manufacturedDate,
-              expiryDate,
-            },
-          });
-
-          if (existingStock) {
-            const updatedStock = await existingStock.update({
-              productQuantity: (existingStock.productQuantity +=
-                parseInt(productQuantity)),
-            });
-            return updatedStock;
-          } else {
-            const existingProduct = await Product.findOne({
-              where: { productName: productName },
-            });
-
-            if (!existingProduct) {
-              return {
-                message: `Product with name ${productName} not found`,
-              };
-            }
-            const createdStock = await Stocks.create({
-              productID: product.productID,
-              productName,
-              productQuantity,
-              purchasePrice: purchasePrice || null,
-              manufacturedDate,
-              expiryDate,
-              purchasedDate,
-              purchaseID: null,
-            });
-            return createdStock;
-          }
-        } catch (err) {
-          res.status(500).json({ message: err.message });
-          return null;
-        }
-      })
-    );
-
-    res.status(201).json({
-      message: "Stocks Created Successfully!",
-      stocks: stocksItems,
+    const existingStock = await Stocks.findOne({
+      where: {
+        productID: product.productID,
+        productName,
+        purchasePrice,
+        manufacturedDate,
+        expiryDate,
+      },
     });
+
+    if (existingStock) {
+      const updatedStock = await existingStock.update({
+        productQuantity: (existingStock.productQuantity +=
+          parseInt(productQuantity)),
+      });
+      res.status(201).json({
+        message: "Stocks updated Successfully!",
+        stocks: updatedStock,
+      });
+    }
+    const existingProduct = await Product.findOne({
+      where: {
+        productName: productName,
+      },
+    });
+
+    if (!existingProduct) {
+      return {
+        message: `Product with name ${productName} not found`,
+      };
+    } else {
+      const createdStock = await Stocks.create({
+        productID: product.productID,
+        productName,
+        productQuantity,
+        purchasePrice: purchasePrice || null,
+        manufacturedDate,
+        expiryDate,
+        purchasedDate,
+        purchaseID: null,
+      });
+      res.status(201).json({
+        message: "Stocks Created Successfully!",
+        stocks: createdStock,
+      });
+    }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

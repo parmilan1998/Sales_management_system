@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
 const {
   createProduct,
@@ -12,9 +13,16 @@ const {
   queryProducts,
 } = require("../controllers/productController");
 
+const uploadPath = path.resolve(__dirname, "../public/products");
+
+// Ensure the directory exists
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./images");
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const uniqueName =
@@ -42,9 +50,7 @@ const handleFileUpload = (req, res, next) => {
     } else if (err) {
       return res.status(500).json({ message: "Internal server error" });
     }
-    if (!req.file) {
-      return res.status(400).json({ message: "No file!" });
-    }
+
     next();
   });
 };

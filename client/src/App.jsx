@@ -2,8 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RootLayout from "./Layout/RootLayout";
 import Category from "./Pages/Category/Category";
-import AddCategory from "./Pages/Category/AddCategory";
-import EditCategory from "./Pages/Category/EditCategory";
+
 import Dashboard from "./Pages/Dashboard";
 import Home from "./Components/Home";
 import PageNotFound from "./Pages/PageNotFound";
@@ -25,11 +24,10 @@ const App = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/home" element={<Home />} />
             <Route path="/category" element={<Category />} />
-            <Route path="/category/add" element={<AddCategory />} />
-            <Route path="/category/edit" element={<EditCategory />} />
             <Route path="/products/add" element={<AddProductScreen />} />
             <Route path="/products/edit/:id" element={<EditProductScreen />} />
             <Route path="/products" element={<ProductScreen />} />
+            <Route path="/products" element={<Products />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/purchase" element={<Purchase />} />
             <Route path="/reports" element={<Report />} />

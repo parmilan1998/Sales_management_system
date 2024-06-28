@@ -46,10 +46,6 @@ const Stocks = db.define(
     },
     purchasePrice: {
       type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
     },
     manufacturedDate: {
       type: DataTypes.DATEONLY,

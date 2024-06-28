@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 
 const categoryRoute = require("./routes/categoryRoute");
 const productRoute = require("./routes/productRoute");
@@ -28,7 +29,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/images", express.static("images"));
+app.use("/public", express.static(path.join(__dirname, "./public")));
 
 // Middleware to parse cookies
 app.use(cookieParser());
