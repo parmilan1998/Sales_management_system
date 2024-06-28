@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { MdAdd } from "react-icons/md";
 import CategoryList from "../../Components/CategoryList";
 import { useForm } from "react-hook-form";
@@ -19,10 +19,6 @@ const Category = () => {
     reset,
     setValue,
   } = useForm();
-
-  const popUp = () => {
-    setIsOpen(!isOpen);
-  };
 
   // Reset input fields
   const handleClear = () => {
@@ -90,16 +86,25 @@ const Category = () => {
         fetchCategories();
         setIsOpen(true);
         reset();
+        setSelectedCategory(null);
+        setFormMode("add");
       })
       .catch((err) => {
         console.log(err.message);
       });
   };
+  const handleClose = useCallback(() => {
+    setIsOpen(true);
+    setSelectedCategory(null);
+    setFormMode("add");
+    reset(); // Reset the form fields
+  }, [reset]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
         setIsOpen(true);
+        handleClose();
       }
     };
 
@@ -107,7 +112,7 @@ const Category = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [popupRef]);
+  }, [popupRef, handleClose]);
 
   return (
     <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
@@ -236,7 +241,7 @@ const Category = () => {
 
                   <div className="mt-3 sm:flex sm:gap-4 flex justify-center">
                     <button
-                      onClick={() => setIsOpen(true)}
+                      onClick={handleClose}
                       className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-100 px-5 py-3 text-center text-sm font-semibold text-gray-500 sm:mt-0 sm:w-auto"
                       href="#"
                     >
