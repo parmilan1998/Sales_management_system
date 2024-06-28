@@ -50,9 +50,7 @@ const handleFileUpload = (req, res, next) => {
     } else if (err) {
       return res.status(500).json({ message: "Internal server error" });
     }
-    if (!req.file) {
-      return res.status(400).json({ message: "No file!" });
-    }
+
     next();
   });
 };
