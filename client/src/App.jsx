@@ -11,6 +11,9 @@ import Stocks from "./Pages/Stocks/Stocks";
 import Sales from "./Pages/Sales/Sales";
 import Purchase from "./Pages/Purchase/Purchase";
 import Report from "./Pages/Report/Report";
+import ProductScreen from "./Pages/Products/ProductScreen";
+import AddProductScreen from "./Pages/Products/AddProductScreen";
+import EditProductScreen from "./Pages/Products/EditProductScreen";
 
 const App = () => {
   return (
@@ -21,6 +24,9 @@ const App = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/home" element={<Home />} />
             <Route path="/category" element={<Category />} />
+            <Route path="/products/add" element={<AddProductScreen />} />
+            <Route path="/products/edit/:id" element={<EditProductScreen />} />
+            <Route path="/products" element={<ProductScreen />} />
             <Route path="/products" element={<Products />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/purchase" element={<Purchase />} />
