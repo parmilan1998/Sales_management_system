@@ -7,7 +7,7 @@ import { GrFormView } from "react-icons/gr";
 import { Link } from "react-router-dom";
 
 const ProductTable = ({ products, handleDelete, page, limit }) => {
-  const baseUrl = "http://localhost:5000/images";
+  const baseUrl = "http://localhost:5000/public/products";
 
   return (
     <div className="w-full overflow-x-auto cursor-pointer py-5">
@@ -80,7 +80,7 @@ const ProductTable = ({ products, handleDelete, page, limit }) => {
                   <img
                     src={`${baseUrl}/${item.imageUrl}`}
                     alt={item.productName}
-                    className="w-28 h-20 p-1 bg-cover object-fill rounded-md"
+                    className="w-28 h-24 px-1 py-3 bg-cover object-fill rounded-md"
                   />
                 </td>
                 <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
@@ -99,13 +99,18 @@ const ProductTable = ({ products, handleDelete, page, limit }) => {
                       <GrFormView size={26} color="blue" />
                     </Link>
                     <Link to={`/products/edit/${item.productID}`}>
-                      <button>
+                      <button className="py-1">
                         <FaRegEdit size={20} color="green" />
                       </button>
                     </Link>
-                    <button onClick={() => handleDelete(item.productID)}>
-                      <MdDelete size={20} color="red" />
-                    </button>
+                    <Link>
+                      <button
+                        onClick={() => handleDelete(item.productID)}
+                        className="py-1"
+                      >
+                        <MdDelete size={20} color="red" />
+                      </button>
+                    </Link>
                   </div>
                 </td>
               </tr>

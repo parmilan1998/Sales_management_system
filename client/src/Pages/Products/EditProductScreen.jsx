@@ -1,17 +1,35 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 const EditProductScreen = () => {
+  const { id } = useParams();
+  const [category, setCategory] = useState([]);
+
   const navigate = useNavigate();
   const {
     register,
     formState: { errors },
     handleSubmit,
     reset,
+    setValue,
   } = useForm();
+
+  const fetchProductDetails = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/v1/product/${id}`);
+      const product = res.data;
+      setValue("productName", product.productName);
+      setValue("categoryName", product.categoryName);
+      setValue("unitPrice", product.unitPrice);
+      setValue("description", product.productDescription);
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
 
   const onSubmit = async (data) => {
     const formData = new FormData();
@@ -21,14 +39,14 @@ const EditProductScreen = () => {
     formData.append("unitPrice", data.unitPrice);
     formData.append("productDescription", data.description);
     const res = await axios
-      .put("http://localhost:5000/api/v1/product", formData, {
+      .put(`http://localhost:5000/api/v1/product${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       })
       .then((res) => {
         console.log(res.data);
-        toast.success(`Product created successfully!`);
+        toast.success(`Product updated successfully!`);
         navigate("/products");
         reset();
       })
@@ -36,6 +54,28 @@ const EditProductScreen = () => {
         console.log(err.message);
       });
   };
+
+  const handleClear = () => {
+    reset();
+  };
+
+  // Fetch categories
+  const fetchCategoryApi = async () => {
+    const res = await axios
+      .get("http://localhost:5000/api/v1/category/list")
+      .then((res) => {
+        console.log(res.data);
+        setCategory(res.data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  };
+
+  useEffect(() => {
+    fetchCategoryApi();
+    fetchProductDetails();
+  }, []);
 
   return (
     <div className=" max-w-screen-xl mx-auto lg:px-24 font-poppins cursor-pointer">
@@ -57,7 +97,7 @@ const EditProductScreen = () => {
               </svg>
             </span>
             <p className="font-semibold sm:text-2xl text-gray-700">
-              Add New Product!
+              Edit Product!
             </p>
           </div>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -127,11 +167,11 @@ const EditProductScreen = () => {
                   <option value="" className="text-gray-200 opacity-5">
                     Ex - Home Essentials
                   </option>
-                  {/* {category.map((category, index) => (
+                  {category.map((category, index) => (
                     <option value={category.categoryName} key={index}>
                       {category.categoryName}
                     </option>
-                  ))} */}
+                  ))}
                 </select>
                 {errors.categoryName && (
                   <p className="text-red-500 py-1 text-sm">
@@ -192,7 +232,7 @@ const EditProductScreen = () => {
                 </button>
               </Link>
               <button
-                // onClick={handleClear}
+                onClick={handleClear}
                 className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-blue-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
                 href="#"
               >
@@ -203,7 +243,7 @@ const EditProductScreen = () => {
                 className="inline-block w-full cursor-pointer rounded-lg bg-green-500 px-5 py-3 text-center text-sm font-semibold text-white sm:w-auto"
                 href="#"
               >
-                Add Product
+                Update Product
               </button>
             </div>
           </form>
