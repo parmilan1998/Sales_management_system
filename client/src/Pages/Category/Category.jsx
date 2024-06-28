@@ -174,7 +174,7 @@ const Category = () => {
                         name="categoryName"
                         id="categoryName"
                         className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                        placeholder="Ex - Memory Foam Pillow"
+                        placeholder="Ex - Tech Gadgets"
                       />
                       {errors.categoryName && (
                         <p className="text-red-500 py-1 text-sm">
@@ -222,7 +222,7 @@ const Category = () => {
                         id="description"
                         rows={5}
                         className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                        placeholder="Ex - Ergonomically designed pillow for superior neck support and comfort."
+                        placeholder="Ex - Latest technology gadgets and accessories for tech enthusiasts."
                       />
                       {errors.description && (
                         <p className="text-red-500 py-1 text-sm">

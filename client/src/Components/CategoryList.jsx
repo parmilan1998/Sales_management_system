@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import axios, { Axios } from "axios";
@@ -13,7 +13,7 @@ const CategoryList = ({
   openEditPopup,
 }) => {
   const baseUrl = "http://localhost:5000/public/category";
-  const popupRef = useRef();
+
   useEffect(() => {
     setCategory(category);
   }, [category, setCategory]);
