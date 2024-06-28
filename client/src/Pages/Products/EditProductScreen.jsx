@@ -127,11 +127,11 @@ const EditProductScreen = () => {
                   <option value="" className="text-gray-200 opacity-5">
                     Ex - Home Essentials
                   </option>
-                  {category.map((category, index) => (
+                  {/* {category.map((category, index) => (
                     <option value={category.categoryName} key={index}>
                       {category.categoryName}
                     </option>
-                  ))}
+                  ))} */}
                 </select>
                 {errors.categoryName && (
                   <p className="text-red-500 py-1 text-sm">
@@ -192,7 +192,7 @@ const EditProductScreen = () => {
                 </button>
               </Link>
               <button
-                onClick={handleClear}
+                // onClick={handleClear}
                 className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-blue-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
                 href="#"
               >
