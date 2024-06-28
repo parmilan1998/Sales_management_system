@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import axios, { Axios } from "axios";
@@ -6,9 +6,14 @@ import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
-const CategoryList = ({ category, setCategory, fetchCategories }) => {
+const CategoryList = ({
+  category,
+  setCategory,
+  fetchCategories,
+  openEditPopup,
+}) => {
   const baseUrl = "http://localhost:5000/public/category";
-
+  const popupRef = useRef();
   useEffect(() => {
     setCategory(category);
   }, [category, setCategory]);
@@ -22,64 +27,54 @@ const CategoryList = ({ category, setCategory, fetchCategories }) => {
         fetchCategories();
       })
       .catch((err) => {
-        toast.error("Error deleting product!");
+        toast.error(
+          "Can't delete this category since it is linked with other records!!"
+        );
         console.log(err);
       });
   };
 
   return (
-    <div>
-      <div className="w-full overflow-x-auto cursor-pointer">
-        <h1 className="text-3xl font-semibold font-acme text-cyan-600">
-          Categories List
-        </h1>
-        <div className="flex flex-wrap -mx-2">
-          {category.map((item, index) => (
-            <div
-              key={index}
-              className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4"
-            >
-              <article className="relative overflow-hidden rounded-lg shadow transition hover:shadow-lg">
-                <img
-                  src={`${baseUrl}/${item.imageUrl}`}
-                  alt={item.categoryName}
-                  className="absolute inset-0 h-auto object-cover"
-                />
+    <div className="w-full  cursor-pointer z-10">
+      <div className="flex flex-wrap  -mx-2">
+        {category.map((item, index) => (
+          <div
+            key={index}
+            className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4"
+          >
+            <article className="relative overflow-hidden rounded-lg shadow transition hover:shadow-lg h-80 flex flex-col justify-between">
+              <img
+                src={`${baseUrl}/${item.imageUrl}`}
+                alt={item.categoryName}
+                className="w-full h-32 object-cover"
+              />
 
-                <div className="relative bg-gradient-to-t from-gray-900/50 to-gray-900/25 pt-32 sm:pt-48 lg:pt-64">
-                  <div className="p-4 sm:p-6">
-                    <time
-                      dateTime="2022-10-10"
-                      className="block text-xs text-white/90"
-                    >
-                      {" "}
-                      10th Oct 2022{" "}
-                    </time>
+              <div className="flex-grow bg-gradient-to-t from-gray-900/50 to-gray-900/25 p-4 sm:p-6">
+                <Link href="#">
+                  <h3 className="mt-0.5 text-lg text-white">
+                    {item.categoryName}
+                  </h3>
+                </Link>
+                <p className="mt-2 line-clamp-3 text-sm/relaxed text-white/95">
+                  {item.categoryDescription}
+                </p>
+              </div>
 
-                    <a href="#">
-                      <h3 className="mt-0.5 text-lg text-white">
-                        {item.categoryName}
-                      </h3>
-                    </a>
-
-                    <p className="mt-2 line-clamp-3 text-sm/relaxed text-white/95">
-                      {item.categoryDescription}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-row gap-3">
-                  <Link to={`/edit/${item.categoryID}`}>
-                    <FaRegEdit size={20} color="green" />
-                  </Link>
-                  <button onClick={() => handleDelete(item.categoryID)}>
-                    <MdDelete size={20} color="red" />
-                  </button>
-                </div>
-              </article>
-            </div>
-          ))}
-        </div>
+              <div className="flex justify-between z-20 gap-3 ml-2 mr-2 p-3">
+                <button onClick={() => openEditPopup(item)}>
+                  <FaRegEdit size={20} color="green" />
+                </button>
+                <button
+                  onClick={() => {
+                    handleDelete(item.categoryID);
+                  }}
+                >
+                  <MdDelete size={20} color="red" />
+                </button>
+              </div>
+            </article>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -88,6 +83,7 @@ const CategoryList = ({ category, setCategory, fetchCategories }) => {
 CategoryList.propTypes = {
   category: PropTypes.array.isRequired,
   setCategory: PropTypes.func.isRequired,
+  openEditPopup: PropTypes.func.isRequired,
   fetchCategories: PropTypes.func.isRequired,
 };
 
