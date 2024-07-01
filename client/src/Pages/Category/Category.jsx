@@ -2,8 +2,9 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { MdAdd } from "react-icons/md";
 import CategoryList from "../../Components/CategoryList";
 import { useForm } from "react-hook-form";
-import axios from "axios";
+import categoryApi from "../../api/category";
 // import PropTypes from "prop-types";
+
 import toast from "react-hot-toast";
 
 const Category = () => {
@@ -26,15 +27,13 @@ const Category = () => {
   };
 
   const fetchCategories = async () => {
-    const res = await axios
-      .get("http://localhost:5000/api/v1/category/list")
-      .then((res) => {
-        setCategory(res.data);
-        console.log(res.data);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    try {
+      const res = await categoryApi.get("/list");
+      setCategory(res.data);
+      console.log(res.data);
+    } catch (err) {
+      console.log(err.message);
+    }
   };
 
   useEffect(() => {
@@ -64,40 +63,36 @@ const Category = () => {
     formData.append("image", data.image[0]);
     formData.append("categoryDescription", data.description);
 
-    const url =
-      formMode === "add"
-        ? "http://localhost:5000/api/v1/category"
-        : `http://localhost:5000/api/v1/category/${selectedCategory.categoryID}`;
+    const url = formMode === "add" ? "/" : `/${selectedCategory.categoryID}`;
 
     const method = formMode === "add" ? "post" : "put";
-    await axios({
-      method,
-      url,
-      data: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
-      .then((res) => {
-        console.log(res.data);
-        toast.success(
-          `Category ${formMode === "add" ? "created" : "updated"} successfully!`
-        );
-        fetchCategories();
-        setIsOpen(true);
-        reset();
-        setSelectedCategory(null);
-        setFormMode("add");
-      })
-      .catch((err) => {
-        console.log(err.message);
+    try {
+      const res = await categoryApi({
+        method,
+        url,
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+      console.log(res.data);
+      toast.success(
+        `Category ${formMode === "add" ? "created" : "updated"} successfully!`
+      );
+      fetchCategories();
+      setIsOpen(true);
+      reset();
+      selectedCategory(null);
+      setFormMode("add");
+    } catch (err) {
+      console.log(err.message);
+    }
   };
   const handleClose = useCallback(() => {
     setIsOpen(true);
     setSelectedCategory(null);
     setFormMode("add");
-    reset(); // Reset the form fields
+    reset();
   }, [reset]);
 
   useEffect(() => {
