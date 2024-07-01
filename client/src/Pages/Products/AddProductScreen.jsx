@@ -23,11 +23,7 @@ const AddProduct = () => {
     formData.append("unitPrice", data.unitPrice);
     formData.append("productDescription", data.description);
     const res = await axios
-      .post("http://localhost:5000/api/v1/product", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .post("http://localhost:5000/api/v1/product", formData)
       .then((res) => {
         console.log(res.data);
         toast.success(`Product created successfully!`);
