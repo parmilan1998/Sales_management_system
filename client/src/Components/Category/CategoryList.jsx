@@ -11,9 +11,8 @@ const CategoryList = ({
   setCategory,
   fetchCategories,
   openEditPopup,
+  baseUrl,
 }) => {
-  const baseUrl = "http://localhost:5000/public/category";
-
   useEffect(() => {
     setCategory(category);
   }, [category, setCategory]);
@@ -83,6 +82,7 @@ CategoryList.propTypes = {
   setCategory: PropTypes.func.isRequired,
   openEditPopup: PropTypes.func.isRequired,
   fetchCategories: PropTypes.func.isRequired,
+  baseUrl: PropTypes.string.isRequired,
 };
 
 export default CategoryList;

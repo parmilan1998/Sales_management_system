@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { MdAdd } from "react-icons/md";
-import CategoryList from "../../Components/CategoryList";
+import CategoryList from "../../Components/Category/CategoryList";
 import { useForm } from "react-hook-form";
 import categoryApi from "../../api/category";
 // import PropTypes from "prop-types";
@@ -20,6 +20,8 @@ const Category = () => {
     reset,
     setValue,
   } = useForm();
+
+  const baseUrl = "http://localhost:5000/public/category";
 
   // Reset input fields
   const handleClear = () => {
@@ -54,13 +56,17 @@ const Category = () => {
     // Populate the form with the category data
     setValue("categoryName", category.categoryName);
     setValue("description", category.categoryDescription);
+    const existingImage = `${baseUrl}/${category.imageUrl}`;
+    setValue("image", existingImage);
   };
 
   // Created category
   const onSubmit = async (data) => {
     const formData = new FormData();
     formData.append("categoryName", data.categoryName);
-    formData.append("image", data.image[0]);
+    if (data.image[0]) {
+      formData.append("image", data.image[0]);
+    }
     formData.append("categoryDescription", data.description);
 
     const url = formMode === "add" ? "/" : `/${selectedCategory.categoryID}`;
@@ -183,6 +189,7 @@ const Category = () => {
                           </p>
                         )}
                       </div>
+
                       <div className="mb-3 w-full">
                         <label
                           htmlFor="image"
@@ -190,6 +197,7 @@ const Category = () => {
                         >
                           Category Image
                         </label>
+
                         <input
                           {...register("image", {
                             required: "Image is required",
@@ -269,6 +277,7 @@ const Category = () => {
           fetchCategories={fetchCategories}
           setCategory={setCategory}
           openEditPopup={openEditPopup}
+          baseUrl={baseUrl}
         />
       </div>
     </div>
