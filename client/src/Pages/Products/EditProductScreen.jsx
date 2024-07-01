@@ -29,7 +29,7 @@ const EditProductScreen = () => {
       setValue("categoryName", product.categoryName);
       setValue("unitPrice", product.unitPrice);
       setValue("description", product.productDescription);
-      setValue("imageUrl", product.imageUrl);
+      setValue("imageUrl", `${baseUrl}/${product.imageUrl}`);
     } catch (err) {
       console.error(err.message);
     }
