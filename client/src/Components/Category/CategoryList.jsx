@@ -39,7 +39,7 @@ const CategoryList = ({
             key={index}
             className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4"
           >
-            <article className="relative overflow-hidden rounded-lg shadow transition hover:shadow-lg h-80 flex flex-col justify-between">
+            <article className="relative overflow-hidden rounded-lg shadow transition hover:shadow-lg h-auto flex flex-col justify-between">
               <img
                 src={`${baseUrl}/${item.imageUrl}`}
                 alt={item.categoryName}
@@ -52,7 +52,7 @@ const CategoryList = ({
                     {item.categoryName}
                   </h3>
                 </Link>
-                <p className="mt-2 line-clamp-3 text-sm/relaxed text-white/95">
+                <p className="mt-2 line-clamp-3 h-24 text-sm/relaxed text-white/95">
                   {item.categoryDescription}
                 </p>
               </div>

@@ -1,4 +1,4 @@
-const { Op, fn, col } = require("sequelize");
+const { Op, fn, col, where } = require("sequelize");
 const Product = require("../models/products");
 const Category = require("../models/category");
 const Stocks = require("../models/stocks");
@@ -119,6 +119,26 @@ exports.getProduct = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error retrieving product", error: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/product/fbc/:categoryID
+exports.filterbyCategory = async (req, res) => {
+  const { categoryID } = req.params;
+
+  try {
+    const products = await Product.findAll({
+      where: { categoryID },
+    });
+
+    if (products.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No products found in this category" });
+    }
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
