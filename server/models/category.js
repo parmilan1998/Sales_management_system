@@ -29,6 +29,7 @@ const Category = db.define(
     },
     imageUrl: {
       type: DataTypes.TEXT,
+      allowNull: true,
     },
   },
   {

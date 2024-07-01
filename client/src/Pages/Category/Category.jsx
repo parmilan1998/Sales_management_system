@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { MdAdd } from "react-icons/md";
-import CategoryList from "../../Components/CategoryList";
+import CategoryList from "../../Components/Category/CategoryList";
 import { useForm } from "react-hook-form";
-import axios from "axios";
+import categoryApi from "../../api/category";
 // import PropTypes from "prop-types";
+
 import toast from "react-hot-toast";
 
 const Category = () => {
@@ -11,6 +12,9 @@ const Category = () => {
   const [category, setCategory] = useState([]);
   const [formMode, setFormMode] = useState("add");
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [existingImage, setExistingImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
   const popupRef = useRef();
   const {
     register,
@@ -20,9 +24,7 @@ const Category = () => {
     setValue,
   } = useForm();
 
-  const popUp = () => {
-    setIsOpen(!isOpen);
-  };
+  const baseUrl = "http://localhost:5000/public/category";
 
   // Reset input fields
   const handleClear = () => {
@@ -30,15 +32,13 @@ const Category = () => {
   };
 
   const fetchCategories = async () => {
-    const res = await axios
-      .get("http://localhost:5000/api/v1/category/list")
-      .then((res) => {
-        setCategory(res.data);
-        console.log(res.data);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    try {
+      const res = await categoryApi.get("/list");
+      setCategory(res.data);
+      console.log(res.data);
+    } catch (err) {
+      console.log(err.message);
+    }
   };
 
   useEffect(() => {
@@ -59,47 +59,70 @@ const Category = () => {
     // Populate the form with the category data
     setValue("categoryName", category.categoryName);
     setValue("description", category.categoryDescription);
+    setExistingImage(`${baseUrl}/${category.imageUrl}`);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(null);
+    }
   };
 
   // Created category
   const onSubmit = async (data) => {
     const formData = new FormData();
     formData.append("categoryName", data.categoryName);
-    formData.append("image", data.image[0]);
+    if (data.image[0]) {
+      formData.append("image", data.image[0]);
+    }
     formData.append("categoryDescription", data.description);
 
-    const url =
-      formMode === "add"
-        ? "http://localhost:5000/api/v1/category"
-        : `http://localhost:5000/api/v1/category/${selectedCategory.categoryID}`;
+    const url = formMode === "add" ? "/" : `/${selectedCategory.categoryID}`;
 
     const method = formMode === "add" ? "post" : "put";
-    await axios({
-      method,
-      url,
-      data: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
-      .then((res) => {
-        console.log(res.data);
-        toast.success(
-          `Category ${formMode === "add" ? "created" : "updated"} successfully!`
-        );
-        fetchCategories();
-        setIsOpen(true);
-        reset();
-      })
-      .catch((err) => {
-        console.log(err.message);
+    try {
+      const res = await categoryApi({
+        method,
+        url,
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+      console.log(res.data);
+      toast.success(
+        `Category ${formMode === "add" ? "created" : "updated"} successfully!`
+      );
+      fetchCategories();
+      setIsOpen(true);
+      reset();
+      selectedCategory(null);
+      setFormMode("add");
+    } catch (err) {
+      console.log(err.message);
+    }
   };
+  const handleClose = useCallback(() => {
+    setIsOpen(true);
+    setSelectedCategory(null);
+    setFormMode("add");
+    setImagePreview(null);
+    setExistingImage(null);
+    reset();
+  }, [reset]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
         setIsOpen(true);
+        handleClose();
       }
     };
 
@@ -107,7 +130,7 @@ const Category = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [popupRef]);
+  }, [popupRef, handleClose]);
 
   return (
     <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
@@ -175,7 +198,7 @@ const Category = () => {
                           name="categoryName"
                           id="categoryName"
                           className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                          placeholder="Ex - Memory Foam Pillow"
+                          placeholder="Ex - Tech Gadgets"
                         />
                         {errors.categoryName && (
                           <p className="text-red-500 py-1 text-sm">
@@ -183,6 +206,7 @@ const Category = () => {
                           </p>
                         )}
                       </div>
+
                       <div className="mb-3 w-full">
                         <label
                           htmlFor="image"
@@ -190,16 +214,36 @@ const Category = () => {
                         >
                           Category Image
                         </label>
+
                         <input
                           {...register("image", {
-                            required: "Image is required",
+                            required: false,
                           })}
                           type="file"
                           name="image"
                           id="image"
                           className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                          placeholder="Ex - Rs.59.99"
+                          onChange={handleImageChange}
                         />
+                        {imagePreview ? (
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className=" mt-3 h-21 w-21 object-cover"
+                          />
+                        ) : (
+                          existingImage &&
+                          formMode === "edit" && (
+                            <div className="my-2">
+                              <p className="text-sm">Current Image:</p>
+                              <img
+                                src={existingImage}
+                                alt="Current"
+                                className="h-21 w-21 object-cover"
+                              />
+                            </div>
+                          )
+                        )}
                         {errors.image && (
                           <p className="text-red-500 py-1 text-sm">
                             {errors.image.message}
@@ -224,7 +268,7 @@ const Category = () => {
                         id="description"
                         rows={5}
                         className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                        placeholder="Ex - Ergonomically designed pillow for superior neck support and comfort."
+                        placeholder="Ex - Latest technology gadgets and accessories for tech enthusiasts."
                       />
                       {errors.description && (
                         <p className="text-red-500 py-1 text-sm">
@@ -236,7 +280,7 @@ const Category = () => {
 
                   <div className="mt-3 sm:flex sm:gap-4 flex justify-center">
                     <button
-                      onClick={() => setIsOpen(true)}
+                      onClick={handleClose}
                       className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-100 px-5 py-3 text-center text-sm font-semibold text-gray-500 sm:mt-0 sm:w-auto"
                       href="#"
                     >
@@ -269,6 +313,7 @@ const Category = () => {
           fetchCategories={fetchCategories}
           setCategory={setCategory}
           openEditPopup={openEditPopup}
+          baseUrl={baseUrl}
         />
       </div>
     </div>

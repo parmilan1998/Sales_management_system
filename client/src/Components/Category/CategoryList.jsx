@@ -1,37 +1,34 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import axios, { Axios } from "axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
+import categoryApi from "../../api/category";
 
 const CategoryList = ({
   category,
   setCategory,
   fetchCategories,
   openEditPopup,
+  baseUrl,
 }) => {
-  const baseUrl = "http://localhost:5000/public/category";
-  const popupRef = useRef();
   useEffect(() => {
     setCategory(category);
   }, [category, setCategory]);
 
   // Delete category
   const handleDelete = async (id) => {
-    await axios
-      .delete(`http://localhost:5000/api/v1/category/${id}`)
-      .then((res) => {
-        toast.success("Category deleted Successfully!", { duration: 3000 });
-        fetchCategories();
-      })
-      .catch((err) => {
-        toast.error(
-          "Can't delete this category since it is linked with other records!!"
-        );
-        console.log(err);
-      });
+    try {
+      await categoryApi.delete(`/${id}`);
+      toast.success("Category deleted Successfully!", { duration: 2000 });
+      fetchCategories();
+    } catch (err) {
+      toast.error(
+        "Can't delete this category since it is linked with other records!!"
+      );
+      console.log(err);
+    }
   };
 
   return (
@@ -85,6 +82,7 @@ CategoryList.propTypes = {
   setCategory: PropTypes.func.isRequired,
   openEditPopup: PropTypes.func.isRequired,
   fetchCategories: PropTypes.func.isRequired,
+  baseUrl: PropTypes.string.isRequired,
 };
 
 export default CategoryList;
