@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 const EditProductScreen = () => {
+  const baseUrl = "http://localhost:5000/public/products";
+
   const { id } = useParams();
   const [category, setCategory] = useState([]);
 
@@ -18,7 +20,8 @@ const EditProductScreen = () => {
     setValue,
   } = useForm();
 
-  const fetchProductDetails = async () => {
+  // Fetch and display update product Details use setValue
+  const fetchUpdateProductDetails = async () => {
     try {
       const res = await axios.get(`http://localhost:5000/api/v1/product/${id}`);
       const product = res.data;
@@ -26,6 +29,7 @@ const EditProductScreen = () => {
       setValue("categoryName", product.categoryName);
       setValue("unitPrice", product.unitPrice);
       setValue("description", product.productDescription);
+      setValue("imageUrl", product.imageUrl);
     } catch (err) {
       console.error(err.message);
     }
@@ -38,12 +42,9 @@ const EditProductScreen = () => {
     formData.append("categoryName", data.categoryName);
     formData.append("unitPrice", data.unitPrice);
     formData.append("productDescription", data.description);
+
     const res = await axios
-      .put(`http://localhost:5000/api/v1/product${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .put(`http://localhost:5000/api/v1/product/${id}`, formData)
       .then((res) => {
         console.log(res.data);
         toast.success(`Product updated successfully!`);
@@ -74,7 +75,7 @@ const EditProductScreen = () => {
 
   useEffect(() => {
     fetchCategoryApi();
-    fetchProductDetails();
+    fetchUpdateProductDetails();
   }, []);
 
   return (

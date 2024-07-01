@@ -6,7 +6,6 @@ import Category from "./Pages/Category/Category";
 import Dashboard from "./Pages/Dashboard";
 import Home from "./Components/Home";
 import PageNotFound from "./Pages/PageNotFound";
-import Products from "./Pages/Products/Products";
 import Stocks from "./Pages/Stocks/Stocks";
 import Sales from "./Pages/Sales/Sales";
 import Purchase from "./Pages/Purchase/Purchase";
@@ -27,7 +26,6 @@ const App = () => {
             <Route path="/products/add" element={<AddProductScreen />} />
             <Route path="/products/edit/:id" element={<EditProductScreen />} />
             <Route path="/products" element={<ProductScreen />} />
-            <Route path="/products" element={<Products />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/purchase" element={<Purchase />} />
             <Route path="/reports" element={<Report />} />

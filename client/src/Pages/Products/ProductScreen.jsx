@@ -8,6 +8,7 @@ import ProductPagination from "../../Components/Products/ProductPagination";
 import ProductSort from "../../Components/Products/ProductSort";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import { message } from "antd";
 
 const ProductScreen = () => {
   const [products, setProducts] = useState([]);
@@ -17,12 +18,8 @@ const ProductScreen = () => {
   const [sort, setSort] = useState("ASC");
   const [limit, setLimit] = useState(5);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [page, sort, search, limit]);
-
   const fetchProducts = async () => {
-    const url = `http://localhost:5000/api/v1/product/query?page=${page}&limit=${limit}&sort=${sort.order}&keyword=${search}`;
+    const url = `http://localhost:5000/api/v1/product/query?page=${page}&limit=${limit}&sort=${sort}&keyword=${search}`;
     try {
       const res = await axios.get(url);
       const { products, pagination } = res.data;
@@ -34,17 +31,26 @@ const ProductScreen = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  useEffect(() => {
+    fetchProducts();
+  }, [page, sort, search, limit]);
+
+  const confirmDelete = async (id) => {
     await axios
       .delete(`http://localhost:5000/api/v1/product/${id}`)
       .then((res) => {
-        toast.success("Product deleted Successfully!", { duration: 3000 });
+        message.success("Product deleted Successfully!");
         fetchProducts();
+        setPage(1);
       })
       .catch((err) => {
         toast.error("Error deleting product!");
         console.log(err);
       });
+  };
+
+  const cancelDelete = () => {
+    message.error("Product deletion cancelled!");
   };
 
   return (
@@ -76,9 +82,10 @@ const ProductScreen = () => {
       </div>
       <ProductTable
         products={products}
-        handleDelete={handleDelete}
         page={page}
         limit={limit}
+        confirmDelete={confirmDelete}
+        cancelDelete={cancelDelete}
       />
       <ProductPagination
         page={page}
