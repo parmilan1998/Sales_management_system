@@ -154,29 +154,29 @@ exports.updateProduct = async (req, res) => {
 
     // Handle image upload if a new file is provided
     if (req.file) {
-      console.log("New file uploaded:", req.file);
+      console.log("New file uploaded:", req?.file);
+    }
 
-      // Delete existing image if it exists
-      if (product.imageUrl) {
-        const filePath = path.join(
-          __dirname,
-          "../public/products",
-          product.imageUrl
-        );
-        fs.access(filePath, fs.constants.F_OK, (err) => {
-          if (err) {
-            console.warn("File does not exist, cannot delete:", filePath);
-          } else {
-            fs.unlink(filePath, (err) => {
-              if (err) {
-                console.error("Error deleting file:", err);
-              } else {
-                console.log("File deleted successfully:", filePath);
-              }
-            });
-          }
-        });
-      }
+    // Delete existing image if it exists
+    if (product.imageUrl) {
+      const filePath = path.join(
+        __dirname,
+        "../public/products",
+        product.imageUrl
+      );
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+          console.warn("File does not exist, cannot delete:", filePath);
+        } else {
+          fs.unlink(filePath, (err) => {
+            if (err) {
+              console.error("Error deleting file:", err);
+            } else {
+              console.log("File deleted successfully:", filePath);
+            }
+          });
+        }
+      });
 
       // Update product with new image path
       await product.update({
@@ -185,7 +185,7 @@ exports.updateProduct = async (req, res) => {
         categoryName,
         unitPrice,
         categoryID,
-        imageUrl: req.file.filename, // Update imageUrl with the new file path
+        imageUrl: req?.file?.filename, // Update imageUrl with the new file path
       });
     } else {
       // Update product without changing the image

@@ -12,6 +12,9 @@ const Category = () => {
   const [category, setCategory] = useState([]);
   const [formMode, setFormMode] = useState("add");
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [existingImage, setExistingImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
   const popupRef = useRef();
   const {
     register,
@@ -56,8 +59,20 @@ const Category = () => {
     // Populate the form with the category data
     setValue("categoryName", category.categoryName);
     setValue("description", category.categoryDescription);
-    const existingImage = `${baseUrl}/${category.imageUrl}`;
-    setValue("image", existingImage);
+    setExistingImage(`${baseUrl}/${category.imageUrl}`);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(null);
+    }
   };
 
   // Created category
@@ -98,6 +113,8 @@ const Category = () => {
     setIsOpen(true);
     setSelectedCategory(null);
     setFormMode("add");
+    setImagePreview(null);
+    setExistingImage(null);
     reset();
   }, [reset]);
 
@@ -200,14 +217,33 @@ const Category = () => {
 
                         <input
                           {...register("image", {
-                            required: "Image is required",
+                            required: false,
                           })}
                           type="file"
                           name="image"
                           id="image"
                           className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                          placeholder="Ex - Rs.59.99"
+                          onChange={handleImageChange}
                         />
+                        {imagePreview ? (
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className=" mt-3 h-21 w-21 object-cover"
+                          />
+                        ) : (
+                          existingImage &&
+                          formMode === "edit" && (
+                            <div className="my-2">
+                              <p className="text-sm">Current Image:</p>
+                              <img
+                                src={existingImage}
+                                alt="Current"
+                                className="h-21 w-21 object-cover"
+                              />
+                            </div>
+                          )
+                        )}
                         {errors.image && (
                           <p className="text-red-500 py-1 text-sm">
                             {errors.image.message}
