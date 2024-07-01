@@ -154,7 +154,7 @@ const Category = () => {
           </button>
         </div>
         {!isOpen && (
-          <div className="fixed inset-0 mx-auto flex items-center justify-center z-50">
+          <div className="fixed inset-0 mx-auto flex items-center justify-center max-h-svh z-50 overflow-y-auto">
             <div
               ref={popupRef}
               className="rounded-2xl absolute z-50 border border-blue-100 bg-white p-4 shadow-lg sm:p-6 lg:p-8"
@@ -225,25 +225,7 @@ const Category = () => {
                           className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
                           onChange={handleImageChange}
                         />
-                        {imagePreview ? (
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className=" mt-3 h-21 w-21 object-cover"
-                          />
-                        ) : (
-                          existingImage &&
-                          formMode === "edit" && (
-                            <div className="my-2">
-                              <p className="text-sm">Current Image:</p>
-                              <img
-                                src={existingImage}
-                                alt="Current"
-                                className="h-21 w-21 object-cover"
-                              />
-                            </div>
-                          )
-                        )}
+
                         {errors.image && (
                           <p className="text-red-500 py-1 text-sm">
                             {errors.image.message}
@@ -251,7 +233,27 @@ const Category = () => {
                         )}
                       </div>
                     </div>
-
+                    <div className=" flex justify-center items-center  mt-2 mb-2 ">
+                      {imagePreview ? (
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="border-b-gray-900 shadow-lg object-cover h-36 w-36"
+                        />
+                      ) : (
+                        existingImage &&
+                        formMode === "edit" && (
+                          <div className="my-2">
+                            <p className="text-sm">Current Image:</p>
+                            <img
+                              src={existingImage}
+                              alt="Current"
+                              className="border-b-gray-900 shadow-lg object-cover h-36 w-36"
+                            />
+                          </div>
+                        )
+                      )}
+                    </div>
                     <div className="mb-2 w-full">
                       <label
                         htmlFor="description"
