@@ -1,9 +1,9 @@
-/* eslint-disable react/prop-types */
 import React from "react";
 import {
   AiOutlineSortAscending,
   AiOutlineSortDescending,
 } from "react-icons/ai";
+import PropTypes from "prop-types";
 
 const ProductSort = ({ sort, setSort, fetchProducts }) => {
   const handleSort = (selectedSort) => {
@@ -37,6 +37,12 @@ const ProductSort = ({ sort, setSort, fetchProducts }) => {
       )}
     </div>
   );
+};
+
+ProductSort.propTypes = {
+  fetchProducts: PropTypes.array.isRequired,
+  sort: PropTypes.array.isRequired,
+  setSort: PropTypes.func.isRequired,
 };
 
 export default ProductSort;

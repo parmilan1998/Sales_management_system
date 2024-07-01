@@ -1,5 +1,5 @@
-/* eslint-disable react/prop-types */
 import React from "react";
+import PropTypes from "prop-types";
 
 const ProductSearch = ({ search, setSearch, setPage }) => {
   const handleSearch = (e) => {
@@ -18,6 +18,12 @@ const ProductSearch = ({ search, setSearch, setPage }) => {
       />
     </div>
   );
+};
+
+ProductSearch.propTypes = {
+  search: PropTypes.array.isRequired,
+  setPage: PropTypes.func.isRequired,
+  setSearch: PropTypes.func.isRequired,
 };
 
 export default ProductSearch;

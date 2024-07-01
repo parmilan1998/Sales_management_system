@@ -1,6 +1,5 @@
-/* eslint-disable react/prop-types */
 import React, { useState } from "react";
-// import PropTypes from "prop-types";
+import PropTypes from "prop-types";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { GrFormView } from "react-icons/gr";
@@ -175,8 +174,12 @@ const ProductTable = ({
   );
 };
 
-// ProductTable.propTypes = {
-//   products: PropTypes.array.isRequired,
-// };
+ProductTable.propTypes = {
+  products: PropTypes.array.isRequired,
+  confirmDelete: PropTypes.func.isRequired,
+  cancelDelete: PropTypes.func.isRequired,
+  limit: PropTypes.array.isRequired,
+  page: PropTypes.array.isRequired,
+};
 
 export default ProductTable;
