@@ -46,6 +46,7 @@ exports.getCategories = async (req, res) => {
 
 // PUT -> localhost:5000/api/v1/category/:id
 exports.updateCategory = async (req, res) => {
+  console.log({ req });
   try {
     const { id } = req.params;
     const { categoryName, categoryDescription } = req.body;
@@ -55,42 +56,42 @@ exports.updateCategory = async (req, res) => {
       res.status(404).json({ message: "Category not found" });
     }
     if (req.file) {
-      console.log("New file uploaded:", req.file);
-
-      // Delete existing image if it exists
-      if (category.imageUrl) {
-        const filePath = path.join(
-          __dirname,
-          "../public/category",
-          category.imageUrl
-        );
-        fs.access(filePath, fs.constants.F_OK, (err) => {
-          if (err) {
-            console.warn("File does not exist, cannot delete:", filePath);
-          } else {
-            fs.unlink(filePath, (err) => {
-              if (err) {
-                console.error("Error deleting file:", err);
-              } else {
-                console.log("File deleted successfully:", filePath);
-              }
-            });
-          }
-        });
-      }
-
-      // Update category
-      const categoryUpdate = await category.update({
-        categoryName,
-        categoryDescription,
-        imageUrl: req.file.filename,
-      });
-      res.status(200).json({
-        message: "Category Updated Successfully!",
-        updateCategory: categoryUpdate,
+      console.log("New file uploaded:", req?.file);
+    }
+    // Delete existing image if it exists
+    if (category.imageUrl) {
+      const filePath = path.join(
+        __dirname,
+        "../public/category",
+        category.imageUrl
+      );
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+          console.warn("File does not exist, cannot delete:", filePath);
+        } else {
+          fs.unlink(filePath, (err) => {
+            if (err) {
+              console.error("Error deleting file:", err);
+            } else {
+              console.log("File deleted successfully:", filePath);
+            }
+          });
+        }
       });
     }
+
+    // Update category
+    const categoryUpdate = await category.update({
+      categoryName,
+      categoryDescription,
+      imageUrl: req?.file?.filename,
+    });
+    res.status(200).json({
+      message: "Category Updated Successfully!",
+      updateCategory: categoryUpdate,
+    });
   } catch (error) {
+    console.log({ error });
     res.status(500).json({ message: error.message });
   }
 };
