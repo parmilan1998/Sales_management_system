@@ -144,14 +144,14 @@ exports.queryCategory = async (req, res) => {
       : {};
 
     // Sorting by ASC or DESC
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    const sortBy = sort.toLowerCase() === "desc" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: categories } = await Category.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
-      order: [["createdAt", sortOrder]],
+      order: [["categoryName", sortBy]],
     });
 
     // Total pages
