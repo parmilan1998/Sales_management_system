@@ -16,7 +16,7 @@ const Sidebar = () => {
       <div className="px-4 py-6 ">
         <span className="flex flex-row items-center justify-start py-5 mb-10 w-full place-content-center rounded-lg text-3xl font-acme font-medium tracking-widest">
           <SiPowerapps className="mr-2 text-primaryRed" />
-          <span className=" text-primaryRed">Power</span> <span>Pixel</span>
+          <span className=" text-primaryRed">Foot</span> <span>Bridge</span>
         </span>
 
         <div>
