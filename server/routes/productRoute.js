@@ -11,6 +11,7 @@ const {
   deleteProduct,
   getProduct,
   queryProducts,
+  filterbyCategory,
 } = require("../controllers/productController");
 
 const uploadPath = path.resolve(__dirname, "../public/products");
@@ -58,6 +59,7 @@ const handleFileUpload = (req, res, next) => {
 router.post("/", handleFileUpload, createProduct);
 router.get("/query", queryProducts);
 router.get("/list", getAllProduct);
+router.get("/fbc/:categoryID", filterbyCategory);
 router.put("/:id", handleFileUpload, updateProduct);
 router.delete("/:id", deleteProduct);
 router.get("/:id", getProduct);

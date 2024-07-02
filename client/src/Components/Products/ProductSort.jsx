@@ -40,8 +40,8 @@ const ProductSort = ({ sort, setSort, fetchProducts }) => {
 };
 
 ProductSort.propTypes = {
-  fetchProducts: PropTypes.array.isRequired,
-  sort: PropTypes.array.isRequired,
+  fetchProducts: PropTypes.func.isRequired,
+  sort: PropTypes.string.isRequired,
   setSort: PropTypes.func.isRequired,
 };
 

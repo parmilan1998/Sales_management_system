@@ -40,7 +40,7 @@ const SingleProductPopUp = ({ rowData }) => {
 };
 
 SingleProductPopUp.propTypes = {
-  rowData: PropTypes.array.isRequired,
+  rowData: PropTypes.object.isRequired,
 };
 
 export default SingleProductPopUp;

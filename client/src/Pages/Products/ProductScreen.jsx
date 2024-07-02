@@ -1,7 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import axios from "axios";
+
 import React, { useEffect, useState } from "react";
 import { MdAdd } from "react-icons/md";
+import fetchProducts from "../../api/fetchProducts";
+import productApi from "../../api/products";
+
 import ProductSearch from "../../Components/Products/ProductSearch";
 import ProductTable from "../../Components/Products/ProductTable";
 import ProductPagination from "../../Components/Products/ProductPagination";
@@ -18,35 +21,22 @@ const ProductScreen = () => {
   const [sort, setSort] = useState("ASC");
   const [limit, setLimit] = useState(5);
 
-  const fetchProducts = async () => {
-    const url = `http://localhost:5000/api/v1/product/query?page=${page}&limit=${limit}&sort=${sort}&keyword=${search}`;
-    try {
-      const res = await axios.get(url);
-      const { products, pagination } = res.data;
-      setProducts(products);
-      setTotalPages(pagination.totalPages);
-      console.log(res.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   useEffect(() => {
-    fetchProducts();
-  }, [page, sort, search, limit]);
+    fetchProducts(null, page, limit, sort, search, setProducts, setTotalPages);
+  }, [page, limit, sort, search]);
 
   const confirmDelete = async (id) => {
-    await axios
-      .delete(`http://localhost:5000/api/v1/product/${id}`)
-      .then((res) => {
-        message.success("Product deleted Successfully!");
-        fetchProducts();
-        setPage(1);
-      })
-      .catch((err) => {
-        toast.error("Error deleting product!");
-        console.log(err);
-      });
+    try {
+      await productApi.delete(`/${id}`);
+      message.success("Product deleted Successfully!");
+      fetchProducts();
+      setPage(1);
+    } catch (err) {
+      toast.error(
+        "Can't delete this product since it is linked with other records!!"
+      );
+      console.log(err);
+    }
   };
 
   const cancelDelete = () => {

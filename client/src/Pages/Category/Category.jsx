@@ -3,8 +3,9 @@ import { MdAdd } from "react-icons/md";
 import CategoryList from "../../Components/Category/CategoryList";
 import { useForm } from "react-hook-form";
 import categoryApi from "../../api/category";
-// import PropTypes from "prop-types";
-
+import CategoryPagination from "../../Components/Category/CategoryPagination";
+import CategorySearch from "../../Components/Category/CategorySearch";
+import CategorySort from "../../Components/Category/CategorySort";
 import toast from "react-hot-toast";
 
 const Category = () => {
@@ -14,6 +15,12 @@ const Category = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [existingImage, setExistingImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("ASC");
+  const [limit, setLimit] = useState(8);
 
   const popupRef = useRef();
   const {
@@ -31,18 +38,24 @@ const Category = () => {
     reset();
   };
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (sortType) => {
     try {
-      const res = await categoryApi.get("/list");
-      setCategory(res.data);
-      console.log(res.data);
+      const res = await categoryApi.get(
+        `/query?page=${page}&limit=${limit}&sort=${sortType}&keyword=${search}`
+      );
+      console.log("Response data:", res.data);
+      const { categories, pagination } = res.data;
+      setTotalPages(pagination.totalPages);
+      setCategory(categories);
+      console.log("Categories set:", categories);
     } catch (err) {
       console.log(err.message);
     }
   };
 
   useEffect(() => {
-    fetchCategories();
+    fetchCategories("ASC");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const openAddPopup = () => {
@@ -100,7 +113,7 @@ const Category = () => {
       toast.success(
         `Category ${formMode === "add" ? "created" : "updated"} successfully!`
       );
-      fetchCategories();
+      fetchCategories("ASC");
       setIsOpen(true);
       reset();
       selectedCategory(null);
@@ -135,16 +148,21 @@ const Category = () => {
   return (
     <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
       <div className="flex flex-row items-center justify-between py-5 relative">
-        <h1 className="text-3xl font-semibold font-acme text-cyan-600">
-          Category List
-        </h1>
+        <div className="flex flex-row gap-2 items-center">
+          <h1 className="text-3xl font-semibold font-acme text-cyan-600">
+            Category List
+          </h1>
+          <CategorySort
+            sort={sort}
+            setSort={setSort}
+            fetchCategories={(sort) => fetchCategories(sort)}
+          />
+        </div>
         <div className="flex gap-4">
-          <input
-            type="text"
-            // value={query}
-            // onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search here.."
-            className="px-3 py-2 m-0 rounded-lg focus:outline-cyan-500"
+          <CategorySearch
+            search={search}
+            setSearch={setSearch}
+            setPage={setPage}
           />
           <button
             onClick={openAddPopup}
@@ -154,7 +172,7 @@ const Category = () => {
           </button>
         </div>
         {!isOpen && (
-          <div className="fixed inset-0 mx-auto flex items-center justify-center z-50">
+          <div className="fixed inset-0 mx-auto flex items-center justify-center max-h-svh z-50 overflow-y-auto">
             <div
               ref={popupRef}
               className="rounded-2xl absolute z-50 border border-blue-100 bg-white p-4 shadow-lg sm:p-6 lg:p-8"
@@ -225,25 +243,7 @@ const Category = () => {
                           className="w-full py-2 px-2 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
                           onChange={handleImageChange}
                         />
-                        {imagePreview ? (
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className=" mt-3 h-21 w-21 object-cover"
-                          />
-                        ) : (
-                          existingImage &&
-                          formMode === "edit" && (
-                            <div className="my-2">
-                              <p className="text-sm">Current Image:</p>
-                              <img
-                                src={existingImage}
-                                alt="Current"
-                                className="h-21 w-21 object-cover"
-                              />
-                            </div>
-                          )
-                        )}
+
                         {errors.image && (
                           <p className="text-red-500 py-1 text-sm">
                             {errors.image.message}
@@ -251,7 +251,27 @@ const Category = () => {
                         )}
                       </div>
                     </div>
-
+                    <div className=" flex justify-center items-center  mt-2 mb-2 ">
+                      {imagePreview ? (
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="border-b-gray-900 shadow-lg object-cover h-36 w-36"
+                        />
+                      ) : (
+                        existingImage &&
+                        formMode === "edit" && (
+                          <div className="my-2">
+                            <p className="text-sm">Current Image:</p>
+                            <img
+                              src={existingImage}
+                              alt="Current"
+                              className="border-b-gray-900 shadow-lg object-cover h-36 w-36"
+                            />
+                          </div>
+                        )
+                      )}
+                    </div>
                     <div className="mb-2 w-full">
                       <label
                         htmlFor="description"
@@ -310,10 +330,15 @@ const Category = () => {
       <div>
         <CategoryList
           category={category}
-          fetchCategories={fetchCategories}
+          fetchCategories={() => fetchCategories("ASC")}
           setCategory={setCategory}
           openEditPopup={openEditPopup}
           baseUrl={baseUrl}
+        />
+        <CategoryPagination
+          page={page}
+          totalPages={totalPages}
+          setPage={setPage}
         />
       </div>
     </div>
