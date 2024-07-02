@@ -17,7 +17,6 @@ const CategoryPagination = ({ page, setPage, totalPages }) => {
           <button
             onClick={() => setPage(page - 1)}
             disabled={page <= 1}
-            href="javascript:void(0)"
             aria-label="Previous page"
             className="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 transition duration-300 hover:bg-emerald-50 hover:stroke-emerald-500 hover:text-emerald-500 focus:bg-emerald-50 focus:stroke-emerald-600 focus:text-emerald-600  focus-visible:outline-none"
           >
@@ -41,7 +40,6 @@ const CategoryPagination = ({ page, setPage, totalPages }) => {
             <button
               onClick={() => setPage(pageNumber)}
               disabled={page === pageNumber}
-              href="javascript:void(0)"
               aria-label={`Goto Page ${pageNumber}`}
               className={` items-center block size-8 rounded border border-gray-100 text-center leading-8 transition duration-300 ${
                 page === pageNumber
@@ -57,7 +55,6 @@ const CategoryPagination = ({ page, setPage, totalPages }) => {
           <button
             onClick={() => setPage(page + 1)}
             disabled={page >= totalPages}
-            href="javascript:void(0)"
             aria-label="Next page"
             className="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 transition duration-300 hover:bg-emerald-50 hover:stroke-emerald-500 hover:text-emerald-500 focus:bg-emerald-50 focus:stroke-emerald-600 focus:text-emerald-600  focus-visible:outline-none"
           >

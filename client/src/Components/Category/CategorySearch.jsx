@@ -26,7 +26,7 @@ const CategorySearch = ({ search, setSearch, setPage }) => {
 };
 
 CategorySearch.propTypes = {
-  search: PropTypes.func.isRequired,
+  search: PropTypes.string.isRequired,
   setSearch: PropTypes.func.isRequired,
   setPage: PropTypes.func.isRequired,
 };

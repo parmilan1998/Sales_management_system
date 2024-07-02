@@ -154,7 +154,7 @@ const Category = () => {
           <CategorySort
             sort={sort}
             setSort={setSort}
-            fetchProducts={fetchCategories}
+            fetchCategories={fetchCategories}
           />
         </div>
         <div className="flex gap-4">

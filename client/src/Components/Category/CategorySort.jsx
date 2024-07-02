@@ -35,9 +35,9 @@ const CategorySort = ({ sort, setSort, fetchCategories }) => {
 };
 
 CategorySort.propTypes = {
-  sort: PropTypes.array.isRequired,
+  sort: PropTypes.string.isRequired,
   setSort: PropTypes.func.isRequired,
-  fetchCategories: PropTypes.array.isRequired,
+  fetchCategories: PropTypes.func.isRequired,
 };
 
 export default CategorySort;
