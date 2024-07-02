@@ -38,10 +38,10 @@ const Category = () => {
     reset();
   };
 
-  const fetchCategories = useCallback(async () => {
+  const fetchCategories = async (sortType) => {
     try {
       const res = await categoryApi.get(
-        `/query?page=${page}&limit=${limit}&sort=${sort}&keyword=${search}`
+        `/query?page=${page}&limit=${limit}&sort=${sortType}&keyword=${search}`
       );
       console.log("Response data:", res.data);
       const { categories, pagination } = res.data;
@@ -51,11 +51,12 @@ const Category = () => {
     } catch (err) {
       console.log(err.message);
     }
-  }, [page, limit, sort, search]);
+  };
 
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    fetchCategories("ASC");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openAddPopup = () => {
     setSelectedCategory(null);
@@ -112,7 +113,7 @@ const Category = () => {
       toast.success(
         `Category ${formMode === "add" ? "created" : "updated"} successfully!`
       );
-      fetchCategories();
+      fetchCategories("ASC");
       setIsOpen(true);
       reset();
       selectedCategory(null);
@@ -154,7 +155,7 @@ const Category = () => {
           <CategorySort
             sort={sort}
             setSort={setSort}
-            fetchCategories={fetchCategories}
+            fetchCategories={(sort) => fetchCategories(sort)}
           />
         </div>
         <div className="flex gap-4">
@@ -329,7 +330,7 @@ const Category = () => {
       <div>
         <CategoryList
           category={category}
-          fetchCategories={fetchCategories}
+          fetchCategories={() => fetchCategories("ASC")}
           setCategory={setCategory}
           openEditPopup={openEditPopup}
           baseUrl={baseUrl}

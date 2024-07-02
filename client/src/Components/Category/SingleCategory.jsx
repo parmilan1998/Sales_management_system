@@ -17,7 +17,7 @@ const SingleCategory = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("ASC");
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(6);
 
   useEffect(() => {
     const fetchCategory = async () => {
@@ -56,21 +56,24 @@ const SingleCategory = () => {
           />
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1  sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 ">
         {products.length > 0 ? (
           products.map((product) => (
             <div
               key={product.productID}
-              className="product-card p-4 border rounded-lg shadow"
+              className="product-card p-4 border rounded-lg shadow bg-white  w-72 h-auto  flex flex-col  justify-center"
             >
-              <img
-                src={`${baseUrl}/${product.imageUrl}`}
-                alt={product.productName}
-                className="w-full h-32 object-cover mb-2"
-              />
+              <div className="flex flex-col items-center justify-center bg-slate-300">
+                <img
+                  src={`${baseUrl}/${product.imageUrl}`}
+                  alt={product.productName}
+                  className=" object-cover h-32 m-1  "
+                />
+              </div>
+
               <h3 className="text-lg font-medium">{product.productName}</h3>
               <p className="text-sm">{product.productDescription}</p>
-              <p className="text-sm font-semibold">{`$${product.unitPrice}`}</p>
+              <p className="text-sm font-semibold">{`Lkr.${product.unitPrice}`}</p>
             </div>
           ))
         ) : (

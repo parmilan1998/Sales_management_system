@@ -11,8 +11,9 @@ const CategorySort = ({ sort, setSort, fetchCategories }) => {
       selectedSort = sort === "ASC" ? "DESC" : "ASC";
     }
     setSort(selectedSort);
-    fetchCategories();
+    fetchCategories(selectedSort);
   };
+
   return (
     <div>
       {sort === "ASC" ? (
