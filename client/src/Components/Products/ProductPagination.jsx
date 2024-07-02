@@ -1,5 +1,5 @@
-/* eslint-disable react/prop-types */
 import React from "react";
+import PropTypes from "prop-types";
 
 const ProductPagination = ({ page, setPage, totalPages }) => {
   const getPageNumbers = (totalPages) => {
@@ -94,6 +94,12 @@ const ProductPagination = ({ page, setPage, totalPages }) => {
       </div>
     </div>
   );
+};
+
+ProductPagination.propTypes = {
+  page: PropTypes.array.isRequired,
+  setPage: PropTypes.func.isRequired,
+  totalPages: PropTypes.func.isRequired,
 };
 
 export default ProductPagination;

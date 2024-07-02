@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/prop-types */
 import React from "react";
+import PropTypes from "prop-types";
 
 const SingleProductPopUp = ({ rowData }) => {
   const baseUrl = "http://localhost:5000/public/products";
@@ -37,6 +37,10 @@ const SingleProductPopUp = ({ rowData }) => {
       </div>
     </div>
   );
+};
+
+SingleProductPopUp.propTypes = {
+  rowData: PropTypes.array.isRequired,
 };
 
 export default SingleProductPopUp;

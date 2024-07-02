@@ -1,6 +1,5 @@
-/* eslint-disable react/prop-types */
 import React, { useState } from "react";
-// import PropTypes from "prop-types";
+import PropTypes from "prop-types";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { GrFormView } from "react-icons/gr";
@@ -37,49 +36,49 @@ const ProductTable = ({
           <tr>
             <th
               scope="col"
-              className="h-16 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
+              className="h-16 px-4 items-center justify-center text-sm font-medium border-0 first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
             >
               No
             </th>
             <th
               scope="col"
-              className="h-12 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
+              className="h-12 px-4 w-36 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
             >
               Product Name
             </th>
             <th
               scope="col"
-              className="h-12 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
+              className="h-12 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
             >
               Image
             </th>
             <th
               scope="col"
-              className="h-16 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
+              className="h-16 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
             >
               Description
             </th>
             <th
               scope="col"
-              className="h-16 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
+              className="h-16 px-4 w-40 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
             >
               Category Name
             </th>
             <th
               scope="col"
-              className="h-16 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
+              className="h-16 px-2 w-8 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
             >
               Unit Price
             </th>
             <th
               scope="col"
-              className="h-16 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
+              className="h-16 w-40 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
             >
               Quantity
             </th>
             <th
               scope="col"
-              className="h-16 px-6 text-md font-medium border-l first:border-l-0 stroke-slate-700 text-slate-700 bg-slate-100"
+              className="h-16 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
             >
               Actions
             </th>
@@ -112,22 +111,29 @@ const ProductTable = ({
                 </td>
                 <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                   {item.totalQuantity === 0 ? (
-                    <div>Out of stock</div>
+                    <div className="bg-red-300 rounded-full font-medium text-red-600 flex items-center justify-center mx-auto">
+                      Out of stock
+                    </div>
                   ) : (
-                    <div>In Stock</div>
+                    <div className="bg-green-300 rounded-full font-medium text-green-600 flex items-center justify-center mx-auto">
+                      Available
+                    </div>
                   )}
                 </td>
-                <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
+                <td className="h-16 px-1 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                   <div className="flex flex-row justify-center items-center gap-0">
                     <Button
                       onClick={() => showModal(item)}
                       style={{
                         border: "none",
-                        background: "none",
                         boxShadow: "none",
                       }}
                     >
-                      <GrFormView size={26} color="blue" />
+                      <GrFormView
+                        size={36}
+                        color="white"
+                        className="bg-green-500 p-2 rounded-full"
+                      />
                     </Button>
                     <Modal
                       title="Product Details"
@@ -138,8 +144,12 @@ const ProductTable = ({
                       <SingleProductPopUp rowData={rowData} />
                     </Modal>
                     <Link to={`/products/edit/${item.productID}`}>
-                      <button className="py-1">
-                        <FaRegEdit size={20} color="green" />
+                      <button className="py-1 ">
+                        <FaRegEdit
+                          size={36}
+                          color="white"
+                          className="bg-sky-500 p-2 rounded-full"
+                        />
                       </button>
                     </Link>
                     <Link>
@@ -155,11 +165,14 @@ const ProductTable = ({
                           danger
                           style={{
                             border: "none",
-                            background: "none",
                             boxShadow: "none",
                           }}
                         >
-                          <MdDelete size={20} color="red" />
+                          <MdDelete
+                            size={36}
+                            color="white"
+                            className="bg-red-500 mt-2.5 p-2 rounded-full"
+                          />
                         </Button>
                       </Popconfirm>
                     </Link>
@@ -175,8 +188,12 @@ const ProductTable = ({
   );
 };
 
-// ProductTable.propTypes = {
-//   products: PropTypes.array.isRequired,
-// };
+ProductTable.propTypes = {
+  products: PropTypes.array.isRequired,
+  confirmDelete: PropTypes.func.isRequired,
+  cancelDelete: PropTypes.func.isRequired,
+  limit: PropTypes.array.isRequired,
+  page: PropTypes.array.isRequired,
+};
 
 export default ProductTable;
