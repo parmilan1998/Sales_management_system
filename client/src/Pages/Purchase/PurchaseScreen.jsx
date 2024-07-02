@@ -7,6 +7,8 @@ import toast from "react-hot-toast";
 import { LuPlus } from "react-icons/lu";
 import PurchaseSort from "../../Components/Purchase/PurchaseSort";
 import PurchaseSearch from "../../Components/Purchase/PurchaseSearch";
+import PurchasePagination from "../../Components/Purchase/PurchasePagination";
+import { Link } from "react-router-dom";
 
 const Purchase = () => {
   const [purchase, setPurchase] = useState([]);
@@ -35,7 +37,7 @@ const Purchase = () => {
 
   const confirmDelete = async (id) => {
     await axios
-      .delete(`http://localhost:5000/api/v1/product/${id}`)
+      .delete(`http://localhost:5000/api/v1/purchase/${id}`)
       .then((res) => {
         message.success("Purchase deleted Successfully!");
         fetchProducts();
@@ -56,10 +58,13 @@ const Purchase = () => {
       <div className="flex items-center justify-between gap-4 pb-5">
         <div className="flex items-center gap-6">
           <h1 className="text-3xl font-medium font-acme">All Purchases </h1>
-          <button className="bg-green-600 text-white px-3 py-2 rounded flex gap-2 items-center">
+          <Link
+            to="/purchase/add"
+            className="bg-green-600 text-white px-3 py-2 rounded flex gap-2 items-center"
+          >
             <LuPlus />
             New Purchase
-          </button>
+          </Link>
         </div>
         <div className="flex items-center gap-2">
           <h1>SortBy:</h1>
@@ -78,6 +83,7 @@ const Purchase = () => {
           cancelDelete={cancelDelete}
         />
       </div>
+      <PurchasePagination />
     </div>
   );
 };

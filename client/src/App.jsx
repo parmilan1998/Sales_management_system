@@ -13,6 +13,8 @@ import Report from "./Pages/Report/Report";
 import ProductScreen from "./Pages/Products/ProductScreen";
 import AddProductScreen from "./Pages/Products/AddProductScreen";
 import EditProductScreen from "./Pages/Products/EditProductScreen";
+import AddPurchaseScreen from "./Pages/Purchase/AddPurchaseScreen";
+import EditPurchaseScreen from "./Pages/Purchase/EditPurchaseScreen";
 
 const App = () => {
   return (
@@ -28,6 +30,8 @@ const App = () => {
             <Route path="/products" element={<ProductScreen />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/purchase" element={<Purchase />} />
+            <Route path="/purchase/add" element={<AddPurchaseScreen />} />
+            <Route path="/purchase/edit/:id" element={<EditPurchaseScreen />} />
             <Route path="/reports" element={<Report />} />
             <Route path="/stocks" element={<Stocks />} />
             <Route path="*" element={<PageNotFound />} />

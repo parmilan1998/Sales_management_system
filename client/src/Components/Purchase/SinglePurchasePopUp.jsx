@@ -20,13 +20,21 @@ const SinglePurchasePopUp = ({ purchaseRowData }) => {
             <h3 className="text-xl font-medium text-slate-700">
               {purchaseRowData.productName}
             </h3>
-            <p className="text-md text-slate-400">
+            <p className="text-base text-slate-500">
               From: {purchaseRowData.purchaseVendor},{" "}
               {purchaseRowData.purchasedDate}
             </p>
-            <p className="text-md text-slate-400">
+            <p className="text-base text-slate-500">
               Contact No - {purchaseRowData.vendorContact}
             </p>
+            <div className="flex justify-between items-center">
+              <p className="text-base text-slate-500">
+                Quantity - {purchaseRowData.purchaseQuantity}
+              </p>
+              <p className="text-base text-slate-500">
+                Purchase Price - Rs.{purchaseRowData.purchasePrice}
+              </p>
+            </div>
           </header>
         </div>
       </div>
