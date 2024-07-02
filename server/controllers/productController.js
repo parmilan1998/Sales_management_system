@@ -247,7 +247,7 @@ exports.deleteProduct = async (req, res) => {
 
 // GET -> localhost:5000/api/v1/product/query
 exports.queryProducts = async (req, res) => {
-  const { categoryID } = req.params;
+  const { categoryID } = req.query;
   const { page = 1, limit = 8, sort = "ASC", keyword } = req.query;
   try {
     // Pagination
@@ -268,6 +268,7 @@ exports.queryProducts = async (req, res) => {
     const sortBy = sort.toLowerCase() === "desc" ? "DESC" : "ASC";
 
     // Search condition
+
     let searchCondition = {};
     if (categoryID) {
       searchCondition = { ...searchCondition, categoryID };

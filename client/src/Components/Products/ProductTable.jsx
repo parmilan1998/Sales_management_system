@@ -192,8 +192,8 @@ ProductTable.propTypes = {
   products: PropTypes.array.isRequired,
   confirmDelete: PropTypes.func.isRequired,
   cancelDelete: PropTypes.func.isRequired,
-  limit: PropTypes.array.isRequired,
-  page: PropTypes.array.isRequired,
+  limit: PropTypes.number.isRequired,
+  page: PropTypes.number.isRequired,
 };
 
 export default ProductTable;
