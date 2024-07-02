@@ -320,3 +320,83 @@ exports.queryProducts = async (req, res) => {
     res.status(500).send({ message: error.message });
   }
 };
+
+// GET -> localhost:5000/api/v1/product/fbc/query
+exports.queryProductsByCategory = async (req, res) => {
+  const { categoryID } = req.params;
+  const { page = 1, limit = 8, sort = "ASC", keyword } = req.query;
+
+  try {
+    // Pagination
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    if (
+      isNaN(parsedPage) ||
+      parsedPage < 1 ||
+      isNaN(parsedLimit) ||
+      parsedLimit < 1
+    ) {
+      return res.status(400).json({ message: "Invalid parameter" });
+    }
+
+    // Sorting by ProductName
+    const sortBy = sort.toLowerCase() === "desc" ? "DESC" : "ASC";
+
+    // Search condition
+    const searchCondition = keyword
+      ? {
+          categoryID,
+          productName: { [Op.like]: `%${keyword}%` },
+        }
+      : { categoryID };
+
+    const { count, rows: products } = await Product.findAndCountAll({
+      where: searchCondition,
+      offset: offset,
+      limit: parsedLimit,
+      order: [["productName", sortBy]],
+    });
+
+    // Get product IDs from the products found
+    const productIDs = products.map((product) => product.productID);
+
+    // Find total quantities for the found products
+    const stockQuantities = await Stocks.findAll({
+      attributes: [
+        "productID",
+        [fn("sum", col("productQuantity")), "totalQuantity"],
+      ],
+      where: {
+        productID: {
+          [Op.in]: productIDs,
+        },
+      },
+      group: ["productID"],
+    });
+
+    // Create a map of productID to totalQuantity
+    const stockQuantityMap = stockQuantities.reduce((acc, stock) => {
+      acc[stock.productID] = stock.dataValues.totalQuantity;
+      return acc;
+    }, {});
+
+    // Add totalQuantity to each product
+    const productWithQuantities = products.map((product) => ({
+      ...product.dataValues,
+      totalQuantity: stockQuantityMap[product.productID] || 0,
+    }));
+
+    res.status(200).json({
+      products: productWithQuantities,
+      pagination: {
+        totalPages: Math.ceil(count / parsedLimit),
+        totalCount: count,
+        currentPage: parsedPage,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -3,8 +3,9 @@ import { MdAdd } from "react-icons/md";
 import CategoryList from "../../Components/Category/CategoryList";
 import { useForm } from "react-hook-form";
 import categoryApi from "../../api/category";
-// import PropTypes from "prop-types";
-
+import CategoryPagination from "../../Components/Category/CategoryPagination";
+import CategorySearch from "../../Components/Category/CategorySearch";
+import CategorySort from "../../Components/Category/CategorySort";
 import toast from "react-hot-toast";
 
 const Category = () => {
@@ -14,6 +15,12 @@ const Category = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [existingImage, setExistingImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("ASC");
+  const [limit, setLimit] = useState(8);
 
   const popupRef = useRef();
   const {
@@ -31,19 +38,24 @@ const Category = () => {
     reset();
   };
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
-      const res = await categoryApi.get("/list");
-      setCategory(res.data);
-      console.log(res.data);
+      const res = await categoryApi.get(
+        `/query?page=${page}&limit=${limit}&sort=${sort}&keyword=${search}`
+      );
+      console.log("Response data:", res.data);
+      const { categories, pagination } = res.data;
+      setTotalPages(pagination.totalPages);
+      setCategory(categories);
+      console.log("Categories set:", categories);
     } catch (err) {
       console.log(err.message);
     }
-  };
+  }, [page, limit, sort, search]);
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [fetchCategories]);
 
   const openAddPopup = () => {
     setSelectedCategory(null);
@@ -135,16 +147,21 @@ const Category = () => {
   return (
     <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
       <div className="flex flex-row items-center justify-between py-5 relative">
-        <h1 className="text-3xl font-semibold font-acme text-cyan-600">
-          Category List
-        </h1>
+        <div className="flex flex-row gap-2 items-center">
+          <h1 className="text-3xl font-semibold font-acme text-cyan-600">
+            Category List
+          </h1>
+          <CategorySort
+            sort={sort}
+            setSort={setSort}
+            fetchProducts={fetchCategories}
+          />
+        </div>
         <div className="flex gap-4">
-          <input
-            type="text"
-            // value={query}
-            // onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search here.."
-            className="px-3 py-2 m-0 rounded-lg focus:outline-cyan-500"
+          <CategorySearch
+            search={search}
+            setSearch={setSearch}
+            setPage={setPage}
           />
           <button
             onClick={openAddPopup}
@@ -316,6 +333,11 @@ const Category = () => {
           setCategory={setCategory}
           openEditPopup={openEditPopup}
           baseUrl={baseUrl}
+        />
+        <CategoryPagination
+          page={page}
+          totalPages={totalPages}
+          setPage={setPage}
         />
       </div>
     </div>

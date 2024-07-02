@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import categoryApi from "../../api/category";
+import { Popconfirm } from "antd";
 
 const CategoryList = ({
   category,
@@ -16,6 +17,8 @@ const CategoryList = ({
   useEffect(() => {
     setCategory(category);
   }, [category, setCategory]);
+
+  // console.log(category);
 
   // Delete category
   const handleDelete = async (id) => {
@@ -62,13 +65,19 @@ const CategoryList = ({
                 <button onClick={() => openEditPopup(item)}>
                   <FaRegEdit size={20} color="green" />
                 </button>
-                <button
-                  onClick={() => {
+                <Popconfirm
+                  title="Delete the task"
+                  description="Are you sure to delete this task?"
+                  okText="Yes"
+                  cancelText="No"
+                  onConfirm={() => {
                     handleDelete(item.categoryID);
                   }}
                 >
-                  <MdDelete size={20} color="red" />
-                </button>
+                  <button>
+                    <MdDelete size={20} color="red" />
+                  </button>
+                </Popconfirm>
               </div>
             </article>
           </div>
