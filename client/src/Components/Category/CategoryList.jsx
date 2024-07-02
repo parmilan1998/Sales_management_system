@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import toast from "react-hot-toast";
@@ -40,12 +40,13 @@ const CategoryList = ({
             className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4"
           >
             <article className="relative overflow-hidden rounded-lg shadow transition hover:shadow-lg h-auto flex flex-col justify-between">
-              <img
-                src={`${baseUrl}/${item.imageUrl}`}
-                alt={item.categoryName}
-                className="w-full h-32 object-cover"
-              />
-
+              <Link to={`/category/fbc/${item.categoryID}`}>
+                <img
+                  src={`${baseUrl}/${item.imageUrl}`}
+                  alt={item.categoryName}
+                  className="w-full h-32 object-cover"
+                />
+              </Link>
               <div className="flex-grow bg-gradient-to-t from-gray-900/50 to-gray-900/25 p-4 sm:p-6">
                 <Link href="#">
                   <h3 className="mt-0.5 text-lg text-white">

@@ -9,6 +9,7 @@ const {
   updateCategory,
   deleteCategory,
   getCategories,
+  getCategory,
 } = require("../controllers/categoryController");
 
 const router = express.Router();
@@ -60,5 +61,6 @@ router.get("/query", queryCategory);
 router.get("/list", getCategories);
 router.put("/:id", handleFileUpload, updateCategory);
 router.delete("/:id", deleteCategory);
+router.get("/:id", getCategory);
 
 module.exports = router;

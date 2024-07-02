@@ -44,6 +44,17 @@ exports.getCategories = async (req, res) => {
   }
 };
 
+// GET -> localhost:5000/api/v1/category/:id
+exports.getCategory = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const category = await Category.findByPk(id);
+    res.status(200).json(category);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // PUT -> localhost:5000/api/v1/category/:id
 exports.updateCategory = async (req, res) => {
   console.log({ req });
