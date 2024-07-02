@@ -19,7 +19,6 @@ const ProductPagination = ({ page, setPage, totalPages }) => {
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page <= 1}
-                href="javascript:void(0)"
                 aria-label="Previous page"
                 className="inline-flex h-10 items-center justify-center gap-4 stroke-slate-700 px-4 text-sm font-medium text-slate-700 transition duration-300 hover:bg-emerald-50 hover:stroke-emerald-500 hover:text-emerald-500 focus:bg-emerald-50 focus:stroke-emerald-600 focus:text-emerald-600 focus-visible:outline-none"
               >
@@ -48,7 +47,6 @@ const ProductPagination = ({ page, setPage, totalPages }) => {
                 <button
                   onClick={() => setPage(pageNumber)}
                   disabled={page === pageNumber}
-                  href="javascript:void(0)"
                   aria-label={`Goto Page ${pageNumber}`}
                   className={`inline-flex h-10 items-center justify-center stroke-slate-700 px-4 text-sm font-medium text-slate-700 transition duration-300 ${
                     page === pageNumber
@@ -65,7 +63,6 @@ const ProductPagination = ({ page, setPage, totalPages }) => {
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page >= totalPages}
-                href="javascript:void(0)"
                 aria-label="Next page"
                 className="inline-flex h-10 items-center justify-center gap-4 stroke-slate-700 px-4 text-sm font-medium text-slate-700 transition duration-300 hover:bg-emerald-50 hover:stroke-emerald-500 hover:text-emerald-500 focus:bg-emerald-50 focus:stroke-emerald-600 focus:text-emerald-600 focus-visible:outline-none"
               >
@@ -97,9 +94,9 @@ const ProductPagination = ({ page, setPage, totalPages }) => {
 };
 
 ProductPagination.propTypes = {
-  page: PropTypes.array.isRequired,
+  page: PropTypes.number.isRequired,
   setPage: PropTypes.func.isRequired,
-  totalPages: PropTypes.func.isRequired,
+  totalPages: PropTypes.number.isRequired,
 };
 
 export default ProductPagination;

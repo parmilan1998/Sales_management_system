@@ -1,4 +1,4 @@
-const { Op, fn, col } = require("sequelize");
+const { Op, fn, col, where } = require("sequelize");
 const Product = require("../models/products");
 const Category = require("../models/category");
 const Stocks = require("../models/stocks");
@@ -122,6 +122,26 @@ exports.getProduct = async (req, res) => {
   }
 };
 
+// GET -> localhost:5000/api/v1/product/fbc/:categoryID
+exports.filterbyCategory = async (req, res) => {
+  const { categoryID } = req.params;
+
+  try {
+    const products = await Product.findAll({
+      where: { categoryID },
+    });
+
+    if (products.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No products found in this category" });
+    }
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // PUT -> localhost:5000/api/v1/product:id
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
@@ -227,9 +247,9 @@ exports.deleteProduct = async (req, res) => {
 
 // GET -> localhost:5000/api/v1/product/query
 exports.queryProducts = async (req, res) => {
+  const { categoryID } = req.query;
+  const { page = 1, limit = 8, sort = "ASC", keyword } = req.query;
   try {
-    const { page = 1, limit = 8, sort = "ASC", keyword } = req.query;
-
     // Pagination
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
@@ -248,9 +268,17 @@ exports.queryProducts = async (req, res) => {
     const sortBy = sort.toLowerCase() === "desc" ? "DESC" : "ASC";
 
     // Search condition
-    const searchCondition = keyword
-      ? { productName: { [Op.like]: `%${keyword}%` } }
-      : {};
+
+    let searchCondition = {};
+    if (categoryID) {
+      searchCondition = { ...searchCondition, categoryID };
+    }
+    if (keyword) {
+      searchCondition = {
+        ...searchCondition,
+        productName: { [Op.like]: `%${keyword}%` },
+      };
+    }
 
     const { count, rows: products } = await Product.findAndCountAll({
       where: searchCondition,

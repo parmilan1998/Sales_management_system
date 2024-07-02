@@ -44,6 +44,17 @@ exports.getCategories = async (req, res) => {
   }
 };
 
+// GET -> localhost:5000/api/v1/category/:id
+exports.getCategory = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const category = await Category.findByPk(id);
+    res.status(200).json(category);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // PUT -> localhost:5000/api/v1/category/:id
 exports.updateCategory = async (req, res) => {
   console.log({ req });
@@ -133,14 +144,14 @@ exports.queryCategory = async (req, res) => {
       : {};
 
     // Sorting by ASC or DESC
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    const sortBy = sort.toLowerCase() === "desc" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: categories } = await Category.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
-      order: [["createdAt", sortOrder]],
+      order: [["categoryName", sortBy]],
     });
 
     // Total pages
