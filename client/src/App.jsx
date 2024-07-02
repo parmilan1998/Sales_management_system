@@ -8,7 +8,7 @@ import Home from "./Components/Home";
 import PageNotFound from "./Pages/PageNotFound";
 import Stocks from "./Pages/Stocks/Stocks";
 import Sales from "./Pages/Sales/Sales";
-import Purchase from "./Pages/Purchase/Purchase";
+import Purchase from "./Pages/Purchase/PurchaseScreen";
 import Report from "./Pages/Report/Report";
 import ProductScreen from "./Pages/Products/ProductScreen";
 import AddProductScreen from "./Pages/Products/AddProductScreen";
