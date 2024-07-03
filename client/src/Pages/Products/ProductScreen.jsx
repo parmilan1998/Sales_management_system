@@ -40,9 +40,7 @@ const ProductScreen = () => {
       );
       setPage(1);
     } catch (err) {
-      toast.error(
-        "Can't delete this product since it is linked with other records!!"
-      );
+      toast.error("Can't delete this product!");
       console.log(err);
     }
   };
