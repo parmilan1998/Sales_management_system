@@ -54,9 +54,9 @@ const Category = () => {
   };
 
   useEffect(() => {
-    fetchCategories("ASC");
+    fetchCategories();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [page, sort, search]);
 
   const openAddPopup = () => {
     setSelectedCategory(null);
@@ -113,7 +113,7 @@ const Category = () => {
       toast.success(
         `Category ${formMode === "add" ? "created" : "updated"} successfully!`
       );
-      fetchCategories("ASC");
+      fetchCategories();
       setIsOpen(true);
       reset();
       selectedCategory(null);
@@ -330,7 +330,7 @@ const Category = () => {
       <div>
         <CategoryList
           category={category}
-          fetchCategories={() => fetchCategories("ASC")}
+          fetchCategories={() => fetchCategories()}
           setCategory={setCategory}
           openEditPopup={openEditPopup}
           baseUrl={baseUrl}

@@ -29,6 +29,18 @@ exports.createPurchase = async (req, res) => {
       });
     }
 
+    if (purchasedDate < manufacturedDate) {
+      return res.status(404).json({
+        message: `Check the purchasedDate`,
+      });
+    }
+
+    if (manufacturedDate > expiryDate) {
+      return res.status(404).json({
+        message: `Check the manufacturedDate`,
+      });
+    }
+
     const totalCost = purchasePrice * purchaseQuantity;
 
     const createdPurchase = await Purchase.create({
@@ -300,7 +312,10 @@ exports.queryPurchase = async (req, res) => {
     // Search condition
     const searchCondition = keyword
       ? {
-          [Op.or]: [{ productName: { [Op.like]: `%${keyword}%` } }],
+          [Op.or]: [
+            { productName: { [Op.like]: `%${keyword}%` } },
+            { purchasedDate: { [Op.eq]: keyword } },
+          ],
         }
       : {};
 
