@@ -15,14 +15,14 @@ exports.createStocks = async (req, res) => {
     } = req.body;
 
     if (!productName || !productQuantity || !manufacturedDate || !expiryDate) {
-      res.status(400).json({ message: "Fill all the required fields!" });
+      return res.status(400).json({ message: "Fill all the required fields!" });
     }
     const product = await Product.findOne({
       where: { productName },
     });
 
     if (!product) {
-      res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({ message: "Product not found" });
     }
 
     const existingStock = await Stocks.findOne({
@@ -40,7 +40,7 @@ exports.createStocks = async (req, res) => {
         productQuantity: (existingStock.productQuantity +=
           parseInt(productQuantity)),
       });
-      res.status(201).json({
+      return res.status(201).json({
         message: "Stocks updated Successfully!",
         stocks: updatedStock,
       });
@@ -77,12 +77,12 @@ exports.createStocks = async (req, res) => {
       purchasedDate,
       purchaseID: null,
     });
-    res.status(201).json({
+    return res.status(201).json({
       message: "Stocks Created Successfully!",
       stocks: createdStock,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };
 
