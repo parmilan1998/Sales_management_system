@@ -32,7 +32,7 @@ const SinglePurchasePopUp = ({ purchaseRowData }) => {
                 Quantity - {purchaseRowData.purchaseQuantity}
               </p>
               <p className="text-base text-slate-500">
-                Purchase Price - Rs.{purchaseRowData.purchasePrice}
+                Purchase Price - Rs.{purchaseRowData.COGP}
               </p>
             </div>
           </header>

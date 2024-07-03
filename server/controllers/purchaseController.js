@@ -320,14 +320,14 @@ exports.queryPurchase = async (req, res) => {
       : {};
 
     // Sorting by ASC or DESC
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    const sortOrder = sort === "DESC" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: purchases } = await Purchase.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
-      order: [["purchasedDate", sortOrder]],
+      order: [["productName", sortOrder]],
     });
 
     // Total pages

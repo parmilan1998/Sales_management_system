@@ -15,11 +15,11 @@ const Purchase = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("ASC");
   const [limit, setLimit] = useState(12);
 
-  const fetchProducts = async () => {
-    const url = `http://localhost:5000/api/v1/purchase/query?page=${page}&limit=${limit}&sort=${sort}&keyword=${search}`;
+  const fetchPurchases = async (sortType = "ASC") => {
+    const url = `http://localhost:5000/api/v1/purchase/query?page=${page}&limit=${limit}&sort=${sortType}&keyword=${search}`;
+    console.log(sortType);
     try {
       const res = await axios.get(url);
       const { purchases, pagination } = res.data;
@@ -32,15 +32,16 @@ const Purchase = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, [page, sort, search, limit]);
+    fetchPurchases();
+    console.log("useEffect");
+  }, [page, search, limit]);
 
   const confirmDelete = async (id) => {
     await axios
       .delete(`http://localhost:5000/api/v1/purchase/${id}`)
       .then((res) => {
         message.success("Purchase deleted Successfully!");
-        fetchProducts();
+        fetchPurchases();
         setPage(1);
       })
       .catch((err) => {
@@ -68,7 +69,7 @@ const Purchase = () => {
         </div>
         <div className="flex items-center gap-2">
           <h1>SortBy:</h1>
-          <PurchaseSort />
+          <PurchaseSort fetchPurchases={(sort) => fetchPurchases(sort)} />
           <PurchaseSearch
             search={search}
             setSearch={setSearch}
@@ -83,7 +84,11 @@ const Purchase = () => {
           cancelDelete={cancelDelete}
         />
       </div>
-      <PurchasePagination />
+      <PurchasePagination
+        page={page}
+        setPage={setPage}
+        totalPages={totalPages}
+      />
     </div>
   );
 };
