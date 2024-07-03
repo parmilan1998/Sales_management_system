@@ -5,6 +5,8 @@ import enUSIntl from "antd/lib/locale/en_US";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import stocksApi from "../../api/stocks";
+import { Popconfirm } from "antd";
+import { useNavigate } from "react-router-dom";
 
 const Stocks = () => {
   const {
@@ -19,11 +21,14 @@ const Stocks = () => {
     reset();
   };
 
+  const navigate = useNavigate();
   const [editableKeys, setEditableRowKeys] = useState([]);
   const formRef = useRef();
   const actionRef = useRef();
   const editableFormRef = useRef();
   const [stocks, setStocks] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -48,8 +53,47 @@ const Stocks = () => {
 
   useEffect(() => {
     fetchStocks();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sort, search]);
+
+  // Created stocks
+  const onSubmit = async (data) => {
+    console.log({ data });
+    try {
+      const formData = new FormData();
+      formData.append("productName", data.productName);
+      formData.append("productQuantity", data.productQuantity);
+      formData.append("purchasePrice", data.purchasePrice);
+      formData.append("manufacturedDate", data.manufacturedDate);
+      formData.append("expiryDate", data.expiryDate);
+      formData.append("purchasedDate", data.purchasedDate);
+
+      const res = await stocksApi.post("", formData);
+      console.log(res.data);
+      toast.success(`stock created successfully!`);
+      navigate("/stocks");
+      reset();
+    } catch (err) {
+      console.log(err.message);
+      // Handle error or show error toast
+      toast.error(`Failed to create stock: ${err.message}`);
+    }
+  };
+
+  // Delete stock
+  const handleDelete = async (stockID) => {
+    try {
+      await stocksApi.delete(`/${stockID}`);
+      toast.success("Stock deleted Successfully!", { duration: 2000 });
+      fetchStocks();
+    } catch (err) {
+      toast.error(
+        "Can't delete this Stock since it is linked with other records!!"
+      );
+      console.log(err);
+    }
+  };
 
   const columns = [
     {
@@ -93,25 +137,27 @@ const Stocks = () => {
       title: "Action",
       valueType: "option",
       render: (_, row) => [
-        <a
-          key={`delete-${row.id}`}
-          onClick={() => {
-            const tableDataSource = formRef.current?.getFieldValue("table");
-            formRef.current?.setFieldsValue({
-              table: tableDataSource.filter((item) => item.id !== row.id),
-            });
-          }}
-        >
-          Remove
-        </a>,
-        <a
-          key={`edit-${row.id}`}
-          onClick={() => {
-            actionRef.current?.startEditable(row.id);
-          }}
-        >
-          Edit
-        </a>,
+        <React.Fragment key={`actions-${row.id}`}>
+          <Popconfirm
+            title="Delete the task"
+            description="Are you sure to delete this task?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => {
+              handleDelete(row.stockID);
+            }}
+          >
+            <a key={`delete-${row.id}`}>Remove</a>,
+          </Popconfirm>
+          <a
+            key={`edit-${row.id}`}
+            onClick={() => {
+              actionRef.current?.startEditable(row.id);
+            }}
+          >
+            Edit
+          </a>
+        </React.Fragment>,
       ],
     },
   ];
@@ -127,6 +173,9 @@ const Stocks = () => {
         >
           {stocks.length > 0 && (
             <ProForm
+              onFinish={(data) => {
+                console.log({ data });
+              }}
               formRef={formRef}
               initialValues={{
                 table: stocks.map((stock, index) => ({
@@ -141,6 +190,18 @@ const Stocks = () => {
               }}
             >
               <EditableProTable
+                onChange={(value) => {
+                  console.log({ value });
+                }}
+                rowSelection={{
+                  onChange: (_, selectedRows) => {
+                    console.log({ selectedRows });
+                  },
+                }}
+                onSubmit={(data) => {
+                  console.log("agxs");
+                  console.log({ data });
+                }}
                 rowKey="id"
                 scroll={{ x: true }}
                 editableFormRef={editableFormRef}
@@ -155,6 +216,10 @@ const Stocks = () => {
                   type: "multiple",
                   editableKeys,
                   onChange: setEditableRowKeys,
+                  onSave: async (rowKey, data, row) => {
+                    onSubmit(data);
+                    // console.log(rowKey, data, row);
+                  },
                 }}
                 locale={{
                   emptyText: "No Data",
