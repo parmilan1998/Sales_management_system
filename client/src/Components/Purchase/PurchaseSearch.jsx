@@ -21,7 +21,7 @@ const PurchaseSearch = ({ search, setSearch, setPage }) => {
 };
 
 PurchaseSearch.propTypes = {
-  search: PropTypes.array.isRequired,
+  search: PropTypes.string.isRequired,
   setPage: PropTypes.func.isRequired,
   setSearch: PropTypes.func.isRequired,
 };
