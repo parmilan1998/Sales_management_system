@@ -33,7 +33,6 @@ const Purchase = () => {
 
   useEffect(() => {
     fetchPurchases();
-    console.log("useEffect");
   }, [page, search, limit]);
 
   const confirmDelete = async (id) => {
@@ -69,7 +68,9 @@ const Purchase = () => {
         </div>
         <div className="flex items-center gap-2">
           <h1>SortBy:</h1>
-          <PurchaseSort fetchPurchases={(sort) => fetchPurchases(sort)} />
+          <PurchaseSort
+            fetchPurchases={(sortType) => fetchPurchases(sortType)}
+          />
           <PurchaseSearch
             search={search}
             setSearch={setSearch}

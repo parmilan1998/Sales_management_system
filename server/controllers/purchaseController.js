@@ -1,5 +1,5 @@
 const Purchase = require("../models/purchase");
-const { Op } = require("sequelize");
+const { Op, fn, col } = require("sequelize");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 
@@ -108,6 +108,37 @@ exports.getAllPurchases = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Error retrieving purchases" });
+  }
+};
+
+// GET -> localhost:5000/api/v1/purchase/:id
+exports.getPurchaseById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const purchase = await Purchase.findByPk(id);
+
+    if (!purchase) {
+      return res.status(404).json({ message: "Purchase not found" });
+    }
+
+    const stocks = await Stocks.findOne({
+      attributes: ["manufacturedDate", "expiryDate"],
+      where: {
+        purchaseID: id,
+      },
+    });
+
+    res.status(200).json({
+      ...purchase.dataValues,
+      manufacturedDate: stocks.manufacturedDate,
+      expiryDate: stocks.expiryDate,
+    });
+  } catch (error) {
+    console.error("Error fetching purchase:", error);
+    res
+      .status(500)
+      .json({ message: "Error retrieving product", error: error.message });
   }
 };
 

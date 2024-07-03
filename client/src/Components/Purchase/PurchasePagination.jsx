@@ -9,6 +9,11 @@ const PurchasePagination = ({ page, setPage, totalPages }) => {
     }
     return pages;
   };
+
+  if (totalPages !== 2) {
+    return null;
+  }
+
   return (
     <div>
       <>
