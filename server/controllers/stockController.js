@@ -55,22 +55,32 @@ exports.createStocks = async (req, res) => {
       return {
         message: `Product with name ${productName} not found`,
       };
-    } else {
-      const createdStock = await Stocks.create({
-        productID: product.productID,
-        productName,
-        productQuantity,
-        purchasePrice: purchasePrice || null,
-        manufacturedDate,
-        expiryDate,
-        purchasedDate,
-        purchaseID: null,
-      });
-      res.status(201).json({
-        message: "Stocks Created Successfully!",
-        stocks: createdStock,
+    }
+    if (purchasedDate < manufacturedDate) {
+      return res.status(404).json({
+        message: `Check the purchasedDate`,
       });
     }
+
+    if (manufacturedDate > expiryDate) {
+      return res.status(404).json({
+        message: `Check the manufacturedDate`,
+      });
+    }
+    const createdStock = await Stocks.create({
+      productID: product.productID,
+      productName,
+      productQuantity,
+      purchasePrice: purchasePrice || null,
+      manufacturedDate,
+      expiryDate,
+      purchasedDate,
+      purchaseID: null,
+    });
+    res.status(201).json({
+      message: "Stocks Created Successfully!",
+      stocks: createdStock,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

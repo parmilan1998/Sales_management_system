@@ -1,7 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 
 const CategoryPagination = ({ page, setPage, totalPages }) => {
+  useEffect(() => {
+    if (totalPages <= 1 && page !== 1) {
+      setPage(1);
+    }
+  }, [totalPages, page, setPage]);
+
   const getPageNumbers = (totalPages) => {
     const pages = [];
     for (let i = 1; i <= totalPages; i++) {
@@ -9,6 +15,10 @@ const CategoryPagination = ({ page, setPage, totalPages }) => {
     }
     return pages;
   };
+
+  if (totalPages <= 1) {
+    return null;
+  }
 
   return (
     <div>
