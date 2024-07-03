@@ -24,24 +24,25 @@ const EditPurchaseScreen = () => {
   };
 
   const fetchProducts = async () => {
-    const res = await axios
-      .get("http://localhost:5000/api/v1/product/list")
-      .then((res) => {
-        console.log(res.data);
-        setProducts(res.data);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    try {
+      const res = await axios.get("http://localhost:5000/api/v1/product/list");
+      setProducts(res.data);
+    } catch (err) {
+      console.error(err.message);
+    }
   };
 
-  const fetchUpdatePurchaseDetails = async (purchase) => {
+  const fetchUpdatePurchaseDetails = async () => {
     try {
+      const res = await axios.get(
+        `http://localhost:5000/api/v1/purchase/${id}`
+      );
+      const purchase = res.data;
+      setValue("productName", purchase.productName);
       setValue("purchaseVendor", purchase.purchaseVendor);
+      setValue("vendorContact", purchase.vendorContact);
       setValue("purchaseQuantity", purchase.purchaseQuantity);
       setValue("purchasePrice", purchase.purchasePrice);
-      setValue("vendorContact", purchase.vendorContact);
-      setValue("productName", purchase.productName);
       setValue("manufacturedDate", purchase.manufacturedDate);
       setValue("expiryDate", purchase.expiryDate);
       setValue("purchasedDate", purchase.purchasedDate);
@@ -51,17 +52,17 @@ const EditPurchaseScreen = () => {
   };
 
   const onSubmit = async (data) => {
-    const res = await axios
-      .put(`http://localhost:5000/api/v1/purchase/${id}`, data)
-      .then((res) => {
-        console.log(res.data);
-        toast.success(`Purchase updated successfully!`);
-        navigate("/purchase");
-        reset();
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    try {
+      const res = await axios.put(
+        `http://localhost:5000/api/v1/purchase/${id}`,
+        data
+      );
+      toast.success(`Purchase updated successfully!`);
+      navigate("/purchase");
+      reset();
+    } catch (err) {
+      console.error(err.message);
+    }
   };
 
   useEffect(() => {
@@ -70,7 +71,7 @@ const EditPurchaseScreen = () => {
   }, []);
 
   return (
-    <div className=" max-w-screen-xl mx-auto lg:px-24 font-poppins cursor-pointer">
+    <div className="max-w-screen-xl mx-auto lg:px-24 font-poppins cursor-pointer">
       <div className="bg-white rounded p-10">
         <div className="flex items-center justify-center gap-4 py-6 font-poppins">
           <span className="shrink-0 rounded-full bg-blue-400 p-2 text-white">
@@ -88,7 +89,7 @@ const EditPurchaseScreen = () => {
             </svg>
           </span>
           <p className="font-semibold sm:text-2xl text-gray-700">
-            Add New Purchase!
+            Edit Purchase!
           </p>
         </div>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -148,11 +149,9 @@ const EditPurchaseScreen = () => {
               {...register("productName", {
                 required: "productName is required",
               })}
-              type="text"
               name="productName"
               id="productName"
               className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-              placeholder="Ex - Home Essentials"
             >
               <option value="" className="text-gray-200 opacity-5">
                 Ex - Home Essentials
@@ -233,7 +232,6 @@ const EditPurchaseScreen = () => {
                 name="manufacturedDate"
                 id="manufacturedDate"
                 className="w-full py-3 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                placeholder="Ex - 34"
               />
               {errors.manufacturedDate && (
                 <p className="text-red-500 py-1 text-sm">
@@ -253,7 +251,6 @@ const EditPurchaseScreen = () => {
                 name="expiryDate"
                 id="expiryDate"
                 className="w-full py-3 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                placeholder="Ex - 34"
               />
               {errors.expiryDate && (
                 <p className="text-red-500 py-1 text-sm">
@@ -275,8 +272,7 @@ const EditPurchaseScreen = () => {
                 type="date"
                 name="purchasedDate"
                 id="purchasedDate"
-                className="w-full py-3 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                placeholder="Ex - 34"
+                className="w-full cursor-pointer py-3 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
               />
               {errors.purchasedDate && (
                 <p className="text-red-500 py-1 text-sm">
@@ -287,26 +283,21 @@ const EditPurchaseScreen = () => {
           </div>
           <div className="mt-6 sm:flex sm:gap-4 flex justify-center">
             <Link to="/purchase">
-              <button
-                className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
-                href="#"
-              >
+              <button className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto">
                 Cancel
               </button>
             </Link>
             <button
               onClick={handleClear}
               className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-blue-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
-              href="#"
             >
               Clear
             </button>
             <button
               type="submit"
               className="inline-block w-full cursor-pointer rounded-lg bg-green-500 px-5 py-3 text-center text-sm font-semibold text-white sm:w-auto"
-              href="#"
             >
-              Add Purchase
+              Update Purchase
             </button>
           </div>
         </form>

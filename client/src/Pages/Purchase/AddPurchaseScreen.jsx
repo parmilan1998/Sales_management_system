@@ -15,6 +15,20 @@ const AddPurchaseScreen = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
+    const manufacturedDate = new Date(data.manufacturedDate);
+    const expiryDate = new Date(data.expiryDate);
+    const purchasedDate = new Date(data.purchasedDate);
+
+    if (manufacturedDate >= expiryDate) {
+      toast.error("Manufactured date must be before the expiry date.");
+      return;
+    }
+
+    if (manufacturedDate >= purchasedDate) {
+      toast.error("Manufactured date must be before the purchase date.");
+      return;
+    }
+
     const res = await axios
       .post("http://localhost:5000/api/v1/purchase", data)
       .then((res) => {
@@ -28,7 +42,6 @@ const AddPurchaseScreen = () => {
       });
   };
 
-  // Reset input fields
   const handleClear = () => {
     reset();
   };
