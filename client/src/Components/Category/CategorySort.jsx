@@ -15,7 +15,7 @@ const CategorySort = ({ sort, setSort, fetchCategories }) => {
   };
 
   return (
-    <div>
+    <div className="mt-1">
       {sort === "ASC" ? (
         <button
           onClick={() => handleSort("DESC")}

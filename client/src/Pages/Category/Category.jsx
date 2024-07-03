@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { MdAdd } from "react-icons/md";
+import { IoMdAddCircleOutline } from "react-icons/io";
 import CategoryList from "../../Components/Category/CategoryList";
 import { useForm } from "react-hook-form";
 import categoryApi from "../../api/category";
@@ -15,6 +16,7 @@ const Category = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [existingImage, setExistingImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [isRotating, setIsRotating] = useState(false);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -62,6 +64,8 @@ const Category = () => {
     setSelectedCategory(null);
     setFormMode("add");
     setIsOpen(false);
+    setIsRotating(true);
+    setTimeout(() => setIsRotating(false), 500);
   };
 
   const openEditPopup = (category) => {
@@ -145,6 +149,27 @@ const Category = () => {
     };
   }, [popupRef, handleClose]);
 
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.innerHTML = `
+      @keyframes rotate {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(90deg);
+        }
+      }
+      .rotate {
+        animation: rotate 0.3s linear;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   return (
     <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
       <div className="flex flex-row items-center justify-between py-5 relative">
@@ -166,9 +191,9 @@ const Category = () => {
           />
           <button
             onClick={openAddPopup}
-            className="flex mr-4 justify-center items-center text-white text-2xl  px-3 py-3  gap-1 font-medium rounded-full bg-cyan-500"
+            className="flex mr-1 my-2 py-1 px-1 w-10 h-8 justify-center items-center text-white text-2xl rounded-lg bg-blue-600 "
           >
-            <MdAdd />
+            <IoMdAddCircleOutline className={isRotating ? "rotate" : ""} />
           </button>
         </div>
         {!isOpen && (
