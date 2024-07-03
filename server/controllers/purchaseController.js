@@ -359,12 +359,6 @@ exports.queryPurchase = async (req, res) => {
       offset: offset,
       limit: parsedLimit,
       order: [["productName", sortOrder]],
-      include: [
-        {
-          model: Stocks,
-          attributes: ["manufacturedDate", "expiryDate"],
-        },
-      ],
     });
 
     // Total pages
