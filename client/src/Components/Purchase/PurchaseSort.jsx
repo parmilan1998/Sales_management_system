@@ -42,8 +42,6 @@ const PurchaseSort = ({ fetchPurchases }) => {
 
 PurchaseSort.propTypes = {
   fetchPurchases: PropTypes.func.isRequired,
-  sort: PropTypes.string.isRequired,
-  setSort: PropTypes.func.isRequired,
 };
 
 export default PurchaseSort;
