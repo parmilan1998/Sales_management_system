@@ -5,106 +5,84 @@ const Product = require("../models/products");
 // POST -> localhost:5000/api/v1/stocks
 exports.createStocks = async (req, res) => {
   try {
-    let stocksData = req.body;
+    const {
+      productName,
+      productQuantity,
+      purchasePrice,
+      manufacturedDate,
+      expiryDate,
+      purchasedDate,
+    } = req.body;
 
-    // Check if stocksData is an array or not
-    if (!Array.isArray(stocksData)) {
-      stocksData = [stocksData]; // Convert single object to array
+    if (
+      !productName ||
+      !productQuantity ||
+      !manufacturedDate ||
+      !expiryDate ||
+      !purchasedDate
+    ) {
+      return res.status(400).json({ message: "Fill all the required fields!" });
     }
 
-    const createdStocks = await Promise.all(
-      stocksData.map(async (stock) => {
-        const {
-          productName,
-          productQuantity,
-          purchasePrice,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate,
-        } = stock;
+    const product = await Product.findOne({
+      where: { productName },
+    });
 
-        if (
-          !productName ||
-          !productQuantity ||
-          !manufacturedDate ||
-          !expiryDate
-        ) {
-          return res
-            .status(400)
-            .json({ message: "Fill all the required fields!" });
-        }
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
-        const product = await Product.findOne({
-          where: { productName },
-        });
+    const existingStock = await Stocks.findOne({
+      where: {
+        productID: product.productID,
+        productName,
+        purchasePrice,
+        manufacturedDate,
+        expiryDate,
+        purchasedDate,
+      },
+    });
 
-        if (!product) {
-          return res
-            .status(404)
-            .json({ message: `Product ${productName} not found` });
-        }
+    if (existingStock) {
+      const updatedStock = await existingStock.update({
+        productQuantity:
+          existingStock.productQuantity + parseInt(productQuantity),
+      });
+      return res.status(201).json({
+        message: "Stocks updated Successfully!",
+        stocks: updatedStock,
+      });
+    }
 
-        if (purchasedDate < manufacturedDate) {
-          return res.status(400).json({
-            message: `Check the purchasedDate for ${productName}`,
-          });
-        }
+    if (purchasedDate < manufacturedDate) {
+      return res.status(400).json({
+        message: `Check the purchasedDate`,
+      });
+    }
 
-        if (manufacturedDate > expiryDate) {
-          return res.status(400).json({
-            message: `Check the manufacturedDate for ${productName}`,
-          });
-        }
+    if (manufacturedDate > expiryDate) {
+      return res.status(400).json({
+        message: `Check the manufacturedDate`,
+      });
+    }
 
-        // Check if stock already exists
-        const existingStock = await Stocks.findOne({
-          where: {
-            productID: product.productID,
-            productName,
-            purchasePrice,
-            manufacturedDate,
-            expiryDate,
-          },
-        });
+    const createdStock = await Stocks.create({
+      productID: product.productID,
+      productName,
+      productQuantity,
+      purchasePrice: purchasePrice || null,
+      manufacturedDate,
+      expiryDate,
+      purchasedDate,
+      purchaseID: null,
+    });
 
-        if (existingStock) {
-          // Update existing stock quantity
-          const updatedStock = await existingStock.update({
-            productQuantity:
-              existingStock.productQuantity + parseInt(productQuantity),
-          });
-
-          return {
-            message: `Stock for ${productName} updated successfully`,
-            stocks: updatedStock,
-          };
-        }
-
-        // Create new stock entry
-        const createdStock = await Stocks.create({
-          productID: product.productID,
-          productName,
-          productQuantity,
-          purchasePrice: purchasePrice || null,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate,
-          purchaseID: null,
-        });
-
-        return {
-          message: `Stock for ${productName} created successfully`,
-          stocks: createdStock,
-        };
-      })
-    );
-
-    res.status(201).json({
-      message: "Stocks Created/Updated Successfully!",
-      stocks: createdStocks,
+    return res.status(201).json({
+      message: "Stocks Created Successfully!",
+      stocks: createdStock,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };
 
@@ -122,52 +100,32 @@ exports.getAllStocks = async (req, res) => {
 exports.updateStocks = async (req, res) => {
   try {
     const { id } = req.params;
-    let stocksData = req.body;
+    const {
+      productName,
+      productQuantity,
+      purchasePrice,
+      manufacturedDate,
+      expiryDate,
+      purchasedDate,
+    } = req.body;
 
-    // Check if stocksData is an array or not
-    if (!Array.isArray(stocksData)) {
-      stocksData = [stocksData]; // Convert single object to array
+    const stocks = await Stocks.findByPk(id);
+    if (!stocks) {
+      return res.status(404).json({ message: "Stock not found" });
     }
 
-    const updatedStocks = await Promise.all(
-      stocksData.map(async (stock) => {
-        const {
-          productName,
-          productQuantity,
-          purchasePrice,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate,
-        } = stock;
-
-        // If stock object has an id property, use it; otherwise, use the id from req.params
-        const stockID = stock.id || id;
-
-        const existingStock = await Stocks.findByPk(stockID);
-
-        if (!existingStock) {
-          throw new Error(`Stock with ID ${stockID} not found`);
-        }
-
-        const updatedStock = await existingStock.update({
-          productName,
-          productQuantity,
-          purchasePrice,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate,
-        });
-
-        return {
-          message: `Stock with ID ${stockID} updated successfully`,
-          updatedStock: updatedStock,
-        };
-      })
-    );
+    const stockUpdate = await stocks.update({
+      productName,
+      productQuantity,
+      purchasePrice,
+      manufacturedDate,
+      expiryDate,
+      purchasedDate,
+    });
 
     res.status(200).json({
-      message: "Stocks Updated Successfully!",
-      stocks: updatedStocks,
+      message: "Stock updated successfully",
+      updateStock: stockUpdate,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

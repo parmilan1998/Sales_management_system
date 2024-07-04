@@ -67,38 +67,39 @@ const Stocks = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sort, search]);
 
-  const formatDate = (dateStr) => new Date(dateStr).toISOString().split("T")[0];
+  // const formatDate = (dateStr) => new Date(dateStr).toISOString().split("T")[0];
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
   // Create/update stocks
   const onSubmit = async (data) => {
+    console.log("hi", data);
     try {
       let res;
 
       console.log("sss", data);
+      const payload = {
+        stockID: data.id,
+        productName: data.productName,
+        productQuantity: data.productQuantity,
+        purchasePrice: data.purchasePrice,
+        manufacturedDate: formatDate(data.manufacturedDate),
+        expiryDate: formatDate(data.expiryDate),
+        purchasedDate: formatDate(data.purchasedDate),
+      };
+
       // eslint-disable-next-line no-prototype-builtins
       if (!data?.hasOwnProperty("map_row_parentKey")) {
         // Edit existing stock
-        const payload = {
-          stockID: data.id,
-          productName: data.productName,
-          productQuantity: data.productQuantity,
-          purchasePrice: data.purchasePrice,
-          manufacturedDate: formatDate(data.manufacturedDate),
-          expiryDate: formatDate(data.expiryDate),
-          purchasedDate: formatDate(data.purchasedDate),
-        };
         res = await stocksApi.put(`/${data.id}`, payload);
         toast.success(`Stock updated successfully!`);
       } else {
         // Create new stock
-        const payload = {
-          productName: data.productName,
-          productQuantity: data.productQuantity,
-          purchasePrice: data.purchasePrice,
-          manufacturedDate: formatDate(data.manufacturedDate),
-          expiryDate: formatDate(data.expiryDate),
-          purchasedDate: formatDate(data.purchasedDate),
-        };
         res = await stocksApi.post("", payload);
         toast.success(`Stock created successfully!`);
       }
@@ -229,6 +230,7 @@ const Stocks = () => {
             }}
           >
             <ProForm
+              submitter={false}
               onFinish={(data) => {
                 console.log({ data });
               }}
@@ -264,6 +266,7 @@ const Stocks = () => {
                 recordCreatorProps={{
                   record: (index) => ({ id: index + 1 }),
                 }}
+                dataSource={stocks}
                 editable={{
                   type: "multiple",
                   editableKeys,
@@ -272,10 +275,10 @@ const Stocks = () => {
                     onSubmit(data);
                     console.log(rowKey, data, row);
                   },
-                  onDelete: async () => {},
-                  onCancel: async () => {
-                    setEditableRowKeys([]);
+                  onDelete: async () => {
+                    fetchStocks();
                   },
+                  onCancel: async () => {},
                 }}
                 locale={{
                   emptyText: "No Data",
