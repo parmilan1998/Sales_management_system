@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { EditableProTable, ProCard, ProForm } from "@ant-design/pro-components";
-import { ConfigProvider, Select } from "antd";
+import { ConfigProvider, Select, DatePicker } from "antd";
 import enUSIntl from "antd/lib/locale/en_US";
 import toast from "react-hot-toast";
 import stocksApi from "../../api/stocks";
 import productsApi from "../../api/products";
+import StockSort from "../../Components/Stocks/StockSort";
 import { Popconfirm } from "antd";
 import { useNavigate } from "react-router-dom";
 const { Option } = Select;
@@ -63,6 +64,7 @@ const Stocks = () => {
   };
 
   useEffect(() => {
+    console.log("rrr", sort);
     fetchStocks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sort, search]);
@@ -83,6 +85,27 @@ const Stocks = () => {
       let res;
 
       console.log("sss", data);
+
+      // Check if manufactured date is after expiry date
+      if (
+        data.manufacturedDate &&
+        data.expiryDate &&
+        data.manufacturedDate > data.expiryDate
+      ) {
+        toast.error("Manufactured date cannot be after expiry date.");
+        return;
+      }
+
+      // Check if manufactured date is after purchase date
+      if (
+        data.manufacturedDate &&
+        data.purchasedDate &&
+        data.manufacturedDate > data.purchasedDate
+      ) {
+        toast.error("Manufactured date cannot be after purchase date.");
+        return;
+      }
+
       const payload = {
         stockID: data.id,
         productName: data.productName,
@@ -109,7 +132,10 @@ const Stocks = () => {
     } catch (err) {
       console.log(err.message);
       toast.error(
-        `Failed to ${data.id ? "update" : "create"} stock: ${err.message}`
+        `Failed to ${
+          // eslint-disable-next-line no-prototype-builtins
+          data.hasOwnProperty("map_row_parentKey") ? "create" : "update"
+        } stock: ${err.message}`
       );
       fetchStocks();
     }
@@ -219,82 +245,105 @@ const Stocks = () => {
   console.log({ stocks });
   return (
     <ConfigProvider locale={enUSIntl}>
-      <ProCard>
-        {loading ? (
-          <div>Loading...</div>
-        ) : (
-          <div
-            style={{
-              maxWidth: 10000,
-              margin: "auto",
-            }}
-          >
-            <ProForm
-              submitter={false}
-              onFinish={(data) => {
-                console.log({ data });
-              }}
-              formRef={formRef}
-              initialValues={{
-                table: stocks.map((stock) => ({
-                  id: stock.stockID,
-                  productName: stock.productName,
-                  productQuantity: stock.productQuantity,
-                  purchasePrice: stock.purchasePrice,
-                  manufacturedDate: stock.manufacturedDate,
-                  expiryDate: stock.expiryDate,
-                  purchasedDate: stock.purchasedDate,
-                })),
-              }}
-            >
-              <EditableProTable
-                onChange={(value) => {
-                  console.log({ value });
-                }}
-                rowSelection={{
-                  onChange: (_, selectedRows) => {
-                    console.log({ selectedRows });
-                  },
-                }}
-                rowKey="id"
-                scroll={{ x: true }}
-                editableFormRef={editableFormRef}
-                controlled
-                actionRef={actionRef}
-                name="table"
-                columns={columns}
-                recordCreatorProps={{
-                  record: (index) => ({ id: index + 1 }),
-                }}
-                dataSource={stocks}
-                editable={{
-                  type: "multiple",
-                  editableKeys,
-                  onChange: setEditableRowKeys,
-                  onSave: async (rowKey, data, row) => {
-                    onSubmit(data);
-                    console.log(rowKey, data, row);
-                  },
-                  onDelete: async () => {
-                    fetchStocks();
-                  },
-                  onCancel: async () => {},
-                }}
-                locale={{
-                  emptyText: "No Data",
-                  edit: "Edit",
-                  delete: "Delete",
-                  deletePopconfirmMessage:
-                    "Are you sure to delete this record?",
-                  add: "Add",
-                  save: "Save",
-                  cancel: "Cancel",
-                }}
-              />
-            </ProForm>
+      <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
+        <div className="flex flex-col  justify-between py-5 relative">
+          <div className="flex gap-3 mx-5">
+            <h1 className="text-3xl font-semibold font-acme text-red-300">
+              Stocks List
+            </h1>
+            <StockSort
+              sort={sort}
+              setSort={setSort}
+              fetchStocks={fetchStocks}
+            />
           </div>
-        )}
-      </ProCard>
+          <div className="m-5">
+            <ProCard>
+              {loading ? (
+                <div>Loading...</div>
+              ) : (
+                <div
+                  style={{
+                    maxWidth: 1000,
+                    margin: "auto",
+                  }}
+                >
+                  <ProForm
+                    submitter={false}
+                    onFinish={(data) => {
+                      console.log({ data });
+                    }}
+                    formRef={formRef}
+                    initialValues={{
+                      table: stocks.map((stock) => ({
+                        id: stock.stockID,
+                        productName: stock.productName,
+                        productQuantity: stock.productQuantity,
+                        purchasePrice: stock.purchasePrice,
+                        manufacturedDate: stock.manufacturedDate,
+                        expiryDate: stock.expiryDate,
+                        purchasedDate: stock.purchasedDate,
+                      })),
+                    }}
+                  >
+                    <EditableProTable
+                      rowSelection={{
+                        onChange: (_, selectedRows) => {
+                          console.log({ selectedRows });
+                        },
+                      }}
+                      rowKey="id"
+                      scroll={{ x: true }}
+                      editableFormRef={editableFormRef}
+                      controlled
+                      actionRef={actionRef}
+                      name="table"
+                      columns={columns}
+                      recordCreatorProps={{
+                        record: (index) => ({ id: index + 1 }),
+                      }}
+                      dataSource={stocks}
+                      editable={{
+                        type: "multiple",
+                        editableKeys,
+                        onChange: setEditableRowKeys,
+                        onSave: async (rowKey, data, row) => {
+                          onSubmit(data);
+                          console.log(rowKey, data, row);
+                        },
+                        onDelete: async () => {
+                          fetchStocks();
+                        },
+                        onCancel: async () => {},
+                      }}
+                      locale={{
+                        emptyText: "No Data",
+                        edit: "Edit",
+                        delete: "Delete",
+                        deletePopconfirmMessage:
+                          "Are you sure to delete this record?",
+                        add: "Add",
+                        save: "Save",
+                        cancel: "Cancel",
+                      }}
+                      pagination={{
+                        total: totalPages * limit,
+                        current: page,
+                        pageSize: limit,
+                        onChange: (page) => setPage(page),
+                      }}
+                      onChange={(filters, sorter, extra) => {
+                        const { columnKey, order } = sorter;
+                        setSort(sort);
+                      }}
+                    />
+                  </ProForm>
+                </div>
+              )}
+            </ProCard>
+          </div>
+        </div>
+      </div>
     </ConfigProvider>
   );
 };
