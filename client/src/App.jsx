@@ -7,7 +7,7 @@ import Dashboard from "./Pages/Dashboard";
 import Home from "./Components/Home";
 import PageNotFound from "./Pages/PageNotFound";
 import Stocks from "./Pages/Stocks/Stocks";
-import Sales from "./Pages/Sales/Sales";
+import Sales from "./Pages/Sales/SalesScreen";
 import Purchase from "./Pages/Purchase/PurchaseScreen";
 import Report from "./Pages/Report/Report";
 import ProductScreen from "./Pages/Products/ProductScreen";

@@ -167,14 +167,14 @@ exports.queryStocks = async (req, res) => {
       : {};
 
     // Sorting by ASC or DESC
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    const sortOrder = sort === "DESC" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: stocks } = await Stocks.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
-      order: [["createdAt", sortOrder]],
+      order: [["productName", sortOrder]],
     });
 
     // Total pages
