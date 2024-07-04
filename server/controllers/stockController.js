@@ -14,15 +14,22 @@ exports.createStocks = async (req, res) => {
       purchasedDate,
     } = req.body;
 
-    if (!productName || !productQuantity || !manufacturedDate || !expiryDate) {
-      res.status(400).json({ message: "Fill all the required fields!" });
+    if (
+      !productName ||
+      !productQuantity ||
+      !manufacturedDate ||
+      !expiryDate ||
+      !purchasedDate
+    ) {
+      return res.status(400).json({ message: "Fill all the required fields!" });
     }
+
     const product = await Product.findOne({
       where: { productName },
     });
 
     if (!product) {
-      res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({ message: "Product not found" });
     }
 
     const existingStock = await Stocks.findOne({
@@ -32,41 +39,33 @@ exports.createStocks = async (req, res) => {
         purchasePrice,
         manufacturedDate,
         expiryDate,
+        purchasedDate,
       },
     });
 
     if (existingStock) {
       const updatedStock = await existingStock.update({
-        productQuantity: (existingStock.productQuantity +=
-          parseInt(productQuantity)),
+        productQuantity:
+          existingStock.productQuantity + parseInt(productQuantity),
       });
-      res.status(201).json({
+      return res.status(201).json({
         message: "Stocks updated Successfully!",
         stocks: updatedStock,
       });
     }
-    const existingProduct = await Product.findOne({
-      where: {
-        productName: productName,
-      },
-    });
 
-    if (!existingProduct) {
-      return {
-        message: `Product with name ${productName} not found`,
-      };
-    }
     if (purchasedDate < manufacturedDate) {
-      return res.status(404).json({
+      return res.status(400).json({
         message: `Check the purchasedDate`,
       });
     }
 
     if (manufacturedDate > expiryDate) {
-      return res.status(404).json({
+      return res.status(400).json({
         message: `Check the manufacturedDate`,
       });
     }
+
     const createdStock = await Stocks.create({
       productID: product.productID,
       productName,
@@ -77,12 +76,13 @@ exports.createStocks = async (req, res) => {
       purchasedDate,
       purchaseID: null,
     });
-    res.status(201).json({
+
+    return res.status(201).json({
       message: "Stocks Created Successfully!",
       stocks: createdStock,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };
 
@@ -113,6 +113,7 @@ exports.updateStocks = async (req, res) => {
     if (!stocks) {
       return res.status(404).json({ message: "Stock not found" });
     }
+
     const stockUpdate = await stocks.update({
       productName,
       productQuantity,
@@ -121,6 +122,7 @@ exports.updateStocks = async (req, res) => {
       expiryDate,
       purchasedDate,
     });
+
     res.status(200).json({
       message: "Stock updated successfully",
       updateStock: stockUpdate,

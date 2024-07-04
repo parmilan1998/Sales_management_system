@@ -16,23 +16,27 @@ const AddProduct = () => {
 
   // Created products
   const onSubmit = async (data) => {
-    const formData = new FormData();
-    formData.append("productName", data.productName);
-    formData.append("image", data.image[0]);
-    formData.append("categoryName", data.categoryName);
-    formData.append("unitPrice", data.unitPrice);
-    formData.append("productDescription", data.description);
-    const res = await axios
-      .post("http://localhost:5000/api/v1/product", formData)
-      .then((res) => {
-        console.log(res.data);
-        toast.success(`Product created successfully!`);
-        navigate("/products");
-        reset();
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    try {
+      const formData = new FormData();
+      formData.append("productName", data.productName);
+      formData.append("image", data.image[0]); // Assuming data.image is an array with one file
+      formData.append("categoryName", data.categoryName);
+      formData.append("unitPrice", data.unitPrice);
+      formData.append("productDescription", data.description);
+
+      const response = await axios.post(
+        "http://localhost:5000/api/v1/product",
+        formData
+      );
+
+      console.log(response.data);
+      toast.success(`Product created successfully!`);
+      navigate("/products");
+      reset();
+    } catch (error) {
+      console.error("Failed to create product:", error);
+      toast.error(`Failed to create product: ${error.message}`);
+    }
   };
 
   // Reset input fields

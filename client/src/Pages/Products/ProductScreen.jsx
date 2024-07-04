@@ -29,7 +29,15 @@ const ProductScreen = () => {
     try {
       await productApi.delete(`/${id}`);
       message.success("Product deleted Successfully!");
-      fetchProducts();
+      fetchProducts(
+        null,
+        page,
+        limit,
+        sort,
+        search,
+        setProducts,
+        setTotalPages
+      );
       setPage(1);
     } catch (err) {
       toast.error("Can't delete this product!");
@@ -51,7 +59,17 @@ const ProductScreen = () => {
           <ProductSort
             sort={sort}
             setSort={setSort}
-            fetchProducts={fetchProducts}
+            fetchProducts={() =>
+              fetchProducts(
+                null,
+                page,
+                limit,
+                sort,
+                search,
+                setProducts,
+                setTotalPages
+              )
+            }
           />
         </div>
         <div className="flex gap-4 items-center">

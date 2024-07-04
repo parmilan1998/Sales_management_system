@@ -38,15 +38,19 @@ const SingleCategory = () => {
   }, [id, page, limit, sort, search]);
 
   return (
-    <div className="single-category">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex gap-4 items-center">
-          <h2 className="text-2xl font-semibold">{category.categoryName}</h2>
-          <ProductSort
-            sort={sort}
-            setSort={setSort}
-            fetchProducts={fetchProducts}
-          />
+    <div className="single-category px-4">
+      <div className="flex justify-between items-center mx-4 mb-4 mt-2">
+        <div className="flex gap-2 mt-2 mr-0 items-center">
+          <h2 className="text-3xl  font-semibold mt-0">
+            {category.categoryName}
+          </h2>
+          <div className="mt-1 ">
+            <ProductSort
+              sort={sort}
+              setSort={setSort}
+              fetchProducts={fetchProducts}
+            />
+          </div>
         </div>
         <div className="flex gap-4 items-center">
           <ProductSearch

@@ -5,13 +5,13 @@ import {
 } from "react-icons/fc";
 import PropTypes from "prop-types";
 
-const CategorySort = ({ sort, setSort, fetchCategories }) => {
+const StockSort = ({ sort, setSort, fetchStocks }) => {
   const handleSort = (selectedSort) => {
     if (sort === selectedSort) {
       selectedSort = sort === "ASC" ? "DESC" : "ASC";
     }
     setSort(selectedSort);
-    fetchCategories(selectedSort);
+    fetchStocks(selectedSort);
   };
 
   return (
@@ -19,14 +19,14 @@ const CategorySort = ({ sort, setSort, fetchCategories }) => {
       {sort === "ASC" ? (
         <button
           onClick={() => handleSort("DESC")}
-          className="p-1 rounded-lg text-lg text-white bg-slate-100 border-blue-500"
+          className="p-1 rounded-lg text-lg text-white bg-blue-100 border-blue-500"
         >
           <FcAlphabeticalSortingZa size={20} className="ml-2" />
         </button>
       ) : (
         <button
           onClick={() => handleSort("ASC")}
-          className="p-1 rounded-lg text-lg text-white bg-slate-100 border-blue-500"
+          className="p-1 rounded-lg text-lg text-white bg-blue-100 border-blue-500"
         >
           <FcAlphabeticalSortingAz size={20} className="ml-2" />
         </button>
@@ -35,10 +35,10 @@ const CategorySort = ({ sort, setSort, fetchCategories }) => {
   );
 };
 
-CategorySort.propTypes = {
+StockSort.propTypes = {
   sort: PropTypes.string.isRequired,
   setSort: PropTypes.func.isRequired,
-  fetchCategories: PropTypes.func.isRequired,
+  fetchStocks: PropTypes.func.isRequired,
 };
 
-export default CategorySort;
+export default StockSort;

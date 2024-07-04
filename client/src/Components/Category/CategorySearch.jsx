@@ -9,18 +9,15 @@ const CategorySearch = ({ search, setSearch, setPage }) => {
   };
 
   return (
-    <div>
-      {" "}
-      <div className="flex flex-wrap">
-        <IoSearch className="mr-2 mt-2 text-blue-400" />
-        <input
-          type="text"
-          placeholder="Search Categories..."
-          value={search}
-          onChange={handleSearch}
-          className="px-2 py-1 m-0 rounded-lg focus:outline-cyan-500"
-        />
-      </div>
+    <div className="flex relative flex-wrap my-2 mx-2 ">
+      <IoSearch className="my-2 ml-2 absolute text-blue-400 " />
+      <input
+        type="text"
+        placeholder="Search Categories..."
+        value={search}
+        onChange={handleSearch}
+        className="pl-8 py-1 m-0 rounded-lg text-sm focus:outline-cyan-500 w-52"
+      />
     </div>
   );
 };
