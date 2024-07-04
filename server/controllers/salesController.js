@@ -333,3 +333,30 @@ exports.querySales = async (req, res) => {
       .json({ message: "Error querying sales", error: error.message });
   }
 };
+
+// DELETE -> localhost:5000/api/v1/sales/details/:id
+exports.deleteSalesDetail = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const salesDetail = await SalesDetail.findByPk(id);
+    if (!salesDetail) {
+      return res.status(404).json({ message: "Sales detail not found" });
+    }
+
+    // Find the stock entry
+    const stock = await Stocks.findByPk(salesDetail.stockID);
+    stock.productQuantity += salesDetail.salesQuantity;
+    await stock.save();
+
+    // Delete the SalesDetail entry
+    await salesDetail.destroy();
+
+    res.status(200).json({
+      message: "Sales detail deleted successfully",
+      deletedSalesDetail: salesDetail,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting sales detail" });
+  }
+};
