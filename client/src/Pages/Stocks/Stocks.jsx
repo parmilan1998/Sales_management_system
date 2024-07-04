@@ -1,34 +1,23 @@
 import React, { useEffect, useState, useRef } from "react";
 import { EditableProTable, ProCard, ProForm } from "@ant-design/pro-components";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, Select } from "antd";
 import enUSIntl from "antd/lib/locale/en_US";
 import toast from "react-hot-toast";
-import { useForm } from "react-hook-form";
 import stocksApi from "../../api/stocks";
+import productsApi from "../../api/products";
 import { Popconfirm } from "antd";
 import { useNavigate } from "react-router-dom";
+const { Option } = Select;
 
 const Stocks = () => {
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-    reset,
-    setValue,
-  } = useForm();
-
-  const handleClear = () => {
-    reset();
-  };
-
   const navigate = useNavigate();
   const [editableKeys, setEditableRowKeys] = useState([]);
   const formRef = useRef();
   const actionRef = useRef();
   const editableFormRef = useRef();
   const [stocks, setStocks] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [productOptions, setProductOptions] = useState([]);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -36,7 +25,26 @@ const Stocks = () => {
   const [sort, setSort] = useState("ASC");
   const [limit, setLimit] = useState(10);
 
+  const fetchProductNames = async () => {
+    try {
+      const res = await productsApi.get("/list");
+      const products = res.data;
+      const options = products.map((product) => ({
+        label: product.productName,
+        value: product.productName,
+      }));
+      setProductOptions(options);
+    } catch (err) {
+      console.log("Failed to fetch product names:", err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchProductNames();
+  }, []);
+
   const fetchStocks = async (sortType) => {
+    setLoading(true);
     try {
       const res = await stocksApi.get(
         `/query?page=${page}&limit=${limit}&sort=${sortType}&keyword=${search}`
@@ -44,47 +52,75 @@ const Stocks = () => {
       console.log("Response data:", res.data);
       const { stocks, pagination } = res.data;
       setTotalPages(pagination.totalPages);
+      console.log({ stocks });
       setStocks(stocks);
       console.log("Stocks set:", stocks);
     } catch (err) {
       console.log(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchStocks();
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sort, search]);
 
-  // Created stocks
-  const onSubmit = async (data) => {
-    console.log({ data });
-    try {
-      const formData = new FormData();
-      formData.append("productName", data.productName);
-      formData.append("productQuantity", data.productQuantity);
-      formData.append("purchasePrice", data.purchasePrice);
-      formData.append("manufacturedDate", data.manufacturedDate);
-      formData.append("expiryDate", data.expiryDate);
-      formData.append("purchasedDate", data.purchasedDate);
+  const formatDate = (dateStr) => new Date(dateStr).toISOString().split("T")[0];
 
-      const res = await stocksApi.post("", formData);
-      console.log(res.data);
-      toast.success(`stock created successfully!`);
+  // Create/update stocks
+  const onSubmit = async (data) => {
+    try {
+      let res;
+
+      console.log("sss", data);
+      // eslint-disable-next-line no-prototype-builtins
+      if (!data?.hasOwnProperty("map_row_parentKey")) {
+        // Edit existing stock
+        const payload = {
+          stockID: data.id,
+          productName: data.productName,
+          productQuantity: data.productQuantity,
+          purchasePrice: data.purchasePrice,
+          manufacturedDate: formatDate(data.manufacturedDate),
+          expiryDate: formatDate(data.expiryDate),
+          purchasedDate: formatDate(data.purchasedDate),
+        };
+        res = await stocksApi.put(`/${data.id}`, payload);
+        toast.success(`Stock updated successfully!`);
+      } else {
+        // Create new stock
+        const payload = {
+          productName: data.productName,
+          productQuantity: data.productQuantity,
+          purchasePrice: data.purchasePrice,
+          manufacturedDate: formatDate(data.manufacturedDate),
+          expiryDate: formatDate(data.expiryDate),
+          purchasedDate: formatDate(data.purchasedDate),
+        };
+        res = await stocksApi.post("", payload);
+        toast.success(`Stock created successfully!`);
+      }
+
       navigate("/stocks");
-      reset();
+      fetchStocks();
     } catch (err) {
       console.log(err.message);
-      // Handle error or show error toast
-      toast.error(`Failed to create stock: ${err.message}`);
+      toast.error(
+        `Failed to ${data.id ? "update" : "create"} stock: ${err.message}`
+      );
+      fetchStocks();
     }
   };
 
   // Delete stock
-  const handleDelete = async (stockID) => {
+  const handleDelete = async (id) => {
+    console.log("ss");
+    console.log(id);
     try {
-      await stocksApi.delete(`/${stockID}`);
+      await stocksApi.delete(`/${id}`);
+
       toast.success("Stock deleted Successfully!", { duration: 2000 });
       fetchStocks();
     } catch (err) {
@@ -105,33 +141,50 @@ const Stocks = () => {
     {
       title: "Product Name",
       dataIndex: "productName",
-      valueType: "text",
-      ellipsis: true,
+      valueType: "select",
+      width: 180,
+      fieldProps: {
+        options: productOptions,
+      },
+      renderFormItem: (_, { recordKey, ...restProps }) => (
+        <Select {...restProps}>
+          {productOptions.map((option) => (
+            <Option key={option.value} value={option.value}>
+              {option.label}
+            </Option>
+          ))}
+        </Select>
+      ),
     },
     {
       title: "Product Quantity",
       dataIndex: "productQuantity",
       valueType: "digit",
+      width: 80,
     },
     {
       title: "Purchase Price",
       dataIndex: "purchasePrice",
       valueType: "money",
+      width: 120,
     },
     {
       title: "Manufactured Date",
       dataIndex: "manufacturedDate",
       valueType: "date",
+      width: 140,
     },
     {
       title: "Expiry Date",
       dataIndex: "expiryDate",
       valueType: "date",
+      width: 120,
     },
     {
       title: "Purchased Date",
       dataIndex: "purchasedDate",
       valueType: "date",
+      width: 100,
     },
     {
       title: "Action",
@@ -144,7 +197,8 @@ const Stocks = () => {
             okText="Yes"
             cancelText="No"
             onConfirm={() => {
-              handleDelete(row.stockID);
+              console.log({ row });
+              handleDelete(row.id);
             }}
           >
             <a key={`delete-${row.id}`}>Remove</a>,
@@ -161,25 +215,27 @@ const Stocks = () => {
       ],
     },
   ];
-
+  console.log({ stocks });
   return (
     <ConfigProvider locale={enUSIntl}>
       <ProCard>
-        <div
-          style={{
-            maxWidth: 800,
-            margin: "auto",
-          }}
-        >
-          {stocks.length > 0 && (
+        {loading ? (
+          <div>Loading...</div>
+        ) : (
+          <div
+            style={{
+              maxWidth: 10000,
+              margin: "auto",
+            }}
+          >
             <ProForm
               onFinish={(data) => {
                 console.log({ data });
               }}
               formRef={formRef}
               initialValues={{
-                table: stocks.map((stock, index) => ({
-                  id: index,
+                table: stocks.map((stock) => ({
+                  id: stock.stockID,
                   productName: stock.productName,
                   productQuantity: stock.productQuantity,
                   purchasePrice: stock.purchasePrice,
@@ -198,10 +254,6 @@ const Stocks = () => {
                     console.log({ selectedRows });
                   },
                 }}
-                onSubmit={(data) => {
-                  console.log("agxs");
-                  console.log({ data });
-                }}
                 rowKey="id"
                 scroll={{ x: true }}
                 editableFormRef={editableFormRef}
@@ -218,7 +270,11 @@ const Stocks = () => {
                   onChange: setEditableRowKeys,
                   onSave: async (rowKey, data, row) => {
                     onSubmit(data);
-                    // console.log(rowKey, data, row);
+                    console.log(rowKey, data, row);
+                  },
+                  onDelete: async () => {},
+                  onCancel: async () => {
+                    setEditableRowKeys([]);
                   },
                 }}
                 locale={{
@@ -233,8 +289,8 @@ const Stocks = () => {
                 }}
               />
             </ProForm>
-          )}
-        </div>
+          </div>
+        )}
       </ProCard>
     </ConfigProvider>
   );
