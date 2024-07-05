@@ -11,7 +11,6 @@ const ProductSort = ({ sort, setSort, fetchProducts }) => {
       selectedSort = sort === "ASC" ? "DESC" : "ASC";
     }
     setSort(selectedSort);
-    fetchProducts();
   };
 
   return (
