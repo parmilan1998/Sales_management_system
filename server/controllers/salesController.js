@@ -253,6 +253,49 @@ exports.updateSales = async (req, res) => {
   }
 };
 
+// GET -> localhost:5000/api/v1/sales/:id
+exports.getSalesById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Fetch the sales record
+    const sales = await Sales.findByPk(id);
+
+    if (!sales) {
+      return res.status(404).json({ message: "Sales not found" });
+    }
+
+    // Fetch the sales details for the given sales ID
+    const saleDetails = await SalesDetail.findAll({
+      attributes: ["productName", "salesQuantity"],
+      where: {
+        salesID: id,
+      },
+    });
+
+    // Construct the products array from saleDetails
+    const products = saleDetails.map((detail) => ({
+      productName: detail.productName,
+      salesQuantity: detail.salesQuantity,
+    }));
+
+    // Construct the response object
+    const response = {
+      custName: sales.custName,
+      customerContact: sales.customerContact,
+      soldDate: sales.soldDate,
+      products: products,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching sales:", error);
+    res
+      .status(500)
+      .json({ message: "Error retrieving sales", error: error.message });
+  }
+};
+
 // DELETE -> localhost:5000/api/v1/sales/:id
 exports.deleteSales = async (req, res) => {
   const { id } = req.params;
