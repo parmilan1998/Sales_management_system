@@ -50,7 +50,7 @@ const Reports = db.define(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
     tableName: "reports",
   }
 );

@@ -28,7 +28,7 @@ const Purchase = () => {
       setPurchase(purchases);
       setTotalPages(pagination.totalPages);
       console.log(res.data);
-    } catch (error) {
+    } catch (error) { 
       console.error(error);
     }
   };
