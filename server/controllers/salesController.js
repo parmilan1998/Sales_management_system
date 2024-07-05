@@ -335,7 +335,7 @@ exports.querySales = async (req, res) => {
         model: SalesDetail,
         as: "details",
         attributes: ["productName", "salesQuantity"],
-        // where: includeConditions.length > 0 ? { [Op.or]: includeConditions } : {},
+        //  where: includeConditions.length > 0 ? { [Op.or]: includeConditions } : {},
       },
       where: searchCondition,
       offset,
