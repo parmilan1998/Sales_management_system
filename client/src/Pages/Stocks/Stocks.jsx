@@ -167,6 +167,11 @@ const Stocks = () => {
       dataIndex: "index",
       valueType: "indexBorder",
       ellipsis: true,
+      render: (text, record, index) => (
+        <div className="w-5 h-5 bg-gray-600 text-white text flex justify-center items-center rounded-full">
+          <span>{index + 1}</span>
+        </div>
+      ),
     },
     {
       title: "Product Name",
@@ -245,7 +250,7 @@ const Stocks = () => {
       ],
     },
   ];
-  console.log({ stocks });
+  const rowClassName = "h-2";
   return (
     <ConfigProvider locale={enUSIntl}>
       <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
@@ -255,10 +260,9 @@ const Stocks = () => {
               <h1 className="text-4xl font-semibold font-acme text-blue-600">
                 Stocks List
               </h1>
-           
             </div>
             <div className="ml-auto flex flex-row mr-4 gap-2">
-            <h2 className="mt-3 ">SortBy:</h2>
+              <h2 className="mt-3 ">SortBy:</h2>
               <StockSort
                 sortName={sortName}
                 setSortName={setSortName}
@@ -285,9 +289,9 @@ const Stocks = () => {
                 >
                   <ProForm
                     submitter={false}
-                    onFinish={(data) => {
-                      console.log({ data });
-                    }}
+                    // onFinish={(data) => {
+                    //   console.log({ data });
+                    // }}
                     formRef={formRef}
                     initialValues={{
                       table: stocks.map((stock) => ({
@@ -302,11 +306,12 @@ const Stocks = () => {
                     }}
                   >
                     <EditableProTable
-                      rowSelection={{
-                        onChange: (_, selectedRows) => {
-                          console.log({ selectedRows });
-                        },
-                      }}
+                      // rowSelection={{
+
+                      //   onChange: (_, selectedRows) => {
+                      //     console.log({ selectedRows });
+                      //   },
+                      // }}
                       rowKey="id"
                       scroll={{ x: true }}
                       editableFormRef={editableFormRef}
@@ -315,6 +320,8 @@ const Stocks = () => {
                       name="table"
                       columns={columns}
                       recordCreatorProps={{
+                        position: "top",
+                        width: 20,
                         record: (index) => ({ id: index + 1 }),
                       }}
                       dataSource={stocks}
@@ -331,6 +338,7 @@ const Stocks = () => {
                         },
                         onCancel: async () => {},
                       }}
+                      rowClassName={() => rowClassName}
                       locale={{
                         emptyText: "No Data",
                         edit: "Edit",
@@ -347,14 +355,6 @@ const Stocks = () => {
                         pageSize: limit,
                         onChange: (page) => setPage(page),
                       }}
-                      // onChange={(filters, sorter, extra) => {
-                      //   const { columnKey, order } = sorter;
-                      //   if (columnKey === "productName") {
-                      //     setSortName(order === "ASC" ? "ASC" : "DESC");
-                      //   } else if (columnKey === "expiryDate") {
-                      //     setSortDate(order === "ASC" ? "ASC" : "DESC");
-                      //   }
-                      // }}
                     />
                   </ProForm>
                 </div>
