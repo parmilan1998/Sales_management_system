@@ -1,14 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import {
-  Badge,
-  Button,
-  Dropdown,
-  message,
-  Popconfirm,
-  Space,
-  Table,
-} from "antd";
+import { Button, message, Popconfirm, Table } from "antd";
 import SalesTable from "../../Components/Sales/SalesTable";
 import axios from "axios";
 import { MdDelete, MdEditSquare } from "react-icons/md";
@@ -16,6 +8,9 @@ import { AiOutlineFolderView } from "react-icons/ai";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { LuPlus } from "react-icons/lu";
+import Barcode from "react-barcode";
+import SalesSearch from "../../Components/Sales/SalesSearch";
+import SalesSort from "../../Components/Sales/SalesSort";
 
 const SalesScreen = () => {
   const expandedRowRender = (record) => {
@@ -30,34 +25,6 @@ const SalesScreen = () => {
         title: "Sales Quantity",
         dataIndex: "salesQuantity",
         key: "salesQuantity",
-      },
-      {
-        title: "Actions",
-        dataIndex: "upgradeNum",
-        key: "upgradeNum",
-        render: (text, record) => (
-          <span className="flex gap-6">
-            <button
-              onClick={() => handleEdit(record.key)}
-              className="text-md font-poppins"
-            >
-              <MdEditSquare size={24} color="green" />
-            </button>
-
-            <Popconfirm
-              title="Delete the Sale Product"
-              description="Are you sure you want to delete this sale product?"
-              onConfirm={() => confirmSalesDelete(record.salesDetailsID)}
-              onCancel={cancelSalesDelete}
-              okText="Yes"
-              cancelText="No"
-            >
-              <button>
-                <MdDelete size={24} color="red" />
-              </button>
-            </Popconfirm>
-          </span>
-        ),
       },
     ];
     const dataList = [];
@@ -222,24 +189,22 @@ const SalesScreen = () => {
         <div className="flex items-center gap-6">
           <h1 className="text-3xl font-medium font-acme">All Sales Here! </h1>
           <Link
-            to="/sales/add"
+            to="/sales/product"
             className="bg-cyan-500 text-white px-3 py-2 rounded flex gap-2 items-center"
           >
             <LuPlus />
             New Sale
           </Link>
         </div>
-        {/* <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <h1>SortBy:</h1>
-          <PurchaseSort
-            fetchPurchases={(sortType) => fetchPurchases(sortType)}
-          />
-          <PurchaseSearch
+          <SalesSort sort={sort} setSort={setSort} fetchSales={fetchSales} />
+          <SalesSearch
             search={search}
             setSearch={setSearch}
             setPage={setPage}
           />
-        </div> */}
+        </div>
       </div>
       <div className="py-5">
         <SalesTable

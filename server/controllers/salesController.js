@@ -333,7 +333,7 @@ exports.querySales = async (req, res) => {
       offset,
       limit: parsedLimit,
       order: [
-        ["productName", sortOrder],
+        ["custName", sortOrder],
         ["soldDate", sortDate],
       ],
     });
