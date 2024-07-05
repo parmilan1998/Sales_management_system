@@ -6,13 +6,14 @@ import axios from "axios";
 import { MdDelete, MdEditSquare } from "react-icons/md";
 import { AiOutlineFolderView } from "react-icons/ai";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { LuPlus } from "react-icons/lu";
 import Barcode from "react-barcode";
 import SalesSearch from "../../Components/Sales/SalesSearch";
 import SalesSort from "../../Components/Sales/SalesSort";
 
 const SalesScreen = () => {
+  const navigate = useNavigate();
   const expandedRowRender = (record) => {
     console.log({ record });
     const column = [
@@ -42,14 +43,7 @@ const SalesScreen = () => {
 
   const handleEdit = (key) => {
     console.log(`Edit clicked for record ${key}`);
-  };
-
-  const handleView = (key) => {
-    console.log(`View clicked for record ${key}`);
-  };
-
-  const handleDelete = (key) => {
-    console.log(`View clicked for record ${key}`);
+    navigate(`/sales/add/${key}`);
   };
 
   const [columns, setColumns] = useState([
@@ -92,7 +86,7 @@ const SalesScreen = () => {
         <span className="flex gap-2">
           <Button
             type="primary"
-            onClick={() => handleEdit(record.key)}
+            onClick={() => handleEdit(record.salesID)}
             className="text-md font-poppins"
           >
             Edit
@@ -168,29 +162,13 @@ const SalesScreen = () => {
     message.error("Sales deletion cancelled!");
   };
 
-  const confirmSalesDelete = async (id) => {
-    await axios
-      .delete(`http://localhost:5000/api/v1/sales/details/${id}`)
-      .then((res) => {
-        message.success("Sales product deleted Successfully!");
-        fetchSales();
-      })
-      .catch((err) => {
-        toast.error("Error deleting sale product!");
-        console.log(err);
-      });
-  };
-
-  const cancelSalesDelete = () => {
-    message.error("Sales product deletion cancelled!");
-  };
   return (
     <div className="max-w-screen-xl mx-auto lg:px-8 font-poppins cursor-pointer">
       <div className="flex items-center justify-between gap-4 pb-5">
         <div className="flex items-center gap-6">
           <h1 className="text-3xl font-medium font-acme">All Sales Here! </h1>
           <Link
-            to="/sales/product"
+            to="/sales/add"
             className="bg-cyan-500 text-white px-3 py-2 rounded flex gap-2 items-center"
           >
             <LuPlus />

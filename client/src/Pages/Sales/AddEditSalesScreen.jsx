@@ -1,10 +1,13 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-const SalesProductFormScreen = () => {
+const AddSalesScreen = () => {
+  const { id } = useParams();
   const [productsData, setProductsData] = useState([]);
+
   const [formValues, setFormValues] = useState({
     custName: "",
     customerContact: "",
@@ -16,7 +19,27 @@ const SalesProductFormScreen = () => {
       },
     ],
   });
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    let errors = {};
+    if (!formValues.custName) errors.custName = "Customer Name is required";
+    if (!formValues.customerContact)
+      errors.customerContact = "Customer Contact is required";
+    if (!formValues.soldDate) errors.soldDate = "Sale Date is required";
+
+    formValues.products.forEach((product, index) => {
+      if (!product.productName)
+        errors[`productName-${index}`] = "Product Name is required";
+      if (!product.salesQuantity || product.salesQuantity <= 0)
+        errors[`salesQuantity-${index}`] =
+          "Sales Quantity must be greater than 0";
+    });
+
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -39,7 +62,7 @@ const SalesProductFormScreen = () => {
     });
   };
 
-  const handleAddProduct = () => {
+  const handleAddEdit = () => {
     setFormValues({
       ...formValues,
       products: [
@@ -62,26 +85,34 @@ const SalesProductFormScreen = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
     console.log("Form submitted with values:", formValues);
     try {
-      const res = await axios.post(
-        `http://localhost:5000/api/v1/sales`,
-        formValues
-      );
-      console.log(res.data);
-      toast.success(`Sales created successfully!`);
+      if (id) {
+        const res = await axios.put(
+          `http://localhost:5000/api/v1/sales/${id}`,
+          formValues
+        );
+        console.log(res.data);
+        toast.success(`Sales updated successfully!`);
+      } else {
+        const res = await axios.post(
+          `http://localhost:5000/api/v1/sales`,
+          formValues
+        );
+        console.log(res.data);
+        toast.success(`Sales created successfully!`);
+      }
       navigate("/sales");
     } catch (err) {
       console.error("Error creating sales", err);
-      if (err.response && err.response.data && err.response.data.error) {
-        toast.error(err.response.data.error);
-      } else {
-        toast.error("An error occurred while creating the sale.");
-      }
+      toast.error("Error creating sales");
     }
   };
 
-  // Fetch categories
   const fetchProductsApi = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/v1/product/list");
@@ -92,9 +123,25 @@ const SalesProductFormScreen = () => {
     }
   };
 
+  const fetchSalesApi = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/v1/sales/${id}`);
+      console.log(res.data);
+      setFormValues({
+        custName: res.data.custName,
+        customerContact: res.data.customerContact,
+        soldDate: res.data.soldDate,
+        products: res.data.details,
+      });
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
   useEffect(() => {
     fetchProductsApi();
-  }, []);
+    fetchSalesApi(id);
+  }, [id]);
 
   return (
     <div className="max-w-screen-xl mx-auto lg:px-24 font-poppins cursor-pointer">
@@ -115,7 +162,7 @@ const SalesProductFormScreen = () => {
             </svg>
           </span>
           <p className="font-semibold sm:text-2xl text-gray-700">
-            Add New Sales!
+            {id ? "Update" : "Create New"} Sales!
           </p>
         </div>
         <form onSubmit={handleSubmit}>
@@ -129,9 +176,14 @@ const SalesProductFormScreen = () => {
               type="text"
               name="custName"
               id="custName"
-              className="w-full py-3 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+              className={`w-full py-3 px-3 rounded border ${
+                errors.custName ? "border-red-500" : "border-gray-300"
+              } mx-auto text-sm focus:outline-cyan-400`}
               placeholder="Ex - John Clerk"
             />
+            {errors.custName && (
+              <p className="text-red-500 text-sm">{errors.custName}</p>
+            )}
           </div>
           <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
             <div className="mb-4">
@@ -147,9 +199,14 @@ const SalesProductFormScreen = () => {
                 type="text"
                 name="customerContact"
                 id="customerContact"
-                className="w-full py-3 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                className={`w-full py-3 px-3 rounded border ${
+                  errors.customerContact ? "border-red-500" : "border-gray-300"
+                } mx-auto text-sm focus:outline-cyan-400`}
                 placeholder="Ex - 0771234567"
               />
+              {errors.customerContact && (
+                <p className="text-red-500 text-sm">{errors.customerContact}</p>
+              )}
             </div>
             <div className="mb-4">
               <label htmlFor="soldDate" className="flex pb-2 text-gray-600">
@@ -161,8 +218,13 @@ const SalesProductFormScreen = () => {
                 type="date"
                 name="soldDate"
                 id="soldDate"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                className={`w-full py-2.5 px-3 rounded border ${
+                  errors.soldDate ? "border-red-500" : "border-gray-300"
+                } mx-auto text-sm focus:outline-cyan-400`}
               />
+              {errors.soldDate && (
+                <p className="text-red-500 text-sm">{errors.soldDate}</p>
+              )}
             </div>
           </div>
 
@@ -184,18 +246,27 @@ const SalesProductFormScreen = () => {
                   type="text"
                   name="productName"
                   id={`productName-${index}`}
-                  className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                  className={`w-full py-2.5 px-3 rounded border ${
+                    errors[`productName-${index}`]
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } mx-auto text-sm focus:outline-cyan-400`}
                   placeholder="Ex - Home Essentials"
                 >
                   <option value="" className="text-gray-200 opacity-5">
                     Ex - Home Essentials
                   </option>
-                  {productsData.map((product, index) => (
-                    <option value={product.productName} key={index}>
+                  {productsData.map((product, i) => (
+                    <option value={product.productName} key={i}>
                       {product.productName}
                     </option>
                   ))}
                 </select>
+                {errors[`productName-${index}`] && (
+                  <p className="text-red-500 text-sm">
+                    {errors[`productName-${index}`]}
+                  </p>
+                )}
               </div>
               <div className="mb-4">
                 <label
@@ -210,9 +281,18 @@ const SalesProductFormScreen = () => {
                   type="number"
                   name="salesQuantity"
                   id={`salesQuantity-${index}`}
-                  className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                  className={`w-full py-2 px-3 rounded border ${
+                    errors[`salesQuantity-${index}`]
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } mx-auto text-sm focus:outline-cyan-400`}
                   placeholder="Ex - 23"
                 />
+                {errors[`salesQuantity-${index}`] && (
+                  <p className="text-red-500 text-sm">
+                    {errors[`salesQuantity-${index}`]}
+                  </p>
+                )}
               </div>
               <button
                 type="button"
@@ -226,10 +306,10 @@ const SalesProductFormScreen = () => {
 
           <button
             type="button"
-            onClick={handleAddProduct}
+            onClick={handleAddEdit}
             className="w-full py-2.5 my-6 text-base font-poppins outline-dashed outline-1 outline-cyan-400 px-3 rounded border border-gray-300 mx-auto focus:outline-cyan-400"
           >
-            Add Product
+            Add Rows
           </button>
           <div className="flex gap-3">
             <Link
@@ -248,7 +328,7 @@ const SalesProductFormScreen = () => {
               type="submit"
               className="w-full text-white bg-green-500 py-2.5 mt-6 text-base font-poppins px-3 rounded border border-gray-300 mx-auto focus:outline-cyan-400"
             >
-              Create New Sale
+              {id ? "Update Sale" : "Create New Sale"}
             </button>
           </div>
         </form>
@@ -257,4 +337,4 @@ const SalesProductFormScreen = () => {
   );
 };
 
-export default SalesProductFormScreen;
+export default AddSalesScreen;

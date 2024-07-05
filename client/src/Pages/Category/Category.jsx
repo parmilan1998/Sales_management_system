@@ -126,6 +126,7 @@ const Category = () => {
       console.log(err.message);
     }
   };
+
   const handleClose = useCallback(() => {
     setIsOpen(true);
     setSelectedCategory(null);

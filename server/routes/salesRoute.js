@@ -7,12 +7,14 @@ const {
   deleteSales,
   querySales,
   deleteSalesDetail,
+  getSalesById,
 } = require("../controllers/salesController");
 
 router.post("/", createSales);
 router.get("/list", getAllSales);
 router.put("/:id", updateSales);
 router.get("/query", querySales);
+router.get("/:id", getSalesById);
 router.delete("/:id", deleteSales);
 router.delete("/details/:id", deleteSalesDetail);
 
