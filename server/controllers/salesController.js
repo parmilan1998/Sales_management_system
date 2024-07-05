@@ -307,6 +307,9 @@ exports.querySales = async (req, res) => {
     // Search condition
     const searchConditions = [];
     const includeConditions = [];
+    let productName = keyword;
+
+    console.log(keyword);
 
     if (keyword) {
       searchConditions.push({ custName: { [Op.like]: `%${keyword}%` } });
@@ -330,21 +333,44 @@ exports.querySales = async (req, res) => {
     const sortDate = sortBy === "DESC" ? "DESC" : "ASC";
 
     // Querying Sales with included SalesDetail
-    const { count, rows: sales } = await Sales.findAndCountAll({
-      include: {
-        model: SalesDetail,
-        as: "details",
-        attributes: ["productName", "salesQuantity"],
-        //  where: includeConditions.length > 0 ? { [Op.or]: includeConditions } : {},
-      },
-      where: searchCondition,
-      offset,
-      limit: parsedLimit,
-      order: [
-        ["custName", sortOrder],
-        ["soldDate", sortDate],
-      ],
-    });
+    const { count: countCustomer, rows: salesCustomer } =
+      await Sales.findAndCountAll({
+        include: {
+          model: SalesDetail,
+          as: "details",
+          attributes: ["productName", "salesQuantity"],
+         
+        },
+        where: searchCondition,
+        offset,
+        limit: parsedLimit,
+        order: [
+          ["custName", sortOrder],
+          ["soldDate", sortDate],
+        ],
+      });
+
+    const { count: countProduct, rows: salesProduct } =
+      await Sales.findAndCountAll({
+        include: {
+          model: SalesDetail,
+          as: "details",
+          attributes: ["productName", "salesQuantity"],
+          where: {
+            productName: { [Op.like]: `%${productName}%` },
+          },
+        },
+       
+        offset,
+        limit: parsedLimit,
+        order: [
+          ["custName", sortOrder],
+          ["soldDate", sortDate],
+        ],
+      });
+
+    let count = countCustomer > 0 ? countCustomer : countProduct;
+    let sales = countCustomer > 0 ? salesCustomer : salesProduct;
 
     // Total pages
     const totalPages = Math.ceil(count / parsedLimit);
