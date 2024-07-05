@@ -308,10 +308,10 @@ exports.querySales = async (req, res) => {
     const searchConditions = [];
 
     if (keyword) {
-      searchConditions.push({ productName: { [Op.like]: `%${keyword}%` } });
+      searchConditions.push({ custName: { [Op.like]: `%${keyword}%` } });
 
       if (isValidDate(keyword)) {
-        searchConditions.push({ expiryDate: { [Op.eq]: keyword } });
+        searchConditions.push({ soldDate: { [Op.eq]: keyword } });
       }
     }
 
