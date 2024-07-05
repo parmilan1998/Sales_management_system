@@ -349,13 +349,20 @@ exports.querySales = async (req, res) => {
 
     // Search condition
     const searchConditions = [];
+    const includeConditions = [];
 
     if (keyword) {
       searchConditions.push({ custName: { [Op.like]: `%${keyword}%` } });
 
+      // Add condition for soldDate if keyword is a valid date
       if (isValidDate(keyword)) {
         searchConditions.push({ soldDate: { [Op.eq]: keyword } });
       }
+
+      // Add condition for productName in SalesDetail
+      includeConditions.push({
+        productName: { [Op.like]: `%${keyword}%` },
+      });
     }
 
     const searchCondition =
@@ -371,6 +378,7 @@ exports.querySales = async (req, res) => {
         model: SalesDetail,
         as: "details",
         attributes: ["productName", "salesQuantity"],
+        // where: includeConditions.length > 0 ? { [Op.or]: includeConditions } : {},
       },
       where: searchCondition,
       offset,

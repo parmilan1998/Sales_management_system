@@ -355,15 +355,19 @@ exports.queryPurchase = async (req, res) => {
     const searchConditions = [];
 
     if (keyword) {
-      searchConditions.push({ productName: { [Op.like]: `%${keyword}%` } });
+      searchConditions.push(
+        { productName: { [Op.like]: `%${keyword}%` } },
+        { purchaseVendor: { [Op.like]: `%${keyword}%` } }
+      );
 
       if (isValidDate(keyword)) {
         searchConditions.push({ purchasedDate: { [Op.eq]: keyword } });
       }
     }
 
-    const searchCondition = searchConditions.length > 0 ? { [Op.or]: searchConditions } : {};
-    
+    const searchCondition =
+      searchConditions.length > 0 ? { [Op.or]: searchConditions } : {};
+
     // Sorting by ASC or DESC
     const sortOrder = sort === "DESC" ? "DESC" : "ASC";
     const sortDate = sortBy === "DESC" ? "DESC" : "ASC";
