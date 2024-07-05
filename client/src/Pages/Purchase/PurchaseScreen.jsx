@@ -16,10 +16,12 @@ const Purchase = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [limit, setLimit] = useState(12);
+  const [sortName, setSortName] = useState("ASC");
+  const [sortDate, setSortDate] = useState("ASC");
 
-  const fetchPurchases = async (sortType = "ASC") => {
-    const url = `http://localhost:5000/api/v1/purchase/query?page=${page}&limit=${limit}&sort=${sortType}&keyword=${search}`;
-    console.log(sortType);
+  const fetchPurchases = async () => {
+    const url = `http://localhost:5000/api/v1/purchase/query?page=${page}&limit=${limit}&sort=${sortName}&sortBy=${sortDate}&keyword=${search}`;
+
     try {
       const res = await axios.get(url);
       const { purchases, pagination } = res.data;
@@ -33,7 +35,7 @@ const Purchase = () => {
 
   useEffect(() => {
     fetchPurchases();
-  }, [page, search, limit]);
+  }, [page, search, limit, sortDate, sortName]);
 
   const confirmDelete = async (id) => {
     await axios
@@ -69,7 +71,10 @@ const Purchase = () => {
         <div className="flex items-center gap-2">
           <h1>SortBy:</h1>
           <PurchaseSort
-            fetchPurchases={(sortType) => fetchPurchases(sortType)}
+            sortName={sortName}
+            setSortName={setSortName}
+            sortDate={sortDate}
+            setSortDate={setSortDate}
           />
           <PurchaseSearch
             search={search}

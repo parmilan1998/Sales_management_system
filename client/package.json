@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@ant-design/pro-components": "^2.7.10",
+    "@mdi/js": "^7.4.47",
+    "@mdi/react": "^1.6.1",
     "antd": "^5.18.3",
     "axios": "^1.7.2",
     "chart.js": "^4.4.3",

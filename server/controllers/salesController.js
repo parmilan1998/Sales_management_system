@@ -282,11 +282,22 @@ exports.deleteSales = async (req, res) => {
   }
 };
 
+const isValidDate = (dateString) => {
+  const date = new Date(dateString);
+  return !isNaN(date.getTime());
+};
+
 // GET -> localhost:5000/api/v1/sales/query
 exports.querySales = async (req, res) => {
   try {
     // Query parameters
-    const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
+    const {
+      keyword,
+      page = 1,
+      limit = 6,
+      sort = "ASC",
+      sortBy = "ASC",
+    } = req.query;
 
     // Pagination
     const parsedPage = parseInt(page, 10);
@@ -294,13 +305,22 @@ exports.querySales = async (req, res) => {
     const offset = (parsedPage - 1) * parsedLimit;
 
     // Search condition
-    const searchCondition = {};
+    const searchConditions = [];
+
     if (keyword) {
-      searchCondition[Op.or] = [{ custName: { [Op.like]: `%${keyword}%` } }];
+      searchConditions.push({ productName: { [Op.like]: `%${keyword}%` } });
+
+      if (isValidDate(keyword)) {
+        searchConditions.push({ expiryDate: { [Op.eq]: keyword } });
+      }
     }
 
-    // Sorting order
-    const sortOrder = sort.toUpperCase() === "DESC" ? "DESC" : "ASC";
+    const searchCondition =
+      searchConditions.length > 0 ? { [Op.or]: searchConditions } : {};
+
+    // Sorting by ASC or DESC
+    const sortOrder = sort === "DESC" ? "DESC" : "ASC";
+    const sortDate = sortBy === "DESC" ? "DESC" : "ASC";
 
     // Querying Sales with included SalesDetail
     const { count, rows: sales } = await Sales.findAndCountAll({
@@ -312,7 +332,10 @@ exports.querySales = async (req, res) => {
       where: searchCondition,
       offset,
       limit: parsedLimit,
-      order: [["soldDate", sortOrder]],
+      order: [
+        ["productName", sortOrder],
+        ["soldDate", sortDate],
+      ],
     });
 
     // Total pages
