@@ -120,10 +120,11 @@ const SalesScreen = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [limit, setLimit] = useState(8);
-  const [sort, setSort] = useState("ASC");
+  const [sortName, setSortName] = useState("ASC");
+  const [sortDate, setSortDate] = useState("ASC");
 
   const fetchSales = async () => {
-    const url = `http://localhost:5000/api/v1/sales/query?page=${page}&limit=${limit}&sort=${sort}&keyword=${search}`;
+    const url = `http://localhost:5000/api/v1/sales/query?page=${page}&limit=${limit}&sort=${sortName}&sortBy=${sortDate}&keyword=${search}`;
     try {
       const res = await axios.get(url);
       const { sales, pagination } = res.data;
@@ -147,7 +148,7 @@ const SalesScreen = () => {
 
   useEffect(() => {
     fetchSales();
-  }, [page, search, limit, sort]);
+  }, [page, search, limit, sortDate, sortName]);
 
   const confirmDelete = async (id) => {
     await axios
@@ -198,7 +199,12 @@ const SalesScreen = () => {
         </div>
         <div className="flex items-center gap-2">
           <h1>SortBy:</h1>
-          <SalesSort sort={sort} setSort={setSort} fetchSales={fetchSales} />
+          <SalesSort
+            sortName={sortName}
+            setSortName={setSortName}
+            sortDate={sortDate}
+            setSortDate={setSortDate}
+          />
           <SalesSearch
             search={search}
             setSearch={setSearch}
