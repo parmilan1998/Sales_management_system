@@ -150,11 +150,22 @@ exports.deleteStocks = async (req, res) => {
   }
 };
 
+const isValidDate = (dateString) => {
+  const date = new Date(dateString);
+  return !isNaN(date.getTime());
+};
+
 // GET -> localhost:5000/api/v1/stocks/query
 exports.queryStocks = async (req, res) => {
   try {
     // Query parameters
-    const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
+    const {
+      keyword,
+      page = 1,
+      limit = 6,
+      sort = "ASC",
+      sortBy = "ASC",
+    } = req.query; 
 
     // Pagination
     const parsedPage = parseInt(page);
@@ -162,21 +173,31 @@ exports.queryStocks = async (req, res) => {
     const offset = (parsedPage - 1) * parsedLimit;
 
     // Search condition
-    const searchCondition = keyword
-      ? {
-          [Op.or]: [{ productName: { [Op.like]: `%${keyword}%` } }],
-        }
-      : {};
+    const searchConditions = [];
 
+    if (keyword) {
+      searchConditions.push({ productName: { [Op.like]: `%${keyword}%` } });
+
+      if (isValidDate(keyword)) {
+        searchConditions.push({ expiryDate: { [Op.eq]: keyword } });
+      }
+    }
+
+    const searchCondition = searchConditions.length > 0 ? { [Op.or]: searchConditions } : {};
+    
     // Sorting by ASC or DESC
     const sortOrder = sort === "DESC" ? "DESC" : "ASC";
+    const sortDate = sortBy === "DESC" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: stocks } = await Stocks.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
-      order: [["productName", sortOrder]],
+      order: [
+        ["productName", sortOrder],
+        ["expiryDate", sortDate],
+      ],
     });
 
     // Total pages

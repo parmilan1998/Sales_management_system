@@ -9,6 +9,7 @@ import StockSort from "../../Components/Stocks/StockSort";
 import { Popconfirm } from "antd";
 import { useNavigate } from "react-router-dom";
 const { Option } = Select;
+import StockSearch from "../../Components/Stocks/StockSearch";
 
 const Stocks = () => {
   const navigate = useNavigate();
@@ -23,7 +24,8 @@ const Stocks = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("ASC");
+  const [sortName, setSortName] = useState("ASC");
+  const [sortDate, setSortDate] = useState("ASC");
   const [limit, setLimit] = useState(10);
 
   const fetchProductNames = async () => {
@@ -44,17 +46,19 @@ const Stocks = () => {
     fetchProductNames();
   }, []);
 
-  const fetchStocks = async (sortType) => {
+  const fetchStocks = async () => {
+    console.log("ttt", sortName, sortDate);
     setLoading(true);
     try {
       const res = await stocksApi.get(
-        `/query?page=${page}&limit=${limit}&sort=${sortType}&keyword=${search}`
+        `/query?page=${page}&limit=${limit}&sort=${sortName}&sortBy=${sortDate}&keyword=${search}`
       );
       console.log("Response data:", res.data);
       const { stocks, pagination } = res.data;
       setTotalPages(pagination.totalPages);
       console.log({ stocks });
       setStocks(stocks);
+      console.log("H", sortDate, sortName);
       console.log("Stocks set:", stocks);
     } catch (err) {
       console.log(err.message);
@@ -64,12 +68,11 @@ const Stocks = () => {
   };
 
   useEffect(() => {
-    console.log("rrr", sort);
+    console.log("ttt", sortName);
     fetchStocks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, sort, search]);
+  }, [page, sortName, sortDate, search]);
 
-  // const formatDate = (dateStr) => new Date(dateStr).toISOString().split("T")[0];
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const year = date.getFullYear();
@@ -247,15 +250,27 @@ const Stocks = () => {
     <ConfigProvider locale={enUSIntl}>
       <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
         <div className="flex flex-col  justify-between py-5 relative">
-          <div className="flex gap-3 mx-5">
-            <h1 className="text-3xl font-semibold font-acme text-red-300">
-              Stocks List
-            </h1>
-            <StockSort
-              sort={sort}
-              setSort={setSort}
-              fetchStocks={fetchStocks}
-            />
+          <div className="flex flex-row ">
+            <div className="flex gap-3 mx-5">
+              <h1 className="text-4xl font-semibold font-acme text-blue-600">
+                Stocks List
+              </h1>
+           
+            </div>
+            <div className="ml-auto flex flex-row mr-4 gap-2">
+            <h2 className="mt-3 ">SortBy:</h2>
+              <StockSort
+                sortName={sortName}
+                setSortName={setSortName}
+                sortDate={sortDate}
+                setSortDate={setSortDate}
+              />
+              <StockSearch
+                search={search}
+                setSearch={setSearch}
+                setPage={setPage}
+              />
+            </div>
           </div>
           <div className="m-5">
             <ProCard>
@@ -332,10 +347,14 @@ const Stocks = () => {
                         pageSize: limit,
                         onChange: (page) => setPage(page),
                       }}
-                      onChange={(filters, sorter, extra) => {
-                        const { columnKey, order } = sorter;
-                        setSort(sort);
-                      }}
+                      // onChange={(filters, sorter, extra) => {
+                      //   const { columnKey, order } = sorter;
+                      //   if (columnKey === "productName") {
+                      //     setSortName(order === "ASC" ? "ASC" : "DESC");
+                      //   } else if (columnKey === "expiryDate") {
+                      //     setSortDate(order === "ASC" ? "ASC" : "DESC");
+                      //   }
+                      // }}
                     />
                   </ProForm>
                 </div>

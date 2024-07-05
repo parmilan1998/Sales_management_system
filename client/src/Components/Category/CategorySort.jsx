@@ -19,14 +19,14 @@ const CategorySort = ({ sort, setSort, fetchCategories }) => {
       {sort === "ASC" ? (
         <button
           onClick={() => handleSort("DESC")}
-          className="p-1 rounded-lg text-lg text-white bg-slate-100 border-blue-500"
+          className="p-1 rounded-lg text-lg text-white bg-slate-100 border-blue-900"
         >
           <FcAlphabeticalSortingZa size={20} className="ml-2" />
         </button>
       ) : (
         <button
           onClick={() => handleSort("ASC")}
-          className="p-1 rounded-lg text-lg text-white bg-slate-100 border-blue-500"
+          className="p-1 rounded-lg text-lg text-white bg-slate-100 border-blue-900"
         >
           <FcAlphabeticalSortingAz size={20} className="ml-2" />
         </button>

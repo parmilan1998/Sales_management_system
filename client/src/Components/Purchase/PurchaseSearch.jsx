@@ -14,7 +14,7 @@ const PurchaseSearch = ({ search, setSearch, setPage }) => {
         placeholder="Search purchases..."
         value={search}
         onChange={handleSearch}
-        className="px-3 py-2 m-0 rounded-lg focus:outline-cyan-500"
+        className="px-3 py-2 m-0 rounded-lg focus:outline-green-600"
       />
     </div>
   );
