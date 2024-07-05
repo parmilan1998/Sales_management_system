@@ -312,7 +312,7 @@ exports.querySales = async (req, res) => {
       where: searchCondition,
       offset,
       limit: parsedLimit,
-      order: [["soldDate", sortOrder]],
+      order: [["custName", sortOrder]],
     });
 
     // Total pages
