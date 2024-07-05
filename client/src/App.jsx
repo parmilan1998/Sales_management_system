@@ -16,7 +16,7 @@ import EditProductScreen from "./Pages/Products/EditProductScreen";
 import AddPurchaseScreen from "./Pages/Purchase/AddPurchaseScreen";
 import EditPurchaseScreen from "./Pages/Purchase/EditPurchaseScreen";
 import SingleCategory from "./Components/Category/SingleCategory";
-import SalesProductFormScreen from "./Pages/Sales/SalesProductFormScreen";
+import AddEditSalesScreen from "./Pages/Sales/AddEditSalesScreen";
 
 const App = () => {
   return (
@@ -35,7 +35,8 @@ const App = () => {
             <Route path="/purchase" element={<Purchase />} />
             <Route path="/purchase/add" element={<AddPurchaseScreen />} />
             <Route path="/purchase/edit/:id" element={<EditPurchaseScreen />} />
-            <Route path="/sales/product" element={<SalesProductFormScreen />} />
+            <Route path="/sales/add" element={<AddEditSalesScreen />} />
+            <Route path="/sales/add/:id" element={<AddEditSalesScreen />} />
             <Route path="/reports" element={<Report />} />
             <Route path="/stocks" element={<Stocks />} />
             <Route path="*" element={<PageNotFound />} />

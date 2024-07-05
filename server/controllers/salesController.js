@@ -265,7 +265,6 @@ exports.getSalesById = async (req, res) => {
       return res.status(404).json({ message: "Sales not found" });
     }
 
-    // Fetch the sales details for the given sales ID
     const saleDetails = await SalesDetail.findAll({
       attributes: ["productName", "salesQuantity"],
       where: {
@@ -273,18 +272,17 @@ exports.getSalesById = async (req, res) => {
       },
     });
 
-    // Construct the products array from saleDetails
     const products = saleDetails.map((detail) => ({
       productName: detail.productName,
       salesQuantity: detail.salesQuantity,
     }));
 
-    // Construct the response object
     const response = {
+      totalRevenue: sales.totalRevenue,
       custName: sales.custName,
       customerContact: sales.customerContact,
       soldDate: sales.soldDate,
-      products: products,
+      details: products,
     };
 
     res.status(200).json(response);

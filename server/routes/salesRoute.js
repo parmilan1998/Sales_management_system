@@ -13,8 +13,8 @@ const {
 router.post("/", createSales);
 router.get("/list", getAllSales);
 router.put("/:id", updateSales);
-router.get("/:id", getSalesById);
 router.get("/query", querySales);
+router.get("/:id", getSalesById);
 router.delete("/:id", deleteSales);
 router.delete("/details/:id", deleteSalesDetail);
 
