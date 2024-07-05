@@ -16,6 +16,7 @@ import EditProductScreen from "./Pages/Products/EditProductScreen";
 import AddPurchaseScreen from "./Pages/Purchase/AddPurchaseScreen";
 import EditPurchaseScreen from "./Pages/Purchase/EditPurchaseScreen";
 import SingleCategory from "./Pages/Category/SingleCategory";
+import AddEditSalesScreen from "./Pages/Sales/AddEditSalesScreen";
 
 const App = () => {
   return (
