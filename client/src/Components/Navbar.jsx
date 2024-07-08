@@ -1,8 +1,35 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { IoNotifications } from "react-icons/io5";
-import { IoIosSettings } from "react-icons/io";
+import { IoIosLogOut, IoIosSettings } from "react-icons/io";
+import { Tooltip } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout, logOutAdmin } from "../features/authSlice";
+import toast from "react-hot-toast";
+import LoginScreen from "../Pages/Admin/LoginScreen";
 
 const Navbar = () => {
+  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/user/login");
+    }
+  }, [user, navigate]);
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logOutAdmin());
+      dispatch(logout());
+      navigate("/");
+      toast.success("Logged out successfully!");
+    } catch (error) {
+      toast.error("Logout failed. Please try again.");
+    }
+  };
+
   return (
     <header>
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 bg-gray-200 w-full font-poppins">
@@ -14,8 +41,27 @@ const Navbar = () => {
               </a>
               <div className="hidden sm:flex">
                 <a href="#" className="text-gray-600">
-                  <IoIosSettings size={22} />
+                  <Tooltip title="Admin Profile">
+                    <IoIosSettings size={22} />
+                  </Tooltip>
                 </a>
+              </div>
+              <div className="hidden sm:flex">
+                {user ? (
+                  <div>
+                    <Tooltip title="Logout">
+                      <button
+                        onClick={handleLogout}
+                        href="#"
+                        className="text-gray-600 font-bold"
+                      >
+                        <IoIosLogOut size={22} />{" "}
+                      </button>
+                    </Tooltip>{" "}
+                  </div>
+                ) : (
+                  <LoginScreen />
+                )}
               </div>
             </div>
             <div className="block md:hidden">

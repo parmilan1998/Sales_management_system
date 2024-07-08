@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-
 import React, { useEffect, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import fetchProducts from "../../api/fetchProducts";
@@ -11,7 +10,7 @@ import ProductPagination from "../../Components/Products/ProductPagination";
 import ProductSort from "../../Components/Products/ProductSort";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
-import { message } from "antd";
+import { message, Tooltip } from "antd";
 
 const ProductScreen = () => {
   const [products, setProducts] = useState([]);
@@ -19,7 +18,7 @@ const ProductScreen = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("ASC");
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(8);
 
   useEffect(() => {
     fetchProducts(null, page, limit, sort, search, setProducts, setTotalPages);
@@ -56,21 +55,24 @@ const ProductScreen = () => {
           <h1 className="text-3xl font-semibold font-acme text-cyan-600">
             Products List
           </h1>
-          <ProductSort
-            sort={sort}
-            setSort={setSort}
-            fetchProducts={() =>
-              fetchProducts(
-                null,
-                page,
-                limit,
-                sort,
-                search,
-                setProducts,
-                setTotalPages
-              )
-            }
-          />
+          <div className="flex gap-1 items-center">
+            <h1 className="text-md font-medium text-gray-600">SortBy:</h1>
+            <ProductSort
+              sort={sort}
+              setSort={setSort}
+              fetchProducts={() =>
+                fetchProducts(
+                  null,
+                  page,
+                  limit,
+                  sort,
+                  search,
+                  setProducts,
+                  setTotalPages
+                )
+              }
+            />
+          </div>
         </div>
         <div className="flex gap-4 items-center">
           <ProductSearch
@@ -80,9 +82,11 @@ const ProductScreen = () => {
           />
 
           <Link to="/products/add">
-            <button className="flex mr-4 justify-center items-center text-white text-2xl px-3 py-3  gap-1 font-medium rounded-full bg-cyan-500">
-              <MdAdd />
-            </button>
+            <Tooltip title="Add Product">
+              <button className="flex mr-4 justify-center items-center text-white text-2xl px-3 py-3  gap-1 font-medium rounded-full bg-cyan-500">
+                <MdAdd />
+              </button>
+            </Tooltip>
           </Link>
         </div>
       </div>

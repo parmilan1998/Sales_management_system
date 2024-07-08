@@ -5,7 +5,7 @@ import { MdDelete } from "react-icons/md";
 import { GrFormView } from "react-icons/gr";
 import { Link } from "react-router-dom";
 import SingleProductPopUp from "./SingleProductPopUp";
-import { Button, Popconfirm } from "antd";
+import { Button, Popconfirm, Tooltip } from "antd";
 import { Modal } from "antd";
 
 const ProductTable = ({
@@ -118,11 +118,13 @@ const ProductTable = ({
                         boxShadow: "none",
                       }}
                     >
-                      <GrFormView
-                        size={36}
-                        color="white"
-                        className="bg-green-500 p-2 rounded-full"
-                      />
+                      <Tooltip title="View Products">
+                        <GrFormView
+                          size={36}
+                          color="white"
+                          className="bg-green-500 p-2 rounded-full"
+                        />{" "}
+                      </Tooltip>
                     </Button>
                     <Modal
                       title="Product Details"
@@ -134,11 +136,13 @@ const ProductTable = ({
                     </Modal>
                     <Link to={`/products/edit/${item.productID}`}>
                       <button className="py-1 ">
-                        <FaRegEdit
-                          size={36}
-                          color="white"
-                          className="bg-sky-500 p-2 rounded-full"
-                        />
+                        <Tooltip title="Edit Products">
+                          <FaRegEdit
+                            size={36}
+                            color="white"
+                            className="bg-sky-500 p-2 rounded-full"
+                          />
+                        </Tooltip>
                       </button>
                     </Link>
                     <Link>
@@ -157,11 +161,13 @@ const ProductTable = ({
                             boxShadow: "none",
                           }}
                         >
-                          <MdDelete
-                            size={36}
-                            color="white"
-                            className="bg-red-500 mt-2.5 p-2 rounded-full"
-                          />
+                          <Tooltip title="Delete Products">
+                            <MdDelete
+                              size={36}
+                              color="white"
+                              className="bg-red-500 mt-2.5 p-2 rounded-full"
+                            />
+                          </Tooltip>
                         </Button>
                       </Popconfirm>
                     </Link>

@@ -8,6 +8,7 @@ import CategoryPagination from "../../Components/Category/CategoryPagination";
 import CategorySearch from "../../Components/Category/CategorySearch";
 import CategorySort from "../../Components/Category/CategorySort";
 import toast from "react-hot-toast";
+import { Tooltip } from "antd";
 
 const Category = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -194,7 +195,9 @@ const Category = () => {
             onClick={openAddPopup}
             className="flex mr-1 my-2 py-1 px-1 w-10 h-8 justify-center items-center text-white text-2xl rounded-lg bg-blue-600 "
           >
-            <IoMdAddCircleOutline className={isRotating ? "rotate" : ""} />
+            <Tooltip title="Add Category">
+              <IoMdAddCircleOutline className={isRotating ? "rotate" : ""} />
+            </Tooltip>
           </button>
         </div>
         {!isOpen && (
