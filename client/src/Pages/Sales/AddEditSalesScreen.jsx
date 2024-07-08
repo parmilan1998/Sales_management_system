@@ -257,8 +257,12 @@ const AddSalesScreen = () => {
                     Ex - Home Essentials
                   </option>
                   {productsData.map((product, i) => (
-                    <option value={product.productName} key={i}>
-                      {product.productName}
+                    <option
+                      value={product.productName}
+                      key={i}
+                      disabled={product.totalQuantity == 0}
+                    >
+                      {product.productName} - Qt({product.totalQuantity})
                     </option>
                   ))}
                 </select>
