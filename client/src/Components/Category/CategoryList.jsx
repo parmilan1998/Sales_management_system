@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import categoryApi from "../../api/category";
-import { Popconfirm } from "antd";
+import { Popconfirm, Tooltip } from "antd";
 
 const CategoryList = ({
   category,
@@ -63,7 +63,9 @@ const CategoryList = ({
 
               <div className="flex justify-between z-20 gap-3 ml-2 mr-2 p-3">
                 <button onClick={() => openEditPopup(item)}>
-                  <FaRegEdit size={20} color="green" />
+                  <Tooltip title="Edit Category">
+                    <FaRegEdit size={20} color="green" />
+                  </Tooltip>
                 </button>
                 <Popconfirm
                   title="Delete the task"
@@ -75,7 +77,9 @@ const CategoryList = ({
                   }}
                 >
                   <button>
-                    <MdDelete size={20} color="red" />
+                    <Tooltip title="Delete Category">
+                      <MdDelete size={20} color="red" />
+                    </Tooltip>
                   </button>
                 </Popconfirm>
               </div>
