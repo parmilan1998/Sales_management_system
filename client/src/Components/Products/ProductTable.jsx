@@ -46,12 +46,7 @@ const ProductTable = ({
             >
               Product Name
             </th>
-            <th
-              scope="col"
-              className="h-12 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
-            >
-              Image
-            </th>
+
             <th
               scope="col"
               className="h-16 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
@@ -93,13 +88,7 @@ const ProductTable = ({
                 <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                   {item.productName}
                 </td>
-                <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500">
-                  <img
-                    src={`${baseUrl}/${item.imageUrl}`}
-                    alt={item.productName}
-                    className="w-32 h-24 px-1 py-3 bg-cover object-fill rounded-md"
-                  />
-                </td>
+
                 <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                   {item.productDescription}
                 </td>
