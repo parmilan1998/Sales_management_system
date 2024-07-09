@@ -342,6 +342,7 @@ exports.updateReport = async (req, res) => {
         totalCOGS,
         totalPurchases,
         totalSales,
+        totalRevenue,
         oldReport.reportID
       );
       // Update the reportFile
