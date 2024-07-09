@@ -145,12 +145,12 @@ const CreateReport = ({
   };
 
   return (
-    <div className="flex mx-10 bg-slate-100 w-3/4 p-2">
+    <div className="flex mx-5 bg-slate-100 w-3/4 p-2 border border-slate-300">
       <form onSubmit={handleSubmit(onSubmit)} className="w-full">
         <div className="flex flex-row justify-between items-center">
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-1">
             <label>Report Type:</label>
-            <select value={reportType} onChange={handleReportTypeChange}>
+            <select value={reportType} onChange={handleReportTypeChange} className="border border-slate-400">
               <option value="Weekly">Weekly</option>
               <option value="Monthly">Monthly</option>
               <option value="Half-Yearly">Half-Yearly</option>
@@ -160,28 +160,30 @@ const CreateReport = ({
             {errors.reportName && <p>This field is required</p>}
           </div>
           {reportType === "Input" && (
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-1 ">
               <label>Specific Report Name:</label>
               <input
                 type="text"
                 name="reportName"
                 value={customReportName}
                 onChange={(e) => setCustomReportName(e.target.value)}
+                className="border border-slate-400"
               />
               {errors.reportName && <p>This field is required</p>}
             </div>
           )}
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-1">
             <label>Start Date:</label>
             <input
               type="date"
               name="startDate"
               value={startDate}
               onChange={handleStartDateChange}
+              className="border border-slate-400"
             />
             {errors.startDate && <p>This field is required</p>}
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-1">
             <label>End Date:</label>
             {reportType === "Input" ? (
               <input
@@ -189,16 +191,18 @@ const CreateReport = ({
                 name="endDate"
                 value={manualEndDate}
                 onChange={handleEndDateChange}
+                className="border border-slate-400"
               />
             ) : (
-              <input type="date" name="endDate" value={endDate} readOnly />
+              <input type="date" name="endDate" value={endDate} readOnly 
+              className="border border-slate-400"/>
             )}
             {errors.endDate && <p>This field is required</p>}
           </div>
           <div className="pt-1 mr-2">
             <button
               type="submit"
-              className="bg-blue-600 text-white text-m rounded-md p-1"
+              className="bg-blue-600 text-white text-m rounded-md p-1 border border-blue-700"
             >
               Generate report
             </button>

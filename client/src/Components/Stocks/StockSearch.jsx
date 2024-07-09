@@ -9,7 +9,7 @@ const StockSearch = ({ search, setSearch, setPage }) => {
   };
 
   return (
-    <div className="flex relative flex-wrap  mx-2  mt-2">
+    <div className="flex relative flex-wrap  mx-2  mt-2 border rounded-md border-slate-500">
       <IoSearch className=" ml-2 mt-2 absolute text-blue-400 " />
       <input
         type="text"

@@ -430,18 +430,25 @@ exports.getAllReport = async (req, res) => {
 exports.queryReport = async (req, res) => {
   try {
     // Query parameters
-    const { page = 1, limit = 6, sort = "ASC" } = req.query;
+    const { page = 1, limit = 8, sort = "ASC",keyword } = req.query;
 
     // Pagination
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
     const offset = (parsedPage - 1) * parsedLimit;
 
+     // Search condition
+     const searchCondition = keyword
+     ? { reportName: { [Op.like]: `%${keyword}%` } }
+     : {};
+
+
     // Sorting by ASC or DESC
     const sortOrder = sort === "DESC" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: reports } = await Reports.findAndCountAll({
+      where: searchCondition,
       offset: offset,
       limit: parsedLimit,
       order: [["createdAt", sortOrder]],

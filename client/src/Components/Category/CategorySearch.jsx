@@ -9,7 +9,7 @@ const CategorySearch = ({ search, setSearch, setPage }) => {
   };
 
   return (
-    <div className="flex relative flex-wrap my-2 mx-2 ">
+    <div className="flex relative flex-wrap my-2 mx-2 border rounded-md border-slate-500 ">
       <IoSearch className="my-2 ml-2 absolute text-blue-400 " />
       <input
         type="text"
