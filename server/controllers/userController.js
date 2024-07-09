@@ -28,10 +28,8 @@ const generateToken = (user) => {
 //       password: hashedPassword,
 //     });
 
-//     const token = generateToken(user);
 //     res.status(201).json({
-//       user: user,
-//       token: token,
+//       user: user
 //     });
 //   } catch (error) {
 //     res.status(500).json({ message: error.message });
@@ -66,7 +64,8 @@ exports.loginUser = async (req, res) => {
     res.status(200).json({
       message: "Admin login successfully",
       token: token,
-      userInfo: user.username,
+      username: user.username,
+      email: user.email,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -86,13 +85,14 @@ exports.logOutUser = async (req, res) => {
 // GET -> localhost:5000/api/v1/user
 exports.getUserDetails = async (req, res) => {
   try {
-    const token = req.cookies.Authorization;
+    const token = req.headers.authorization;
+    const splitedToken = token.split(" ")[1];
 
-    if (!token) {
+    if (!splitedToken) {
       return res.status(401).json({ error: "Not authenticated" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const decoded = jwt.verify(splitedToken, process.env.JWT_SECRET_KEY);
     const user = await User.findByPk(decoded.userID, {
       attributes: ["userID", "email", "username"],
     });
@@ -115,13 +115,15 @@ exports.getUserDetails = async (req, res) => {
 // PUT -> localhost:5000/api/v1/user
 exports.updateUserProfile = async (req, res) => {
   try {
-    const token = req.cookies.Authorization;
+    const token = req.headers.authorization;
+    console.log(token);
+    const splitedToken = token.split(" ")[1];
 
-    if (!token) {
+    if (!splitedToken) {
       return res.status(401).json({ error: "Not authenticated" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const decoded = jwt.verify(splitedToken, process.env.JWT_SECRET_KEY);
     const user = await User.findByPk(decoded.userID);
 
     if (!user) {
@@ -144,6 +146,39 @@ exports.updateUserProfile = async (req, res) => {
         email: user.email,
       },
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// PUT -> localhost:5000/api/v1/user/change-password
+exports.changePassword = async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    const splitedToken = token.split(" ")[1];
+
+    if (!splitedToken) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const decoded = jwt.verify(splitedToken, process.env.JWT_SECRET_KEY);
+    const user = await User.findByPk(decoded.userID);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Current password is incorrect" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ message: "Password changed successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
