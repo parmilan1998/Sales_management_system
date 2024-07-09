@@ -12,13 +12,13 @@ const Report = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("ASC");
+  const [sort, setSort] = useState("DESC");
   const [limit, setLimit] = useState(8);
 
-  const fetchReports = async (sortType) => {
+  const fetchReports = async () => {
     try {
       const res = await reportsApi.get(
-        `/query?page=${page}&limit=${limit}&sort=${sortType}&keyword=${search}`
+        `/query?page=${page}&limit=${limit}&sort=${sort}&keyword=${search}`
       );
       console.log("Response data:", res.data);
       const { reports, pagination } = res.data;
