@@ -173,8 +173,8 @@ const Category = () => {
   }, []);
 
   return (
-    <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
-      <div className="flex flex-row items-center justify-between py-5 relative">
+    <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
+      <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
         <div className="flex flex-row gap-2 items-center">
           <h1 className="text-3xl font-semibold font-acme text-cyan-600">
             Category List

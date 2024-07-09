@@ -117,7 +117,7 @@ const SalesScreen = () => {
   const [limit, setLimit] = useState(8);
   const [sortName, setSortName] = useState("ASC");
   const [sortDate, setSortDate] = useState("ASC");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchSales = async () => {
     const url = `http://localhost:5000/api/v1/sales/query?page=${page}&limit=${limit}&sort=${sortName}&sortBy=${sortDate}&keyword=${search}`;
@@ -132,6 +132,7 @@ const SalesScreen = () => {
             key: `parent-${idx}`,
           });
         });
+      setLoading(false);
       setDataSource(dataList);
       setExpandData(sales.details);
       setTotalPages(pagination.totalPages);
@@ -179,8 +180,8 @@ const SalesScreen = () => {
           />
         </div>
       ) : (
-        <div className="max-w-screen-xl mx-auto lg:px-8 font-poppins cursor-pointer">
-          <div className="flex items-center justify-between gap-4 pb-5">
+        <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
+          <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
             <div className="flex items-center gap-6">
               <h1 className="text-3xl font-medium font-acme">
                 All Sales Here!{" "}

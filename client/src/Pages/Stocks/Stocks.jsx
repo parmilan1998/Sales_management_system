@@ -195,7 +195,7 @@ const Stocks = () => {
       title: "Product Quantity",
       dataIndex: "productQuantity",
       valueType: "digit",
-      width: 80,
+      width: 100,
     },
     {
       title: "Purchase Price",
@@ -253,9 +253,9 @@ const Stocks = () => {
   const rowClassName = "h-2";
   return (
     <ConfigProvider locale={enUSIntl}>
-      <div className=" max-w-screen-xl mx-auto lg:px-16 font-poppins cursor-pointer">
-        <div className="flex flex-col  justify-between py-5 relative">
-          <div className="flex flex-row ">
+      <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
+        <div className="flex flex-col  justify-between pb-5 relative">
+          <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
             <div className="flex gap-3 mx-5">
               <h1 className="text-4xl font-semibold font-acme text-blue-600">
                 Stocks List
