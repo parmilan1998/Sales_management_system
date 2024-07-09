@@ -20,7 +20,6 @@ const LoginScreen = () => {
 
   // Login User
   const onSubmit = async (data) => {
-    console.log("Login Details: ", data);
     try {
       const result = await dispatch(loginAdmin(data));
       if (loginAdmin.fulfilled.match(result)) {
@@ -37,7 +36,7 @@ const LoginScreen = () => {
   };
 
   return (
-    <div className="flex lg:flex-row flex-col  w-full h-screen">
+    <div className="flex lg:flex-row flex-col w-full h-screen">
       <div className=" bg-primaryDefault text-white lg:w-[46%] py-5 w-full lg:rounded-r-[50px] flex justify-center items-center text-center flex-col space-y-14 relative">
         <div className="">
           <h1 className="text-2xl text-white font-poppins font-normal">

@@ -3,7 +3,7 @@ import { IoNotifications } from "react-icons/io5";
 import { IoIosLogOut, IoIosSettings } from "react-icons/io";
 import { Tooltip } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { logout, logOutAdmin } from "../features/authSlice";
 import toast from "react-hot-toast";
 import LoginScreen from "../Pages/Admin/LoginScreen";
@@ -40,11 +40,11 @@ const Navbar = () => {
                 <IoNotifications size={22} />
               </a>
               <div className="hidden sm:flex">
-                <a href="#" className="text-gray-600">
+                <Link to="/profile" className="text-gray-600">
                   <Tooltip title="Admin Profile">
                     <IoIosSettings size={22} />
                   </Tooltip>
-                </a>
+                </Link>
               </div>
               <div className="hidden sm:flex">
                 {user ? (
@@ -55,7 +55,7 @@ const Navbar = () => {
                         href="#"
                         className="text-gray-600 font-bold"
                       >
-                        <IoIosLogOut size={22} />{" "}
+                        <IoIosLogOut size={22} />
                       </button>
                     </Tooltip>{" "}
                   </div>
