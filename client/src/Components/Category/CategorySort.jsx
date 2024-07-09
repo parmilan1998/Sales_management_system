@@ -1,8 +1,8 @@
 import React from "react";
 import {
-  FcAlphabeticalSortingAz,
-  FcAlphabeticalSortingZa,
-} from "react-icons/fc";
+  AiOutlineSortAscending,
+  AiOutlineSortDescending,
+} from "react-icons/ai";
 import PropTypes from "prop-types";
 
 const CategorySort = ({ sort, setSort, fetchCategories }) => {
@@ -15,20 +15,24 @@ const CategorySort = ({ sort, setSort, fetchCategories }) => {
   };
 
   return (
-    <div className="mt-1">
+    <div className="mt-1  ">
       {sort === "ASC" ? (
         <button
           onClick={() => handleSort("DESC")}
-          className="p-1 rounded-lg text-lg text-white bg-slate-100 border-blue-900"
+          className={`p-1 rounded-lg text-lg text-white bg-gray-500 ${
+            sort === "DESC" ? "border-blue-500" : ""
+          }`}
         >
-          <FcAlphabeticalSortingZa size={20} className="ml-2" />
+          <AiOutlineSortDescending size={20} />
         </button>
       ) : (
         <button
           onClick={() => handleSort("ASC")}
-          className="p-1 rounded-lg text-lg text-white bg-slate-100 border-blue-900"
+          className={`p-1 rounded-lg text-lg text-white bg-blue-500 ${
+            sort === "ASC" ? "border-blue-500" : ""
+          }`}
         >
-          <FcAlphabeticalSortingAz size={20} className="ml-2" />
+          <AiOutlineSortAscending size={20} />
         </button>
       )}
     </div>

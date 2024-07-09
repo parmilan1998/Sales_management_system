@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { MdAdd } from "react-icons/md";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import CategoryList from "../../Components/Category/CategoryList";
 import { useForm } from "react-hook-form";

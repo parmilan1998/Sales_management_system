@@ -8,7 +8,7 @@ const PurchaseSearch = ({ search, setSearch, setPage }) => {
   };
 
   return (
-    <div>
+    <div className="border rounded-md border-slate-500">
       <input
         type="text"
         placeholder="Search purchases..."

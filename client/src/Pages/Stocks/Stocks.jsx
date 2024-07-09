@@ -4,7 +4,7 @@ import { ConfigProvider, Select, DatePicker } from "antd";
 import enUSIntl from "antd/lib/locale/en_US";
 import toast from "react-hot-toast";
 import stocksApi from "../../api/stocks";
-import productsApi from "../../api/products";
+import productApi from "../../api/products";
 import StockSort from "../../Components/Stocks/StockSort";
 import { Popconfirm } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +30,7 @@ const Stocks = () => {
 
   const fetchProductNames = async () => {
     try {
-      const res = await productsApi.get("/list");
+      const res = await productApi.get("/list");
       const products = res.data;
       const options = products.map((product) => ({
         label: product.productName,
@@ -83,11 +83,9 @@ const Stocks = () => {
 
   // Create/update stocks
   const onSubmit = async (data) => {
-    console.log("hi", data);
+
     try {
       let res;
-
-      console.log("sss", data);
 
       // Check if manufactured date is after expiry date
       if (
@@ -276,7 +274,7 @@ const Stocks = () => {
               />
             </div>
           </div>
-          <div className="m-5">
+          <div className="m-5 border rounded-md border-slate-400">
             <ProCard>
               {loading ? (
                 <div>Loading...</div>
