@@ -1,15 +1,49 @@
 const { Op } = require("sequelize");
+const { jsPDF } = require("jspdf");
 const Reports = require("../models/reports");
 const Sales = require("../models/sales");
 const Purchase = require("../models/purchase");
 const Stocks = require("../models/stocks");
-const SalesDetail = require("../models/salesDetails");
 const SalesReport = require("../models/salesReport");
+const path = require("path");
+const fs = require("fs");
+
+const generatePDFReport = async (
+  startDate,
+  endDate,
+  reportName,
+  grossProfit,
+  totalCOGS,
+  totalPurchases,
+  totalSales
+) => {
+  // Initialize jsPDF
+  const doc = new jsPDF();
+
+  // Add content to the PDF
+  doc.text(`Gross Profit Report`, 10, 10);
+  doc.text(`Report Name: ${reportName}`, 10, 20);
+  doc.text(`Start Date: ${startDate}`, 10, 30);
+  doc.text(`End Date: ${endDate}`, 10, 40);
+  doc.text(`Total No of Purchases: ${totalPurchases}`, 10, 50);
+  doc.text(`Total COGS: $${totalCOGS.toFixed(2)}`, 10, 60);
+  doc.text(`Total No of Sales: ${totalSales}`, 10, 70);
+  doc.text(`Gross Profit: $${grossProfit.toFixed(2)}`, 10, 80);
+
+  const uploadPath = path.resolve(__dirname, "../public/reports");
+  const pdfFileName = `Gross_Profit_Report_${startDate}_to_${endDate}.pdf`;
+  const pdfFilePath = path.join(uploadPath, pdfFileName);
+
+  // Save the PDF to the filesystem
+  doc.save(pdfFilePath);
+
+  return pdfFileName;
+};
 
 // POST -> localhost:5000/api/v1/reports
 exports.createReport = async (req, res) => {
   try {
-    const { startDate, endDate } = req.body;
+    const { startDate, endDate, reportName } = req.body;
 
     if (!startDate || !endDate) {
       return res.status(400).json({
@@ -69,20 +103,14 @@ exports.createReport = async (req, res) => {
     }, 0);
 
     // Calculate total revenue within the specified period
-    const totalRevenue = await SalesDetail.sum("revenue", {
-      where: {
-        "$sale.soldDate$": {
-          [Op.between]: [start, end],
+    const totalRevenue =
+      (await Sales.sum("totalRevenue", {
+        where: {
+          soldDate: {
+            [Op.between]: [start, end],
+          },
         },
-      },
-      include: [
-        {
-          model: Sales,
-          as: "sale",
-          attributes: [],
-        },
-      ],
-    });
+      })) || 0;
 
     // Calculate total COGS (Cost of Goods Sold)
     const totalCOGS =
@@ -91,13 +119,44 @@ exports.createReport = async (req, res) => {
     // Calculate gross profit
     const grossProfit = totalRevenue - totalCOGS;
 
+    // Count total number of purchases
+    const totalPurchases = await Purchase.count({
+      where: {
+        purchasedDate: {
+          [Op.between]: [start, end],
+        },
+      },
+    });
+
+    // Count total number of sales
+    const totalSales = await Sales.count({
+      where: {
+        soldDate: {
+          [Op.between]: [start, end],
+        },
+      },
+    });
+
+    // Generate PDF report
+    const reportFileName = await generatePDFReport(
+      startDate,
+      endDate,
+      reportName,
+      grossProfit,
+      totalCOGS,
+      totalPurchases,
+      totalSales
+    );
+
     // Create a new report
     const newReport = await Reports.create({
+      reportName: reportName,
       totalRevenue: parseFloat(totalRevenue.toFixed(2)),
       totalCOGS: parseFloat(totalCOGS.toFixed(2)),
       grossProfit: parseFloat(grossProfit.toFixed(2)),
       startDate: startDate,
       endDate: endDate,
+      reportFile: reportFileName,
     });
 
     const salesInPeriod = await Sales.findAll({
@@ -133,7 +192,7 @@ exports.createReport = async (req, res) => {
 exports.updateReport = async (req, res) => {
   try {
     const { id } = req.params;
-    const { startDate, endDate } = req.body;
+    const { startDate, endDate, reportName } = req.body;
 
     if (!startDate || !endDate) {
       return res.status(400).json({
@@ -156,6 +215,22 @@ exports.updateReport = async (req, res) => {
       return res.status(404).json({
         message: "Report not found",
       });
+    }
+    // Check if reportName, startDate, or endDate have changed
+    const isNameChanged = report.reportName !== reportName;
+    const isStartDateChanged = report.startDate !== startDate;
+    const isEndDateChanged = report.endDate !== endDate;
+
+    // Delete old PDF if necessary
+    if (isNameChanged || isStartDateChanged || isEndDateChanged) {
+      const uploadPath = path.resolve(__dirname, "../public/reports");
+      const oldFileName = report.reportFile;
+      const oldFilePath = path.join(uploadPath, oldFileName);
+
+      // Check if old file exists and delete it
+      if (fs.existsSync(oldFilePath)) {
+        fs.unlinkSync(oldFilePath);
+      }
     }
 
     // Calculate beginning inventory cost
@@ -201,21 +276,14 @@ exports.updateReport = async (req, res) => {
     }, 0);
 
     // Calculate total revenue within the specified period
-    const totalRevenue = await SalesDetail.sum("revenue", {
-      where: {
-        "$sale.soldDate$": {
-          [Op.between]: [start, end],
+    const totalRevenue =
+      (await Sales.sum("totalRevenue", {
+        where: {
+          soldDate: {
+            [Op.between]: [start, end],
+          },
         },
-      },
-      include: [
-        {
-          model: Sales,
-          as: "sale",
-          attributes: [],
-        },
-      ],
-      group: ["sale.salesID"],
-    });
+      })) || 0;
 
     // Calculate total COGS (Cost of Goods Sold)
     const totalCOGS =
@@ -224,14 +292,50 @@ exports.updateReport = async (req, res) => {
     // Calculate gross profit
     const grossProfit = totalRevenue - totalCOGS;
 
+    // Count total number of purchases
+    const totalPurchases = await Purchase.count({
+      where: {
+        purchasedDate: {
+          [Op.between]: [start, end],
+        },
+      },
+    });
+
+    // Count total number of sales
+    const totalSales = await Sales.count({
+      where: {
+        soldDate: {
+          [Op.between]: [start, end],
+        },
+      },
+    });
+
     // Update the report
     await report.update({
+      reportName: reportName || report.reportName,
       totalRevenue: parseFloat(totalRevenue.toFixed(2)),
       totalCOGS: parseFloat(totalCOGS.toFixed(2)),
       grossProfit: parseFloat(grossProfit.toFixed(2)),
-      startDate: startDate,
-      endDate: endDate,
+      startDate: startDate || report.startDate,
+      endDate: endDate || report.endDate,
     });
+
+    if (isNameChanged || isStartDateChanged || isEndDateChanged) {
+      const newReportFileName = await generatePDFReport(
+        startDate,
+        endDate,
+        reportName,
+        grossProfit,
+        totalCOGS,
+        totalPurchases,
+        totalSales
+      );
+      // Update the reportFile
+      await report.update({
+        reportFile: newReportFileName,
+      });
+    }
+
     // Clear existing SalesReport entries for the report
     await SalesReport.destroy({
       where: {
@@ -261,7 +365,6 @@ exports.updateReport = async (req, res) => {
       report: report,
     });
   } catch (error) {
-    console.error("Error updating report:", error);
     res.status(500).json({
       message: "An error occurred while updating the report",
       error: error.message,
@@ -325,7 +428,7 @@ exports.queryReport = async (req, res) => {
     const offset = (parsedPage - 1) * parsedLimit;
 
     // Sorting by ASC or DESC
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    const sortOrder = sort === "DESC" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: reports } = await Reports.findAndCountAll({
@@ -347,5 +450,28 @@ exports.queryReport = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+const reportsDirectory = path.resolve(__dirname, "../public/reports");
+
+// Ensure the directory exists
+if (!fs.existsSync(reportsDirectory)) {
+  fs.mkdirSync(reportsDirectory, { recursive: true });
+}
+
+exports.getReport = async (req, res) => {
+  const { id } = req.params;
+  const filePath = path.join(reportsDirectory, `${id}.pdf`);
+
+  try {
+    if (fs.existsSync(filePath)) {
+      res.download(filePath);
+    } else {
+      res.status(404).json({ message: "Report not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching report:", error);
+    res.status(500).json({ message: "Failed to fetch report", error: error.message });
   }
 };
