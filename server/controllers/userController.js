@@ -9,32 +9,32 @@ const generateToken = (user) => {
 };
 
 // POST -> localhost:5000/api/v1/user/register
-// exports.registerUser = async (req, res) => {
-//   try {
-//     const { username, email, password } = req.body;
+exports.registerUser = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
 
-//     // hashing password
-//     const hashedPassword = await bcrypt.hash(password, 10);
+    // hashing password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-//     // Check if user exists already
-//     const userExists = await User.findOne({ where: { email: email } });
-//     if (userExists) {
-//       res.status(409).json({ message: "User already exists" });
-//     }
+    // Check if user exists already
+    const userExists = await User.findOne({ where: { email: email } });
+    if (userExists) {
+      res.status(409).json({ message: "User already exists" });
+    }
 
-//     const user = await User.create({
-//       username,
-//       email,
-//       password: hashedPassword,
-//     });
+    const user = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
 
-//     res.status(201).json({
-//       user: user
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
+    res.status(201).json({
+      user: user,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // POST -> localhost:5000/api/v1/user/login
 exports.loginUser = async (req, res) => {

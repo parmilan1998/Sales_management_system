@@ -13,6 +13,9 @@ const Reports = db.define(
         notEmpty: true,
       },
     },
+    reportName:{
+      type:DataTypes.STRING
+    },
     startDate: {
       type: DataTypes.DATEONLY,
       allowNull: false,
@@ -48,6 +51,9 @@ const Reports = db.define(
         notEmpty: true,
       },
     },
+    reportFile:{
+      type:DataTypes.TEXT
+    }
   },
   {
     timestamps: true,

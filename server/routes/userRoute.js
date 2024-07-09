@@ -1,7 +1,7 @@
 const express = require("express");
 
 const {
-  //   registerUser,
+  // registerUser,
   logOutUser,
   loginUser,
   getUserDetails,
