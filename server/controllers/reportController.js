@@ -18,6 +18,7 @@ const generatePDFReport = async (
   totalCOGS,
   totalPurchases,
   totalSales,
+  totalRevenue,
   reportID
 ) => {
   // Initialize jsPDF
@@ -31,7 +32,8 @@ const generatePDFReport = async (
   doc.text(`Total No of Purchases: ${totalPurchases}`, 10, 50);
   doc.text(`Total COGS: $${totalCOGS.toFixed(2)}`, 10, 60);
   doc.text(`Total No of Sales: ${totalSales}`, 10, 70);
-  doc.text(`Gross Profit: $${grossProfit.toFixed(2)}`, 10, 80);
+  doc.text(`Total Revenue: $${totalRevenue.toFixed(2)}`, 10, 80);
+  doc.text(`Gross Profit: $${grossProfit.toFixed(2)}`, 10, 90);
 
   const uploadPath = path.resolve(__dirname, "../public/reports");
   const pdfFileName = `Gross_Profit_Report_${reportID}.pdf`;
@@ -161,6 +163,7 @@ exports.createReport = async (req, res) => {
           reportName,
           grossProfit,
           totalCOGS,
+          totalRevenue,
           totalPurchases,
           totalSales,
           newReport.reportID

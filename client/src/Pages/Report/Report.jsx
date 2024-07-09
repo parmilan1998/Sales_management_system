@@ -35,6 +35,10 @@ const Report = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sort, search]);
 
+  const closePopup = () => {
+   
+  };
+
   return (
     <div>
       <div className="my-2 mx-4">
@@ -46,6 +50,7 @@ const Report = () => {
           endDate={endDate}
           setEndDate={setEndDate}
           fetchReports={fetchReports}
+          closePopup={closePopup}
         />
       </div>
       <div>
