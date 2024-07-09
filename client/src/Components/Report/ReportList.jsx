@@ -20,9 +20,11 @@ const ReportList = ({ fetchReports, report, limit, page }) => {
     }
   };
 
-  const handleFileDownload = async (fileName) => {
+  const handleFileDownload = async (reportID) => {
     try {
-      const response = await reportsApi.downloadReport(fileName);
+      const response = await reportsApi.get(`/download/${reportID}`, {
+        responseType: "blob", // Ensure responseType is 'blob' to handle binary data
+      });
 
       // Create a blob from the response data
       const blob = new Blob([response.data], { type: "application/pdf" });
@@ -33,7 +35,7 @@ const ReportList = ({ fetchReports, report, limit, page }) => {
       // Create a link element and click it to trigger the download
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", fileName);
+      link.setAttribute("download", `Gross_Profit_Report_${reportID}.pdf`);
       document.body.appendChild(link);
       link.click();
 
@@ -124,8 +126,8 @@ const ReportList = ({ fetchReports, report, limit, page }) => {
                   data-th="Role"
                   className="before:w-24 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-12 px-6 text-sm transition duration-300 sm:border-t sm:border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500"
                 >
-                  <button onClick={() => handleFileDownload(item.reportFile)}>
-                    Download
+                  <button onClick={() => handleFileDownload(item.reportID)}>
+                    {item.reportFile}
                   </button>
                 </td>
                 <td

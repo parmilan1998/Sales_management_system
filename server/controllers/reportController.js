@@ -8,6 +8,8 @@ const SalesReport = require("../models/salesReport");
 const path = require("path");
 const fs = require("fs");
 
+
+
 const generatePDFReport = async (
   startDate,
   endDate,
@@ -15,7 +17,8 @@ const generatePDFReport = async (
   grossProfit,
   totalCOGS,
   totalPurchases,
-  totalSales
+  totalSales,
+  reportID
 ) => {
   // Initialize jsPDF
   const doc = new jsPDF();
@@ -31,9 +34,10 @@ const generatePDFReport = async (
   doc.text(`Gross Profit: $${grossProfit.toFixed(2)}`, 10, 80);
 
   const uploadPath = path.resolve(__dirname, "../public/reports");
-  const pdfFileName = `Gross_Profit_Report_${startDate}_to_${endDate}.pdf`;
+  const pdfFileName = `Gross_Profit_Report_${reportID}.pdf`;
   const pdfFilePath = path.join(uploadPath, pdfFileName);
 
+  console.log(`PDF Report saved: ${pdfFilePath}`);
   // Save the PDF to the filesystem
   doc.save(pdfFilePath);
 
@@ -137,16 +141,7 @@ exports.createReport = async (req, res) => {
       },
     });
 
-    // Generate PDF report
-    const reportFileName = await generatePDFReport(
-      startDate,
-      endDate,
-      reportName,
-      grossProfit,
-      totalCOGS,
-      totalPurchases,
-      totalSales
-    );
+
 
     // Create a new report
     const newReport = await Reports.create({
@@ -156,8 +151,23 @@ exports.createReport = async (req, res) => {
       grossProfit: parseFloat(grossProfit.toFixed(2)),
       startDate: startDate,
       endDate: endDate,
-      reportFile: reportFileName,
+    
     });
+
+        // Generate PDF report
+        const reportFileName = await generatePDFReport(
+          startDate,
+          endDate,
+          reportName,
+          grossProfit,
+          totalCOGS,
+          totalPurchases,
+          totalSales,
+          newReport.reportID
+        );
+
+        newReport.reportFile = reportFileName;
+        await newReport.save();
 
     const salesInPeriod = await Sales.findAll({
       where: {
@@ -453,8 +463,8 @@ exports.queryReport = async (req, res) => {
   }
 };
 
-const reportsDirectory = path.resolve(__dirname, "../public/reports");
 
+const reportsDirectory = path.resolve(__dirname, "../public/reports");
 // Ensure the directory exists
 if (!fs.existsSync(reportsDirectory)) {
   fs.mkdirSync(reportsDirectory, { recursive: true });
@@ -462,7 +472,7 @@ if (!fs.existsSync(reportsDirectory)) {
 
 exports.getReport = async (req, res) => {
   const { id } = req.params;
-  const filePath = path.join(reportsDirectory, `${id}.pdf`);
+  const filePath = path.join(reportsDirectory, `Gross_Profit_Report_${id}.pdf`);
 
   try {
     if (fs.existsSync(filePath)) {
