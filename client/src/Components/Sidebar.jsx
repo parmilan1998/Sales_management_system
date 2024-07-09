@@ -43,7 +43,7 @@ export default function Sidebar() {
       <button
         title="Side navigation"
         type="button"
-        className={`visible fixed flex justify-end right-8 top-6 z-40 order-10 h-10 w-10 self-center rounded bg-white opacity-100 lg:hidden ${
+        className={`visible fixed flex justify-end right-8 top-6 z-40 order-10 h-10 w-10 self-center rounded bg-gray-300 opacity-100 lg:hidden ${
           isSideNavOpen
             ? "visible opacity-100 [&_span:nth-child(1)]:w-6 [&_span:nth-child(1)]:translate-y-0 [&_span:nth-child(1)]:rotate-45 [&_span:nth-child(3)]:w-0 [&_span:nth-child(2)]:-rotate-45 "
             : ""
@@ -88,7 +88,7 @@ export default function Sidebar() {
           className="flex-1 text-white overflow-auto"
         >
           <div>
-            <ul className="flex flex-1 flex-col gap-3 pt-5">
+            <ul className="flex flex-1 flex-col gap-2 pt-5">
               <li className="px-3">
                 <Link
                   to="/"

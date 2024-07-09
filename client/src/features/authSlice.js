@@ -3,11 +3,14 @@ import axios from "axios";
 
 export const loginAdmin = createAsyncThunk("/user/login", async (data) => {
   const res = await axios.post(`http://localhost:5000/api/v1/user/login`, data);
+  console.log({ res });
+  localStorage.setItem("token", res.data.token);
   return res.data;
 });
 
 export const logOutAdmin = createAsyncThunk("/logout", async () => {
   await axios.post(`http://localhost:5000/api/v1/user/logout`);
+  localStorage.removeItem("token");
   return {};
 });
 
@@ -16,7 +19,7 @@ const initialState = {
 };
 
 const authSlice = createSlice({
-  name: "auth",
+  name: "user",
   initialState: initialState,
   reducers: {
     login: (state, action) => {
