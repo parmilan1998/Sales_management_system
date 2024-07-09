@@ -274,7 +274,7 @@ const Stocks = () => {
               />
             </div>
           </div>
-          <div className="m-5">
+          <div className="m-5 border rounded-md border-slate-400">
             <ProCard>
               {loading ? (
                 <div>Loading...</div>

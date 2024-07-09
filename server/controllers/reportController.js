@@ -321,7 +321,7 @@ exports.updateReport = async (req, res) => {
     });
 
     // Update the report
-    await report.update({
+    const oldReport = await report.update({
       reportName: reportName || report.reportName,
       totalRevenue: parseFloat(totalRevenue.toFixed(2)),
       totalCOGS: parseFloat(totalCOGS.toFixed(2)),
@@ -338,7 +338,8 @@ exports.updateReport = async (req, res) => {
         grossProfit,
         totalCOGS,
         totalPurchases,
-        totalSales
+        totalSales,
+        oldReport.reportID
       );
       // Update the reportFile
       await report.update({
@@ -421,6 +422,17 @@ exports.getAllReport = async (req, res) => {
     res.status(200).json({
       reports: reports,
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/reports/:id
+exports.getReportByID = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const report = await Reports.findByPk(id);
+    res.status(200).json(report);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
