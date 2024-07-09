@@ -11,6 +11,7 @@ import { LuPlus } from "react-icons/lu";
 import Barcode from "react-barcode";
 import SalesSearch from "../../Components/Sales/SalesSearch";
 import SalesSort from "../../Components/Sales/SalesSort";
+import { Triangle } from "react-loader-spinner";
 
 const SalesScreen = () => {
   const navigate = useNavigate();
@@ -116,6 +117,7 @@ const SalesScreen = () => {
   const [limit, setLimit] = useState(8);
   const [sortName, setSortName] = useState("ASC");
   const [sortDate, setSortDate] = useState("ASC");
+  const [loading, setLoading] = useState(true);
 
   const fetchSales = async () => {
     const url = `http://localhost:5000/api/v1/sales/query?page=${page}&limit=${limit}&sort=${sortName}&sortBy=${sortDate}&keyword=${search}`;
@@ -130,6 +132,7 @@ const SalesScreen = () => {
             key: `parent-${idx}`,
           });
         });
+      setLoading(false);
       setDataSource(dataList);
       setExpandData(sales.details);
       setTotalPages(pagination.totalPages);
@@ -163,45 +166,63 @@ const SalesScreen = () => {
   };
 
   return (
-    <div className="max-w-screen-xl mx-auto lg:px-8 font-poppins cursor-pointer">
-      <div className="flex items-center justify-between gap-4 pb-5">
-        <div className="flex items-center gap-6">
-          <h1 className="text-3xl font-medium font-acme">All Sales Here! </h1>
-          <Link
-            to="/sales/add"
-            className="bg-cyan-500 text-white px-3 py-2 rounded flex gap-2 items-center"
-          >
-            <LuPlus />
-            New Sale
-          </Link>
-        </div>
-        <div className="flex items-center gap-2">
-          <h1>SortBy:</h1>
-          <SalesSort
-            sortName={sortName}
-            setSortName={setSortName}
-            sortDate={sortDate}
-            setSortDate={setSortDate}
-          />
-          <SalesSearch
-            search={search}
-            setSearch={setSearch}
-            setPage={setPage}
+    <>
+      {loading ? (
+        <div className="flex justify-center items-center w-full h-[75vh]">
+          <Triangle
+            visible={true}
+            height="100"
+            width="100"
+            color="#4fa94d"
+            ariaLabel="triangle-loading"
+            wrapperStyle={{}}
+            wrapperClass=""
           />
         </div>
-      </div>
-      <div className="py-5">
-        <SalesTable
-          expandedRowRender={(record) => expandedRowRender(record)}
-          columns={columns}
-          dataSource={dataSource}
-          page={page}
-          limit={limit}
-          setPage={setPage}
-          totalPages={totalPages}
-        />
-      </div>
-    </div>
+      ) : (
+        <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
+          <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
+            <div className="flex items-center gap-6">
+              <h1 className="text-3xl font-medium font-acme">
+                All Sales Here!{" "}
+              </h1>
+              <Link
+                to="/sales/add"
+                className="bg-cyan-500 text-white px-3 py-2 rounded flex gap-2 items-center"
+              >
+                <LuPlus />
+                New Sale
+              </Link>
+            </div>
+            <div className="flex items-center gap-2">
+              <h1>SortBy:</h1>
+              <SalesSort
+                sortName={sortName}
+                setSortName={setSortName}
+                sortDate={sortDate}
+                setSortDate={setSortDate}
+              />
+              <SalesSearch
+                search={search}
+                setSearch={setSearch}
+                setPage={setPage}
+              />
+            </div>
+          </div>
+          <div className="py-5">
+            <SalesTable
+              expandedRowRender={(record) => expandedRowRender(record)}
+              columns={columns}
+              dataSource={dataSource}
+              page={page}
+              limit={limit}
+              setPage={setPage}
+              totalPages={totalPages}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

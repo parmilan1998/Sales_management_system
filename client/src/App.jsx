@@ -17,6 +17,8 @@ import AddPurchaseScreen from "./Pages/Purchase/AddPurchaseScreen";
 import EditPurchaseScreen from "./Pages/Purchase/EditPurchaseScreen";
 import SingleCategory from "./Pages/Category/SingleCategory";
 import AddEditSalesScreen from "./Pages/Sales/AddEditSalesScreen";
+import LoginScreen from "./Pages/Admin/LoginScreen";
+import ProfileSettingsScreen from "./Pages/ProfileSettingsScreen";
 
 const App = () => {
   return (
@@ -38,9 +40,11 @@ const App = () => {
             <Route path="/sales/add" element={<AddEditSalesScreen />} />
             <Route path="/sales/add/:id" element={<AddEditSalesScreen />} />
             <Route path="/reports" element={<Report />} />
+            <Route path="/profile" element={<ProfileSettingsScreen />} />
             <Route path="/stocks" element={<Stocks />} />
             <Route path="*" element={<PageNotFound />} />
           </Route>
+          <Route path="/user/login" element={<LoginScreen />} />
         </Routes>
       </BrowserRouter>
     </>

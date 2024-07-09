@@ -28,7 +28,7 @@ const Purchase = () => {
       setPurchase(purchases);
       setTotalPages(pagination.totalPages);
       console.log(res.data);
-    } catch (error) { 
+    } catch (error) {
       console.error(error);
     }
   };
@@ -57,12 +57,12 @@ const Purchase = () => {
 
   return (
     <div className=" max-w-screen-xl mx-auto lg:px-8 font-poppins">
-      <div className="flex items-center justify-between gap-4 pb-5">
+      <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
         <div className="flex items-center gap-6">
           <h1 className="text-3xl font-medium font-acme">All Purchases </h1>
           <Link
             to="/purchase/add"
-            className="bg-green-600 text-white px-3 py-2 rounded flex gap-2 items-center"
+            className="bg-green-600 text-white px-3 py-1.5 rounded flex gap-2 items-center"
           >
             <LuPlus />
             New Purchase

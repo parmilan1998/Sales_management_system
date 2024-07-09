@@ -4,6 +4,7 @@ import {
   AiOutlineSortDescending,
 } from "react-icons/ai";
 import PropTypes from "prop-types";
+import { Tooltip } from "antd";
 
 const ProductSort = ({ sort, setSort, fetchProducts }) => {
   const handleSort = (selectedSort) => {
@@ -22,7 +23,9 @@ const ProductSort = ({ sort, setSort, fetchProducts }) => {
             sort === "DESC" ? "border-blue-500" : ""
           }`}
         >
-          <AiOutlineSortDescending size={20} />
+          <Tooltip title="Products Ascending">
+            <AiOutlineSortDescending size={20} />
+          </Tooltip>
         </button>
       ) : (
         <button
@@ -31,7 +34,9 @@ const ProductSort = ({ sort, setSort, fetchProducts }) => {
             sort === "ASC" ? "border-blue-500" : ""
           }`}
         >
-          <AiOutlineSortAscending size={20} />
+          <Tooltip title="Products Descending">
+            <AiOutlineSortAscending size={20} />
+          </Tooltip>
         </button>
       )}
     </div>
