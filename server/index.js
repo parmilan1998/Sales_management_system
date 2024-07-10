@@ -50,6 +50,7 @@ app.use(cookieParser());
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/public", express.static(path.join(__dirname, "./public")));
