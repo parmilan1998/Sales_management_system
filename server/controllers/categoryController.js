@@ -25,6 +25,10 @@ exports.createCategory = async (req, res) => {
       categoryDescription,
       imageUrl: req.file ? req.file.filename : null,
     });
+
+    // Emit event for real-time updates
+    req.app.get("socketio").emit("categoryCreated", creCategory);
+
     res.status(201).json({
       message: "Category Created Successfully!",
       category: creCategory,
@@ -167,5 +171,18 @@ exports.queryCategory = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/category/count
+exports.getCategoryCount = async (req, res) => {
+  try {
+    const count = await Category.count();
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching category count:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching category count", error: error.message });
   }
 };

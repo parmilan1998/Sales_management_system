@@ -100,7 +100,7 @@ exports.createSales = async (req, res) => {
     }
 
     // Emit event to notify clients about the new sales
-    req.app.get("socketio").emit("salesUpdated", createdSales);
+    req.app.get("socketio").emit("salesCreated", createdSales);
 
     res.status(201).json({
       message: "Sales added successfully",
@@ -154,12 +154,14 @@ exports.updateSales = async (req, res) => {
     existingSale.custName = custName || existingSale.custName;
     existingSale.customerContact =
       customerContact || existingSale.customerContact;
+
     existingSale.soldDate = soldDate || existingSale.soldDate;
 
     // Remove old sales details and restore quantities
     const oldSalesDetails = await SalesDetail.findAll({
       where: { salesID: id },
     });
+
     for (const detail of oldSalesDetails) {
       const stock = await Stocks.findByPk(detail.stockID);
       stock.productQuantity += detail.salesQuantity;
@@ -519,18 +521,18 @@ exports.returnProductFromSale = async (req, res) => {
     salesDetail.revenue = salesDetail.unitPrice * salesDetail.salesQuantity;
     await salesDetail.save();
 
-      // Update the total revenue for the sale
-      const updatedSaleDetails = await SalesDetail.findAll({
-        where: { salesID: salesID },
-      });
-  
-      const totalRevenue = updatedSaleDetails.reduce(
-        (total, detail) => total + detail.revenue,
-        0
-      );
-      existingSale.totalRevenue = totalRevenue;
-      await existingSale.save();
-  
+    // Update the total revenue for the sale
+    const updatedSaleDetails = await SalesDetail.findAll({
+      where: { salesID: salesID },
+    });
+
+    const totalRevenue = updatedSaleDetails.reduce(
+      (total, detail) => total + detail.revenue,
+      0
+    );
+    existingSale.totalRevenue = totalRevenue;
+    await existingSale.save();
+
     // Emit event to notify clients about the updated sale
     req.app.get("socketio").emit("salesUpdated", existingSale);
 

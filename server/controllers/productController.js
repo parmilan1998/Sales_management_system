@@ -42,6 +42,9 @@ exports.createProduct = async (req, res) => {
       imageUrl: req.file ? req.file.filename : null,
     });
 
+    // Emit event for real-time updates
+    req.app.get("socketio").emit("productCreated", newProduct);
+
     res.status(201).json({
       message: "Product added successfully",
       result: newProduct,
@@ -326,5 +329,16 @@ exports.queryProducts = async (req, res) => {
     });
   } catch (error) {
     res.status(500).send({ message: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/product/count
+exports.getProductCount = async (req, res) => {
+  try {
+    const count = await Product.count();
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching product count:", error);
+    res.status(500).json({ message: "Error fetching product count", error: error.message });
   }
 };

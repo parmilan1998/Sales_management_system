@@ -64,6 +64,8 @@ exports.createPurchase = async (req, res) => {
       },
     });
 
+    let updatedStock;
+
     if (existingStock) {
       // Update product quantity for the existing product
       existingStock.productQuantity += purchaseQuantity;
@@ -73,9 +75,9 @@ exports.createPurchase = async (req, res) => {
       } else {
         existingStock.relatedPurchaseIDs = `${createdPurchase.purchaseID}`;
       }
-      await existingStock.save();
+      updatedStock = await existingStock.save();
     } else {
-      await Stocks.create({
+      updatedStock = await Stocks.create({
         productName,
         productID: product.productID,
         purchaseID: createdPurchase.purchaseID,
@@ -87,6 +89,10 @@ exports.createPurchase = async (req, res) => {
         relatedPurchaseIDs: `${createdPurchase.purchaseID}`,
       });
     }
+
+    // Emit event for stock update
+    req.app.get("socketio").emit("stockUpdated", updatedStock);
+    req.app.get("socketio").emit("purchaseCreated", createdPurchase);
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
@@ -253,33 +259,37 @@ exports.updatePurchase = async (req, res) => {
         newStock.relatedPurchaseIDs = `${existingPurchase.purchaseID}`;
       }
       await newStock.save();
+
+      // Emit event for stock update
+      req.app.get("socketio").emit("stockUpdated", newStock);
     } else {
       // If product name is not changing, just update the quantity difference
       if (quantityDifference !== 0) {
         newStock.productQuantity += quantityDifference;
         await newStock.save();
+        // Emit event for stock update
+        req.app.get("socketio").emit("stockUpdated", newStock);
       }
     }
 
-    // Update the existing purchase record
-    existingPurchase.productID = newProduct.productID;
-    existingPurchase.productName = productName;
-    if (purchaseQuantity !== undefined)
-      existingPurchase.purchaseQuantity = purchaseQuantity;
-    if (purchasePrice !== undefined) {
-      existingPurchase.purchasePrice = purchasePrice;
-      existingPurchase.COGP =
-        purchasePrice * (purchaseQuantity || existingPurchase.purchaseQuantity);
-    }
-    if (purchaseVendor !== undefined)
-      existingPurchase.purchaseVendor = purchaseVendor;
-    if (vendorContact !== undefined)
-      existingPurchase.vendorContact = vendorContact;
-    if (purchasedDate !== undefined)
-      existingPurchase.purchasedDate = purchasedDate;
+    // Update the existing purchase record using update method
+    await existingPurchase.update({
+      productID: newProduct.productID,
+      productName,
+      purchaseQuantity:
+        purchaseQuantity !== undefined
+          ? purchaseQuantity
+          : existingPurchase.purchaseQuantity,
+      purchasePrice,
+      COGP:
+        purchasePrice * (purchaseQuantity || existingPurchase.purchaseQuantity),
+      purchaseVendor,
+      vendorContact,
+      purchasedDate,
+    });
 
-    // Save the updated purchase record
-    await existingPurchase.save();
+    // Emit event for purchase update
+    req.app.get("socketio").emit("purchaseUpdated", existingPurchase);
 
     res.status(200).json({
       message: `Purchase record with ID '${id}' updated successfully`,
@@ -399,7 +409,6 @@ exports.queryPurchase = async (req, res) => {
   }
 };
 
-
 //PUT ->localhost:5000/api/v1/purchase/return/:id
 exports.returnPurchase = async (req, res) => {
   const { id } = req.params;
@@ -426,11 +435,9 @@ exports.returnPurchase = async (req, res) => {
     });
 
     if (!stock) {
-      return res
-        .status(404)
-        .json({
-          error: `Stock entry for purchase ID '${existingPurchase.purchaseID}' not found`,
-        });
+      return res.status(404).json({
+        error: `Stock entry for purchase ID '${existingPurchase.purchaseID}' not found`,
+      });
     }
 
     if (returnQuantity <= 0) {
