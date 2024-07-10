@@ -37,23 +37,7 @@ const Purchase = () => {
     fetchPurchases();
   }, [page, search, limit, sortDate, sortName]);
 
-  const confirmDelete = async (id) => {
-    await axios
-      .delete(`http://localhost:5000/api/v1/purchase/${id}`)
-      .then((res) => {
-        message.success("Purchase deleted Successfully!");
-        fetchPurchases();
-        setPage(1);
-      })
-      .catch((err) => {
-        toast.error("Error deleting purchase!");
-        console.log(err);
-      });
-  };
-
-  const cancelDelete = () => {
-    message.error("Purchase deletion cancelled!");
-  };
+  
 
   return (
     <div className=" max-w-screen-xl mx-auto lg:px-8 font-poppins">
@@ -86,8 +70,7 @@ const Purchase = () => {
       <div>
         <PurchaseCard
           purchase={purchase}
-          confirmDelete={confirmDelete}
-          cancelDelete={cancelDelete}
+      
         />
       </div>
       <PurchasePagination

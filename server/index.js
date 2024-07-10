@@ -2,6 +2,24 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
+const app = express();
+
+//Set up a basic Socket.IO server
+const socketIO = require('socket.io')
+const http = require('http')
+const server =http.createServer(app)
+const io =socketIO(server)
+
+io.on('connection',(socket)=>{
+  console.log('New client connected')
+
+  socket.on('disconnect',()=>{
+    console.log('Client disconnect');
+  })
+})
+
+// Make the Socket.IO instance available to your routes
+app.set('socketio', io);
 
 const categoryRoute = require("./routes/categoryRoute");
 const productRoute = require("./routes/productRoute");
@@ -22,13 +40,13 @@ const Stocks = require("./models/stocks");
 
 dotenv.config();
 
-const app = express();
-
 //Middleware for parse JSON bodies
 const corsOptions = {
   origin: "http://localhost:5173",
   credentials: true,
 };
+// Middleware to parse cookies
+app.use(cookieParser());
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
@@ -37,8 +55,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/public", express.static(path.join(__dirname, "./public")));
 
-// Middleware to parse cookies
-app.use(cookieParser());
+
 
 app.use("/api/v1/category", categoryRoute);
 app.use("/api/v1/product", productRoute);
@@ -62,7 +79,7 @@ SalesDetail.belongsTo(Stocks, { foreignKey: "stockID", targetKey: "stockID" });
 db.sync()
   .then(() => {
     console.log("Database synced successfully");
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   })

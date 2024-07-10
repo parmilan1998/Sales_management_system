@@ -48,6 +48,10 @@ exports.createStocks = async (req, res) => {
         productQuantity:
           existingStock.productQuantity + parseInt(productQuantity),
       });
+
+      // Emit event for real-time updates
+      req.app.get("socketio").emit("stock Updated", updatedStock);
+
       return res.status(201).json({
         message: "Stocks updated Successfully!",
         stocks: updatedStock,
@@ -76,6 +80,9 @@ exports.createStocks = async (req, res) => {
       purchasedDate,
       purchaseID: null,
     });
+
+    // Emit event for real-time updates
+    req.app.get("socketio").emit("stock Created", createdStock);
 
     return res.status(201).json({
       message: "Stocks Created Successfully!",
@@ -123,6 +130,9 @@ exports.updateStocks = async (req, res) => {
       purchasedDate,
     });
 
+    // Emit event for real-time updates
+    req.app.get("socketio").emit("stock Updated", updatedStock);
+
     res.status(200).json({
       message: "Stock updated successfully",
       updateStock: stockUpdate,
@@ -165,7 +175,7 @@ exports.queryStocks = async (req, res) => {
       limit = 6,
       sort = "ASC",
       sortBy = "ASC",
-    } = req.query; 
+    } = req.query;
 
     // Pagination
     const parsedPage = parseInt(page);
@@ -183,8 +193,9 @@ exports.queryStocks = async (req, res) => {
       }
     }
 
-    const searchCondition = searchConditions.length > 0 ? { [Op.or]: searchConditions } : {};
-    
+    const searchCondition =
+      searchConditions.length > 0 ? { [Op.or]: searchConditions } : {};
+
     // Sorting by ASC or DESC
     const sortOrder = sort === "DESC" ? "DESC" : "ASC";
     const sortDate = sortBy === "DESC" ? "DESC" : "ASC";
@@ -215,3 +226,15 @@ exports.queryStocks = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// GET -> localhost:5000/api/v1/stocks/total
+exports.getTotalProductQuantity = async (req, res) => {
+  try {
+    const totalQuantity = await Stocks.sum('productQuantity');
+    res.status(200).json({ totalQuantity });
+  } catch (error) {
+    console.error("Error fetching total product quantity:", error);
+    res.status(500).json({ message: "Error fetching total product quantity", error: error.message });
+  }
+};
+

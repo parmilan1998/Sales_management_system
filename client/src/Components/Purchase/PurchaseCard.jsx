@@ -84,16 +84,7 @@ const PurchaseCard = ({ purchase, confirmDelete, cancelDelete }) => {
                   </button>
                 </Link>
                 <div className="flex items-center cursor-pointer">
-                  <Popconfirm
-                    title="Delete the Purchase"
-                    description="Are you sure you want to delete this purchase?"
-                    onConfirm={() => confirmDelete(purchase.purchaseID)}
-                    onCancel={cancelDelete}
-                    okText="Yes"
-                    cancelText="No"
-                  >
-                    <MdDelete size={24} color="red" />
-                  </Popconfirm>
+                
                 </div>
               </div>
             </div>
