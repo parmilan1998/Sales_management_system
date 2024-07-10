@@ -88,16 +88,16 @@ export default function Sidebar() {
           className="flex-1 text-white overflow-auto"
         >
           <div>
-            <ul className="flex flex-1 flex-col gap-2 pt-5">
+            <ul className="flex flex-1 flex-col gap-1 pt-5">
               <li className="px-3">
                 <Link
                   to="/"
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center">
-                    <AiOutlineDashboard size={24} />
+                    <AiOutlineDashboard size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-base">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Dashboard
                   </div>
                 </Link>
@@ -108,9 +108,9 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <BiCategoryAlt size={24} />
+                    <BiCategoryAlt size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-base">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Category
                   </div>
                   {/* <span className="inline-flex items-center justify-center rounded-full bg-pink-100 px-2 text-xs text-pink-500 ">
@@ -124,9 +124,9 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <FaTag size={22} />
+                    <FaTag size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-base">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Products
                   </div>
                 </Link>
@@ -137,9 +137,9 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <RiStockFill size={24} />
+                    <RiStockFill size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-base">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Stocks
                   </div>
                 </Link>
@@ -150,9 +150,9 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <FaTag size={22} />
+                    <FaTag size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-base">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Purchase
                   </div>
                 </Link>
@@ -163,9 +163,9 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <FcSalesPerformance size={24} />
+                    <FcSalesPerformance size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-base">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Sales
                   </div>
                 </Link>
@@ -176,9 +176,9 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <BiSolidReport size={22} />
+                    <BiSolidReport size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-base">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Reports
                   </div>
                 </Link>
@@ -189,9 +189,9 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <IoIosSettings size={22} />
+                    <IoIosSettings size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-base">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Settings
                   </div>
                 </Link>
