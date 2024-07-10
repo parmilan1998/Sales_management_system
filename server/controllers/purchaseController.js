@@ -291,43 +291,43 @@ exports.updatePurchase = async (req, res) => {
   }
 };
 
-// DELETE -> localhost:5000/api/v1/purchase/:id
-exports.deletePurchase = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const purchase = await Purchase.findByPk(id);
-    if (!purchase) {
-      return res.status(404).json({ message: "Purchase not found" });
-    }
+// // DELETE -> localhost:5000/api/v1/purchase/:id
+// exports.deletePurchase = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const purchase = await Purchase.findByPk(id);
+//     if (!purchase) {
+//       return res.status(404).json({ message: "Purchase not found" });
+//     }
 
-    // Remove related purchaseID from purchaseID in Stocks table
-    const stockEntries = await Stocks.findAll({
-      where: {
-        relatedPurchaseIDs: {
-          [Op.like]: `%${id}%`,
-        },
-      },
-    });
+//     // Remove related purchaseID from purchaseID in Stocks table
+//     const stockEntries = await Stocks.findAll({
+//       where: {
+//         relatedPurchaseIDs: {
+//           [Op.like]: `%${id}%`,
+//         },
+//       },
+//     });
 
-    for (const stock of stockEntries) {
-      if (purchase.purchaseID == stock.purchaseID) {
-        stock.purchaseID = null;
-      }
+//     for (const stock of stockEntries) {
+//       if (purchase.purchaseID == stock.purchaseID) {
+//         stock.purchaseID = null;
+//       }
 
-      await stock.save();
+//       await stock.save();
 
-      const destroyPurchase = await purchase.destroy();
+//       const destroyPurchase = await purchase.destroy();
 
-      res.status(200).json({
-        message: "Purchase deleted successfully",
-        deletePurchase: destroyPurchase,
-      });
-    }
-  } catch (error) {
-    console.error("Error deleting purchase:", error);
-    res.status(500).send("Error deleting purchase");
-  }
-};
+//       res.status(200).json({
+//         message: "Purchase deleted successfully",
+//         deletePurchase: destroyPurchase,
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error deleting purchase:", error);
+//     res.status(500).send("Error deleting purchase");
+//   }
+// };
 
 const isValidDate = (dateString) => {
   const date = new Date(dateString);
@@ -396,5 +396,69 @@ exports.queryPurchase = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+
+//PUT ->localhost:5000/api/v1/purchase/return/:id
+exports.returnPurchase = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { returnQuantity } = req.body;
+
+    // Find the existing purchase record
+    const existingPurchase = await Purchase.findByPk(id);
+
+    if (!existingPurchase) {
+      return res
+        .status(404)
+        .json({ error: `Purchase record with ID '${id}' not found` });
+    }
+
+    // Find the associated stock entries for the purchase ID
+    const stock = await Stocks.findOne({
+      where: {
+        relatedPurchaseIDs: {
+          [Op.substring]: `${existingPurchase.purchaseID}`,
+        },
+      },
+    });
+
+    if (!stock) {
+      return res
+        .status(404)
+        .json({
+          error: `Stock entry for purchase ID '${existingPurchase.purchaseID}' not found`,
+        });
+    }
+
+    if (returnQuantity <= 0) {
+      return res
+        .status(400)
+        .json({ error: `Return quantity must be greater than zero` });
+    }
+
+    if (returnQuantity > stock.productQuantity) {
+      return res
+        .status(400)
+        .json({ error: `Return quantity exceeds available stock` });
+    }
+
+    existingPurchase.purchaseQuantity -= returnQuantity;
+    await existingPurchase.save();
+
+    stock.productQuantity -= returnQuantity;
+    await stock.save();
+
+    res.status(200).json({
+      message: `Returned ${returnQuantity} units for purchase record with ID '${id}' successfully`,
+      updatedStock: stock,
+    });
+  } catch (error) {
+    console.error("Error returning purchase:", error);
+    res
+      .status(500)
+      .json({ message: "Error returning purchase", error: error.message });
   }
 };
