@@ -3,6 +3,9 @@ const Sales = require("../models/sales");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 const SalesDetail = require("../models/salesDetails");
+const Reports = require("../models/reports")
+
+
 
 // POST -> localhost:5000/api/v1/sales
 exports.createSales = async (req, res) => {
@@ -255,6 +258,8 @@ exports.updateSales = async (req, res) => {
 
     // Emit event to notify clients about the updated sale
     req.app.get("socketio").emit("salesUpdated", existingSale);
+
+
 
     res.status(200).json({
       message: `Sales record with ID '${id}' updated successfully`,
@@ -535,6 +540,7 @@ exports.returnProductFromSale = async (req, res) => {
 
     // Emit event to notify clients about the updated sale
     req.app.get("socketio").emit("salesUpdated", existingSale);
+
 
     res.status(200).json({
       message: `Returned ${returnQuantity} units of product with ID '${productID}' from sales record '${salesID}' successfully`,
