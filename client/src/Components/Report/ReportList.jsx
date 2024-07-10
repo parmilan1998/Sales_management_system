@@ -9,6 +9,7 @@ import ReportSort from "./ReportSort";
 import ReportSearch from "./ReportSearch";
 import { useForm } from "react-hook-form";
 import CreateReport from "./CreateReport";
+import { FcDownload } from "react-icons/fc";
 
 const ReportList = ({
   fetchReports,
@@ -198,7 +199,7 @@ const ReportList = ({
                   </td>
                   <td
                     data-th="Role"
-                    className="before:w-24 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-12 px-6 text-sm transition duration-300 sm:border-t sm:border-l first:border-l-0 border-slate-400 stroke-slate-500 text-black"
+                    className="before:w-24 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-12 px-6 text-sm transition duration-300 sm:border-t sm:border-l first:border-l-0 border-slate-400 stroke-slate-500 text-blue-600 hover:text-blue-800"
                   >
                     <button onClick={() => handleFileDownload(item.reportID)}>
                       {item.reportFile}
@@ -215,6 +216,11 @@ const ReportList = ({
                       >
                         <FaRegEdit size={20} color="green" />
                       </button>
+                
+                      <button onClick={() => handleFileDownload(item.reportID)}>
+                      <FcDownload size={20} />
+                      </button>
+
                       <Popconfirm
                         title="Delete the task"
                         description="Are you sure to delete this task?"
@@ -224,7 +230,7 @@ const ReportList = ({
                           handleDelete(item.reportID);
                         }}
                       >
-                        <button>
+                        <button className=" ml-3">
                           <MdDelete size={20} color="red" />
                         </button>
                       </Popconfirm>

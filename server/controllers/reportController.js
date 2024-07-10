@@ -8,21 +8,21 @@ const SalesReport = require("../models/salesReport");
 const path = require("path");
 const fs = require("fs");
 
-
-
 const generatePDFReport = async (
   startDate,
   endDate,
   reportName,
   grossProfit,
   totalCOGS,
+  totalRevenue,
   totalPurchases,
   totalSales,
-  totalRevenue,
   reportID
 ) => {
   // Initialize jsPDF
   const doc = new jsPDF();
+
+  console.log("hill", totalCOGS, totalPurchases, totalRevenue);
 
   // Add content to the PDF
   doc.text(`Gross Profit Report`, 10, 10);
@@ -30,10 +30,10 @@ const generatePDFReport = async (
   doc.text(`Start Date: ${startDate}`, 10, 30);
   doc.text(`End Date: ${endDate}`, 10, 40);
   doc.text(`Total No of Purchases: ${totalPurchases}`, 10, 50);
-  doc.text(`Total COGS: $${totalCOGS.toFixed(2)}`, 10, 60);
+  doc.text(`Total COGS: $${totalCOGS}`, 10, 60);
   doc.text(`Total No of Sales: ${totalSales}`, 10, 70);
-  doc.text(`Total Revenue: $${totalRevenue.toFixed(2)}`, 10, 80);
-  doc.text(`Gross Profit: $${grossProfit.toFixed(2)}`, 10, 90);
+  doc.text(`Total Revenue: $${totalRevenue}`, 10, 80);
+  doc.text(`Gross Profit: $${grossProfit}`, 10, 90);
 
   const uploadPath = path.resolve(__dirname, "../public/reports");
   const pdfFileName = `Gross_Profit_Report_${reportID}.pdf`;
@@ -109,14 +109,15 @@ exports.createReport = async (req, res) => {
     }, 0);
 
     // Calculate total revenue within the specified period
-    const totalRevenue =
-      (await Sales.sum("totalRevenue", {
-        where: {
-          soldDate: {
-            [Op.between]: [start, end],
-          },
+    const totalRevenue = await Sales.sum("totalRevenue", {
+      where: {
+        soldDate: {
+          [Op.between]: [start, end],
         },
-      })) || 0;
+      },
+    });
+
+    console.log(totalRevenue);
 
     // Calculate total COGS (Cost of Goods Sold)
     const totalCOGS =
@@ -124,15 +125,6 @@ exports.createReport = async (req, res) => {
 
     // Calculate gross profit
     const grossProfit = totalRevenue - totalCOGS;
-
-    // Count total number of purchases
-    const totalPurchases = await Purchase.count({
-      where: {
-        purchasedDate: {
-          [Op.between]: [start, end],
-        },
-      },
-    });
 
     // Count total number of sales
     const totalSales = await Sales.count({
@@ -143,7 +135,15 @@ exports.createReport = async (req, res) => {
       },
     });
 
+    const totalPurchases = await Purchase.count({
+      where: {
+        purchasedDate: {
+          [Op.between]: [start, end],
+        },
+      },
+    });
 
+    console.log("hi", totalPurchases);
 
     // Create a new report
     const newReport = await Reports.create({
@@ -153,24 +153,24 @@ exports.createReport = async (req, res) => {
       grossProfit: parseFloat(grossProfit.toFixed(2)),
       startDate: startDate,
       endDate: endDate,
-    
     });
 
-        // Generate PDF report
-        const reportFileName = await generatePDFReport(
-          startDate,
-          endDate,
-          reportName,
-          grossProfit,
-          totalCOGS,
-          totalRevenue,
-          totalPurchases,
-          totalSales,
-          newReport.reportID
-        );
+    console.log("hilly", totalCOGS, totalPurchases, totalRevenue);
+    // Generate PDF report
+    const reportFileName = await generatePDFReport(
+      startDate,
+      endDate,
+      reportName,
+      grossProfit,
+      totalCOGS,
+      totalRevenue,
+      totalPurchases,
+      totalSales,
+      newReport.reportID
+    );
 
-        newReport.reportFile = reportFileName;
-        await newReport.save();
+    newReport.reportFile = reportFileName;
+    await newReport.save();
 
     const salesInPeriod = await Sales.findAll({
       where: {
@@ -305,7 +305,6 @@ exports.updateReport = async (req, res) => {
     // Calculate gross profit
     const grossProfit = totalRevenue - totalCOGS;
 
-    // Count total number of purchases
     const totalPurchases = await Purchase.count({
       where: {
         purchasedDate: {
@@ -313,7 +312,6 @@ exports.updateReport = async (req, res) => {
         },
       },
     });
-
     // Count total number of sales
     const totalSales = await Sales.count({
       where: {
@@ -340,9 +338,9 @@ exports.updateReport = async (req, res) => {
         reportName,
         grossProfit,
         totalCOGS,
+        totalRevenue,
         totalPurchases,
         totalSales,
-        totalRevenue,
         oldReport.reportID
       );
       // Update the reportFile
@@ -446,18 +444,17 @@ exports.getReportByID = async (req, res) => {
 exports.queryReport = async (req, res) => {
   try {
     // Query parameters
-    const { page = 1, limit = 8, sort = "ASC",keyword } = req.query;
+    const { page = 1, limit = 8, sort = "ASC", keyword } = req.query;
 
     // Pagination
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
     const offset = (parsedPage - 1) * parsedLimit;
 
-     // Search condition
-     const searchCondition = keyword
-     ? { reportName: { [Op.like]: `%${keyword}%` } }
-     : {};
-
+    // Search condition
+    const searchCondition = keyword
+      ? { reportName: { [Op.like]: `%${keyword}%` } }
+      : {};
 
     // Sorting by ASC or DESC
     const sortOrder = sort === "DESC" ? "DESC" : "ASC";
@@ -486,7 +483,6 @@ exports.queryReport = async (req, res) => {
   }
 };
 
-
 const reportsDirectory = path.resolve(__dirname, "../public/reports");
 // Ensure the directory exists
 if (!fs.existsSync(reportsDirectory)) {
@@ -505,6 +501,8 @@ exports.getReport = async (req, res) => {
     }
   } catch (error) {
     console.error("Error fetching report:", error);
-    res.status(500).json({ message: "Failed to fetch report", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch report", error: error.message });
   }
 };
