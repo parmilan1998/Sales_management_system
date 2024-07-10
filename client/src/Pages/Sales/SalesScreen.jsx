@@ -154,7 +154,7 @@ const SalesScreen = () => {
           <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
             <div className="flex items-center gap-6">
               <h1 className="text-3xl font-medium font-acme">
-                All Sales Here!{" "}
+                All Sales Here!
               </h1>
               <Link
                 to="/sales/add"
@@ -179,7 +179,7 @@ const SalesScreen = () => {
               />
             </div>
           </div>
-          <div className="py-5">
+          <div>
             <SalesTable
               expandedRowRender={(record) => expandedRowRender(record)}
               columns={columns}

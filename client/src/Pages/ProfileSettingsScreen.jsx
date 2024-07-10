@@ -90,6 +90,7 @@ const ProfileSettingsScreen = () => {
             open={isPasswordModalOpen}
             onCancel={handleCancelPassword}
             footer={null}
+            className="lg:mr-72"
           >
             <ChangePassword setIsModalOpen={setIsPasswordModalOpen} />
           </Modal>
@@ -110,6 +111,7 @@ const ProfileSettingsScreen = () => {
             open={isProfileModalOpen}
             onCancel={handleCancelProfile}
             footer={null}
+            className="lg:mr-72"
           >
             <UpdateProfile
               setIsModalOpen={setIsProfileModalOpen}
