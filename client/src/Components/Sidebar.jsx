@@ -14,6 +14,11 @@ import toast from "react-hot-toast";
 import { Tooltip } from "antd";
 import LoginScreen from "../Pages/Admin/LoginScreen";
 import { jwtDecode } from "jwt-decode";
+import { AiOutlineStock } from "react-icons/ai";
+import { LuWarehouse } from "react-icons/lu";
+import { MdOutlineProductionQuantityLimits } from "react-icons/md";
+import { MdOutlineCurrencyExchange } from "react-icons/md";
+import { PiWarehouseLight } from "react-icons/pi";
 
 export default function Sidebar() {
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
@@ -145,7 +150,7 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <FaTag size={20} />
+                    <MdOutlineProductionQuantityLimits size={22} />
                   </div>
                   <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Products
@@ -158,7 +163,7 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <RiStockFill size={20} />
+                    <PiWarehouseLight size={24} />
                   </div>
                   <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Stocks
@@ -184,7 +189,7 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <FcSalesPerformance size={20} />
+                    <MdOutlineCurrencyExchange size={22} />
                   </div>
                   <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
                     Sales

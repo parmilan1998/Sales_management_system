@@ -4,18 +4,20 @@ const {
   createSales,
   getAllSales,
   updateSales,
-  deleteSales,
+  // deleteSales,
   querySales,
   deleteSalesDetail,
   getSalesById,
+  returnProductFromSale
 } = require("../controllers/salesController");
 
 router.post("/", createSales);
 router.get("/list", getAllSales);
+router.put("/return/:salesID/:productID", returnProductFromSale)
 router.put("/:id", updateSales);
 router.get("/query", querySales);
 router.get("/:id", getSalesById);
-router.delete("/:id", deleteSales);
+// router.delete("/:id", deleteSales);
 router.delete("/details/:id", deleteSalesDetail);
 
 module.exports = router;

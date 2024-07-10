@@ -92,18 +92,6 @@ const SalesScreen = () => {
           >
             Edit
           </Button>
-          {/* <Popconfirm
-            title="Delete the Sales"
-            description="Are you sure you want to delete this sale?"
-            onConfirm={() => confirmDelete(record.salesID)}
-            onCancel={cancelDelete}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button className="text-md font-poppins bg-red-500 text-white">
-              Delete
-            </Button>
-          </Popconfirm> */}
         </span>
       ),
     },
@@ -146,24 +134,6 @@ const SalesScreen = () => {
   useEffect(() => {
     fetchSales();
   }, [page, search, limit, sortDate, sortName]);
-
-  const confirmDelete = async (id) => {
-    await axios
-      .delete(`http://localhost:5000/api/v1/sales/${id}`)
-      .then((res) => {
-        message.success("Sales deleted Successfully!");
-        fetchSales();
-        setPage(1);
-      })
-      .catch((err) => {
-        toast.error("Error deleting purchase!");
-        console.log(err);
-      });
-  };
-
-  const cancelDelete = () => {
-    message.error("Sales deletion cancelled!");
-  };
 
   return (
     <>
