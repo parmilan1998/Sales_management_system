@@ -29,7 +29,7 @@ const SingleProductPopUp = ({ rowData }) => {
               </p>
             </div>
             <p className="text-base text-slate-500">
-              Category: Rs.{rowData.categoryName}
+              Category: {rowData.categoryName}
             </p>
           </header>
           <p className="text-md">Description: {rowData.productDescription}</p>

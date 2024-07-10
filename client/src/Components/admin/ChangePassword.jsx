@@ -1,16 +1,23 @@
+/* eslint-disable react/prop-types */
 import axios from "axios";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
-const ChangePassword = () => {
+const ChangePassword = ({ setIsModalOpen }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleUpdatePassword = async (e) => {
     e.preventDefault();
+
     if (newPassword !== confirmPassword) {
       toast.error("New password and confirm password do not match");
+      return;
+    }
+
+    if (!newPassword || !confirmPassword || !currentPassword) {
+      toast.error("Passwords can't be empty");
       return;
     }
     const token = localStorage.getItem("token");
@@ -33,14 +40,22 @@ const ChangePassword = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setIsModalOpen(false);
     } catch (err) {
       toast.error(err.response.data.error);
     }
   };
 
+  const handleClear = (e) => {
+    e.preventDefault();
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
   return (
     <div>
-      <form onSubmit={handleSubmit}>
+      <form>
         <div className="relative my-6">
           <input
             id="current_password"
@@ -93,8 +108,17 @@ const ChangePassword = () => {
             Current Password
           </label>
         </div>
-        <div className="relative my-6">
-          <button className="text-lg bg-emerald-600 w-full px-4 py-2 rounded-md text-white">
+        <div className="relative my-6 flex flex-row gap-2">
+          <button
+            onClick={handleClear}
+            className="text-base bg-sky-500 hover:bg-sky-700 w-full px-4 py-2 rounded-md text-white"
+          >
+            Clear
+          </button>
+          <button
+            onClick={handleUpdatePassword}
+            className="text-base bg-emerald-500 hover:bg-emerald-700 w-full px-4 py-2 rounded-md text-white"
+          >
             Update Password
           </button>
         </div>
