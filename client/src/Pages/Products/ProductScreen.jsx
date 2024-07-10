@@ -83,7 +83,7 @@ const ProductScreen = () => {
 
           <Link to="/products/add">
             <Tooltip title="Add Product">
-              <button className="flex mr-4 justify-center items-center text-white text-2xl px-3 py-3  gap-1 font-medium rounded-full bg-cyan-500">
+              <button className="flex mr-4 justify-center items-center text-white text-2xl px-2 py-2  gap-1 font-medium rounded-full bg-cyan-500">
                 <MdAdd />
               </button>
             </Tooltip>

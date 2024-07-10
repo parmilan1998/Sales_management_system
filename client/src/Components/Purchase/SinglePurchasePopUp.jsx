@@ -11,11 +11,11 @@ const SinglePurchasePopUp = ({ purchaseRowData }) => {
           <img
             src="https://www.cflowapps.com/wp-content/uploads/2021/05/PurchseordrFor-smbs.jpg"
             alt="card image"
-            className="aspect-video w-full"
+            className="aspect-video w-full h-48 bg-cover object-fill"
           />
         </figure>
         {/*  <!-- Body--> */}
-        <div className="p-6">
+        <div className="p-4">
           <header className="mb-4 space-y-2">
             <h3 className="text-xl font-medium text-slate-700">
               {purchaseRowData.productName}

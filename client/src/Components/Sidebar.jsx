@@ -7,13 +7,13 @@ import { FaTag } from "react-icons/fa6";
 import { RiStockFill } from "react-icons/ri";
 import { FcSalesPerformance } from "react-icons/fc";
 import { BiSolidReport } from "react-icons/bi";
-import { MdNotificationsActive } from "react-icons/md";
 import { IoIosLogOut, IoIosSettings } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, logOutAdmin } from "../features/authSlice";
 import toast from "react-hot-toast";
 import { Tooltip } from "antd";
 import LoginScreen from "../Pages/Admin/LoginScreen";
+import { jwtDecode } from "jwt-decode";
 
 export default function Sidebar() {
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
@@ -37,6 +37,27 @@ export default function Sidebar() {
       toast.error("Logout failed. Please try again.");
     }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      const expTime = decodedToken.exp;
+
+      const expiryTime = (expTime - currentTime) * 1000;
+
+      if (expiryTime > 0) {
+        const timer = setTimeout(() => {
+          dispatch(logout());
+        }, expiryTime);
+
+        return () => clearTimeout(timer);
+      } else {
+        dispatch(logout());
+      }
+    }
+  }, [dispatch]);
 
   return (
     <>

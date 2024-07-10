@@ -15,7 +15,7 @@ const Purchase = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
-  const [limit, setLimit] = useState(12);
+  const [limit, setLimit] = useState(9);
   const [sortName, setSortName] = useState("ASC");
   const [sortDate, setSortDate] = useState("ASC");
 

@@ -104,7 +104,7 @@ const ReportList = ({
   };
 
   return (
-    <div>
+    <div className=" font-poppins mr-8">
       <div className="mx-4 my-3 flex flex-row gap-2">
         <div>
           <h1 className="text-3xl font-semibold font-acme text-blue-700">
@@ -246,7 +246,7 @@ const ReportList = ({
         <div className="fixed  inset-0 mx-auto flex items-center justify-center max-h-svh z-50 overflow-y-auto">
           <div
             ref={popupRef}
-            className="rounded-2xl absolute z-50 border border-blue-100 bg-white p-4 shadow-lg sm:p-6 lg:p-8  w-full md:w-[80%] max-w-[850px]"
+            className="rounded-2xl absolute z-50 border border-blue-100 bg-white p-4 shadow-lg sm:p-6 lg:p-8 lg:ml-64  w-full md:w-[80%] max-w-[1000px]"
             role="alert"
           >
             <div className="flex items-center justify-center gap-4 py-6 font-poppins">

@@ -92,7 +92,7 @@ const SalesScreen = () => {
           >
             Edit
           </Button>
-          <Popconfirm
+          {/* <Popconfirm
             title="Delete the Sales"
             description="Are you sure you want to delete this sale?"
             onConfirm={() => confirmDelete(record.salesID)}
@@ -103,7 +103,7 @@ const SalesScreen = () => {
             <Button className="text-md font-poppins bg-red-500 text-white">
               Delete
             </Button>
-          </Popconfirm>
+          </Popconfirm> */}
         </span>
       ),
     },

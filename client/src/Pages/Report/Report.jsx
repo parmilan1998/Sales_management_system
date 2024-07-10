@@ -35,15 +35,15 @@ const Report = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sort, search]);
 
-  const closePopup = () => {
-   
-  };
+  const closePopup = () => {};
 
   return (
     <div>
       <div className="my-2 mx-4">
-       <h1 className="text-3xl font-semibold font-acme text-blue-700">Reports</h1>
-       </div>
+        <h1 className="text-3xl font-semibold font-acme text-blue-700">
+          Reports
+        </h1>
+      </div>
       <div>
         <CreateReport
           startDate={startDate}

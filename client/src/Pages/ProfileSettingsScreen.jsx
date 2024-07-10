@@ -29,6 +29,10 @@ const ProfileSettingsScreen = () => {
 
   const fetchDetails = async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Token not found");
+      }
       const res = await axios.get(`http://localhost:5000/api/v1/user`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -44,12 +48,12 @@ const ProfileSettingsScreen = () => {
   }, []);
 
   return (
-    <div className="max-w-screen-xl mx-auto lg:px-8 font-poppins">
-      <h1 className="text-3xl text-center font-medium py-8 text-cyan-600">
-        Admin Profile
-      </h1>
-      <div className="overflow-hidden rounded w-96 mx-auto bg-gray-300 text-center text-slate-500">
+    <div className="max-w-screen-xl lg:px-8 font-poppins">
+      <div className="overflow-hidden rounded pb-12 mx-auto bg-gray-300 text-center text-slate-500">
         <figure className="p-6 pb-0">
+          <h1 className="text-3xl text-center font-medium py-8 text-cyan-600">
+            Admin Profile
+          </h1>
           <span className="relative inline-flex h-20 w-20 items-center justify-center rounded-full text-white">
             <img
               src="https://i.pravatar.cc/80?img=22"
@@ -69,10 +73,10 @@ const ProfileSettingsScreen = () => {
             <p className="text-slate-400">{user.email}</p>
           </header>
         </div>
-        <div className="flex justify-end gap-2 p-6 pt-0">
+        <div className="flex justify-center gap-2 p-6 pt-0">
           <Button
             onClick={showPasswordModal}
-            className="h-10 px-5 bg-emerald-500 text-base text-white hover:bg-emerald-800"
+            className="h-10 px-5 w-40 bg-emerald-500 text-base text-white hover:bg-emerald-800"
           >
             Change Password
           </Button>
@@ -92,7 +96,7 @@ const ProfileSettingsScreen = () => {
 
           <Button
             onClick={showProfileModal}
-            className="inline-flex h-10 flex-1 items-center justify-center gap-2 justify-self-center whitespace-nowrap rounded bg-emerald-50 px-5 text-sm font-medium tracking-wide text-emerald-500 transition duration-300 hover:bg-emerald-100 hover:text-emerald-600 focus:bg-emerald-200 focus:text-emerald-700 focus-visible:outline-none disabled:cursor-not-allowed disabled:border-emerald-300 disabled:bg-emerald-100 disabled:text-emerald-400 disabled:shadow-none"
+            className="h-10 px-5 w-40 bg-blue-500 text-base text-white hover:bg-emerald-800"
           >
             Update Profile
           </Button>

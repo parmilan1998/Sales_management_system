@@ -27,7 +27,7 @@ const ProductTable = ({
     setIsModalOpen(false);
   };
   return (
-    <div className="relative w-full overflow-x-auto cursor-pointer py-5">
+    <div className="relative w-full overflow-x-auto cursor-pointer">
       <table
         className="w-full text-left border bg-white rounded-lg border-separate border-slate-200"
         cellSpacing="0"
