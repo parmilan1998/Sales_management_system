@@ -78,7 +78,7 @@ salesDetail = db.define(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
     tableName: "salesDetail",
   }
 );

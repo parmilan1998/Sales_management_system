@@ -1,84 +1,88 @@
 const { Op } = require("sequelize");
 const Stocks = require("../models/stocks");
 const Product = require("../models/products");
-const Purchase = require("../models/purchase");
 
 // POST -> localhost:5000/api/v1/stocks
 exports.createStocks = async (req, res) => {
   try {
-    const stocks = req.body;
+    const {
+      productName,
+      productQuantity,
+      purchasePrice,
+      manufacturedDate,
+      expiryDate,
+      purchasedDate,
+    } = req.body;
 
-    const stocksItems = await Promise.all(
-      stocks.map(async (stock) => {
-        const {
-          productName,
-          productQuantity,
-          purchasePrice,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate,
-        } = stock;
+    if (
+      !productName ||
+      !productQuantity ||
+      !manufacturedDate ||
+      !expiryDate ||
+      !purchasedDate
+    ) {
+      return res.status(400).json({ message: "Fill all the required fields!" });
+    }
 
-        try {
-          if (
-            !productName ||
-            !productQuantity ||
-            !purchasePrice ||
-            !manufacturedDate ||
-            !expiryDate
-          ) {
-            res.status(400).json({ message: "Fill all the required fields!" });
-          }
-          const product = await Product.findOne({
-            where: { productName },
-          });
+    const product = await Product.findOne({
+      where: { productName },
+    });
 
-          if (!product) {
-            res.status(404).json({ message: "Product not found" });
-          }
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
-          const existingStock = await Stocks.findOne({
-            where: {
-              productID: product.productID,
-              productName,
-              purchasePrice,
-              manufacturedDate,
-              expiryDate,
-            },
-          });
+    const existingStock = await Stocks.findOne({
+      where: {
+        productID: product.productID,
+        productName,
+        purchasePrice,
+        manufacturedDate,
+        expiryDate,
+        purchasedDate,
+      },
+    });
 
-          if (existingStock) {
-            const updatedStock = await existingStock.update({
-              productQuantity: (existingStock.productQuantity +=
-                parseInt(productQuantity)),
-            });
-            return updatedStock;
-          } else {
-            const createdStock = await Stocks.create({
-              productID: product.productID,
-              productName,
-              productQuantity,
-              purchasePrice: null,
-              manufacturedDate,
-              expiryDate,
-              purchasedDate,
-              purchaseID: null,
-            });
-            return createdStock;
-          }
-        } catch (err) {
-          res.status(500).json({ message: err.message });
-          return null;
-        }
-      })
-    );
+    if (existingStock) {
+      const updatedStock = await existingStock.update({
+        productQuantity:
+          existingStock.productQuantity + parseInt(productQuantity),
+      });
+      return res.status(201).json({
+        message: "Stocks updated Successfully!",
+        stocks: updatedStock,
+      });
+    }
 
-    res.status(201).json({
+    if (purchasedDate < manufacturedDate) {
+      return res.status(400).json({
+        message: `Check the purchasedDate`,
+      });
+    }
+
+    if (manufacturedDate > expiryDate) {
+      return res.status(400).json({
+        message: `Check the manufacturedDate`,
+      });
+    }
+
+    const createdStock = await Stocks.create({
+      productID: product.productID,
+      productName,
+      productQuantity,
+      purchasePrice: purchasePrice || null,
+      manufacturedDate,
+      expiryDate,
+      purchasedDate,
+      purchaseID: null,
+    });
+
+    return res.status(201).json({
       message: "Stocks Created Successfully!",
-      stocks: stocksItems,
+      stocks: createdStock,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };
 
@@ -109,6 +113,7 @@ exports.updateStocks = async (req, res) => {
     if (!stocks) {
       return res.status(404).json({ message: "Stock not found" });
     }
+
     const stockUpdate = await stocks.update({
       productName,
       productQuantity,
@@ -117,6 +122,7 @@ exports.updateStocks = async (req, res) => {
       expiryDate,
       purchasedDate,
     });
+
     res.status(200).json({
       message: "Stock updated successfully",
       updateStock: stockUpdate,
@@ -144,11 +150,22 @@ exports.deleteStocks = async (req, res) => {
   }
 };
 
+const isValidDate = (dateString) => {
+  const date = new Date(dateString);
+  return !isNaN(date.getTime());
+};
+
 // GET -> localhost:5000/api/v1/stocks/query
 exports.queryStocks = async (req, res) => {
   try {
     // Query parameters
-    const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
+    const {
+      keyword,
+      page = 1,
+      limit = 6,
+      sort = "ASC",
+      sortBy = "ASC",
+    } = req.query; 
 
     // Pagination
     const parsedPage = parseInt(page);
@@ -156,21 +173,31 @@ exports.queryStocks = async (req, res) => {
     const offset = (parsedPage - 1) * parsedLimit;
 
     // Search condition
-    const searchCondition = keyword
-      ? {
-          [Op.or]: [{ productName: { [Op.like]: `%${keyword}%` } }],
-        }
-      : {};
+    const searchConditions = [];
 
+    if (keyword) {
+      searchConditions.push({ productName: { [Op.like]: `%${keyword}%` } });
+
+      if (isValidDate(keyword)) {
+        searchConditions.push({ expiryDate: { [Op.eq]: keyword } });
+      }
+    }
+
+    const searchCondition = searchConditions.length > 0 ? { [Op.or]: searchConditions } : {};
+    
     // Sorting by ASC or DESC
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    const sortOrder = sort === "DESC" ? "DESC" : "ASC";
+    const sortDate = sortBy === "DESC" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: stocks } = await Stocks.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
-      order: [["createdAt", sortOrder]],
+      order: [
+        ["productName", sortOrder],
+        ["expiryDate", sortDate],
+      ],
     });
 
     // Total pages

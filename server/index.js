@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 
 const categoryRoute = require("./routes/categoryRoute");
 const productRoute = require("./routes/productRoute");
@@ -9,9 +10,8 @@ const purchaseRoute = require("./routes/purchaseRoute");
 const salesRoute = require("./routes/salesRoute");
 const userRoute = require("./routes/userRoute");
 const reportRoute = require("./routes/reportRoute");
+
 const cookieParser = require("cookie-parser");
-const http = require("http");
-const socketIo = require("socket.io");
 const bodyParser = require("body-parser");
 const db = require("./database/db.js");
 
@@ -23,17 +23,19 @@ const Stocks = require("./models/stocks");
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: "*",
-  },
-});
 
 //Middleware for parse JSON bodies
-app.use(cors());
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use("/public", express.static(path.join(__dirname, "./public")));
 
 // Middleware to parse cookies
 app.use(cookieParser());
@@ -60,21 +62,10 @@ SalesDetail.belongsTo(Stocks, { foreignKey: "stockID", targetKey: "stockID" });
 db.sync()
   .then(() => {
     console.log("Database synced successfully");
-    server.listen(PORT, () => {
+    app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   })
   .catch((error) => {
     console.error("Error syncing Purchase table:", error);
   });
-
-// Instance
-io.on("connection", (socket) => {
-  console.log("New client connected");
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
-});
-
-module.exports = io;

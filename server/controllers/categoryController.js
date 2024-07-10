@@ -1,5 +1,7 @@
 const Category = require("../models/category");
 const { Op } = require("sequelize");
+const fs = require("fs");
+const path = require("path");
 
 // POST -> localhost:5000/api/v1/category
 exports.createCategory = async (req, res) => {
@@ -9,13 +11,23 @@ exports.createCategory = async (req, res) => {
     if (!categoryName) {
       return res.status(400).json({ message: "Category name is required" });
     }
-    const category = await Category.create({
+    const category = await Category.findOne({
+      where: { categoryName: categoryName },
+    });
+
+    if (category) {
+      return res
+        .status(404)
+        .json({ error: `Category ${categoryName} is already there` });
+    }
+    const creCategory = await Category.create({
       categoryName,
       categoryDescription,
+      imageUrl: req.file ? req.file.filename : null,
     });
     res.status(201).json({
       message: "Category Created Successfully!",
-      category: category,
+      category: creCategory,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -26,9 +38,18 @@ exports.createCategory = async (req, res) => {
 exports.getCategories = async (req, res) => {
   try {
     const categories = await Category.findAll();
-    res.status(200).json({
-      categories: categories,
-    });
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/category/:id
+exports.getCategory = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const category = await Category.findByPk(id);
+    res.status(200).json(category);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -36,6 +57,7 @@ exports.getCategories = async (req, res) => {
 
 // PUT -> localhost:5000/api/v1/category/:id
 exports.updateCategory = async (req, res) => {
+  console.log({ req });
   try {
     const { id } = req.params;
     const { categoryName, categoryDescription } = req.body;
@@ -44,13 +66,43 @@ exports.updateCategory = async (req, res) => {
     if (!category) {
       res.status(404).json({ message: "Category not found" });
     }
+    if (req.file) {
+      console.log("New file uploaded:", req?.file);
+    }
+    // Delete existing image if it exists
+    if (category.imageUrl) {
+      const filePath = path.join(
+        __dirname,
+        "../public/category",
+        category.imageUrl
+      );
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+          console.warn("File does not exist, cannot delete:", filePath);
+        } else {
+          fs.unlink(filePath, (err) => {
+            if (err) {
+              console.error("Error deleting file:", err);
+            } else {
+              console.log("File deleted successfully:", filePath);
+            }
+          });
+        }
+      });
+    }
+
     // Update category
-    const categoryUpdate = await category.update(req.body);
+    const categoryUpdate = await category.update({
+      categoryName,
+      categoryDescription,
+      imageUrl: req?.file?.filename,
+    });
     res.status(200).json({
       message: "Category Updated Successfully!",
       updateCategory: categoryUpdate,
     });
   } catch (error) {
+    console.log({ error });
     res.status(500).json({ message: error.message });
   }
 };
@@ -92,14 +144,14 @@ exports.queryCategory = async (req, res) => {
       : {};
 
     // Sorting by ASC or DESC
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    const sortBy = sort.toLowerCase() === "desc" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: categories } = await Category.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
-      order: [["createdAt", sortOrder]],
+      order: [["categoryName", sortBy]],
     });
 
     // Total pages

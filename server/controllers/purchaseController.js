@@ -1,89 +1,96 @@
 const Purchase = require("../models/purchase");
-const { Op } = require("sequelize");
+const { Op, fn, col } = require("sequelize");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
   try {
-    const purchases = req.body;
-    const purchasedGoods = await Promise.all(
-      purchases.map(async (purchase) => {
-        const {
-          productName,
-          purchaseVendor,
-          vendorContact,
-          purchaseQuantity,
-          purchasePrice,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate,
-        } = purchase;
+    const {
+      productName,
+      purchaseVendor,
+      vendorContact,
+      purchaseQuantity,
+      purchasePrice,
+      manufacturedDate,
+      expiryDate,
+      purchasedDate,
+    } = req.body;
 
-        const product = await Product.findOne({
-          where: {
-            productName: productName,
-          },
-        });
+    const product = await Product.findOne({
+      where: {
+        productName: productName,
+      },
+    });
 
-        if (!product) {
-          return res.status(404).json({
-            message: `Product '${productName}' not found`,
-          });
-        }
-        const totalCost = purchasePrice * purchaseQuantity;
+    if (!product) {
+      return res.status(404).json({
+        message: `Product '${productName}' not found`,
+      });
+    }
 
-        const createdPurchase = await Purchase.create({
-          productID: product.productID,
-          productName,
-          purchaseVendor,
-          vendorContact,
-          purchaseQuantity,
-          purchasePrice,
-          COGP: totalCost,
-          purchasedDate,
-        });
+    if (purchasedDate < manufacturedDate) {
+      return res.status(404).json({
+        message: `Check the purchasedDate`,
+      });
+    }
 
-        const existingStock = await Stocks.findOne({
-          where: {
-            productID: product.productID,
-            purchasePrice: purchasePrice,
-            manufacturedDate: manufacturedDate,
-            expiryDate: expiryDate,
-            purchasedDate: purchasedDate,
-          },
-        });
+    if (manufacturedDate > expiryDate) {
+      return res.status(404).json({
+        message: `Check the manufacturedDate`,
+      });
+    }
 
-        if (existingStock) {
-          // Update product quantity for the existing product
-          existingStock.productQuantity += purchaseQuantity;
+    const totalCost = purchasePrice * purchaseQuantity;
 
-          if (existingStock.relatedPurchaseIDs) {
-            existingStock.relatedPurchaseIDs += `,${createdPurchase.purchaseID}`;
-          } else {
-            existingStock.relatedPurchaseIDs = `${createdPurchase.purchaseID}`;
-          }
-          await existingStock.save();
-        } else {
-          await Stocks.create({
-            productName,
-            productID: product.productID,
-            purchaseID: createdPurchase.purchaseID,
-            productQuantity: purchaseQuantity,
-            manufacturedDate: manufacturedDate,
-            expiryDate: expiryDate,
-            purchasePrice: purchasePrice,
-            purchasedDate: purchasedDate,
-            relatedPurchaseIDs: `${createdPurchase.purchaseID}`,
-          });
-        }
-        return createdPurchase;
-      })
-    );
+    const createdPurchase = await Purchase.create({
+      productID: product.productID,
+      productName,
+      purchaseVendor,
+      vendorContact,
+      purchaseQuantity,
+      purchasePrice,
+      COGP: totalCost,
+      purchasedDate,
+    });
+
+    const existingStock = await Stocks.findOne({
+      where: {
+        productID: product.productID,
+        purchasePrice: purchasePrice,
+        manufacturedDate: manufacturedDate,
+        expiryDate: expiryDate,
+        purchasedDate: purchasedDate,
+      },
+    });
+
+    if (existingStock) {
+      // Update product quantity for the existing product
+      existingStock.productQuantity += purchaseQuantity;
+
+      if (existingStock.relatedPurchaseIDs) {
+        existingStock.relatedPurchaseIDs += `,${createdPurchase.purchaseID}`;
+      } else {
+        existingStock.relatedPurchaseIDs = `${createdPurchase.purchaseID}`;
+      }
+      await existingStock.save();
+    } else {
+      await Stocks.create({
+        productName,
+        productID: product.productID,
+        purchaseID: createdPurchase.purchaseID,
+        productQuantity: purchaseQuantity,
+        manufacturedDate: manufacturedDate,
+        expiryDate: expiryDate,
+        purchasePrice: purchasePrice,
+        purchasedDate: purchasedDate,
+        relatedPurchaseIDs: `${createdPurchase.purchaseID}`,
+      });
+    }
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
-      purchase: purchasedGoods,
+      purchase: createdPurchase,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -101,6 +108,37 @@ exports.getAllPurchases = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Error retrieving purchases" });
+  }
+};
+
+// GET -> localhost:5000/api/v1/purchase/:id
+exports.getPurchaseById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const purchase = await Purchase.findByPk(id);
+
+    if (!purchase) {
+      return res.status(404).json({ message: "Purchase not found" });
+    }
+
+    const stocks = await Stocks.findOne({
+      attributes: ["manufacturedDate", "expiryDate"],
+      where: {
+        purchaseID: id,
+      },
+    });
+
+    res.status(200).json({
+      ...purchase.dataValues,
+      manufacturedDate: stocks.manufacturedDate,
+      expiryDate: stocks.expiryDate,
+    });
+  } catch (error) {
+    console.error("Error fetching purchase:", error);
+    res
+      .status(500)
+      .json({ message: "Error retrieving product", error: error.message });
   }
 };
 
@@ -291,11 +329,22 @@ exports.deletePurchase = async (req, res) => {
   }
 };
 
+const isValidDate = (dateString) => {
+  const date = new Date(dateString);
+  return !isNaN(date.getTime());
+};
+
 // GET -> localhost:5000/api/v1/purchase/query
 exports.queryPurchase = async (req, res) => {
   try {
     // Query parameters
-    const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
+    const {
+      keyword,
+      page = 1,
+      limit = 6,
+      sort = "ASC",
+      sortBy = "ASC",
+    } = req.query;
 
     // Pagination
     const parsedPage = parseInt(page);
@@ -303,21 +352,35 @@ exports.queryPurchase = async (req, res) => {
     const offset = (parsedPage - 1) * parsedLimit;
 
     // Search condition
-    const searchCondition = keyword
-      ? {
-          [Op.or]: [{ productName: { [Op.like]: `%${keyword}%` } }],
-        }
-      : {};
+    const searchConditions = [];
+
+    if (keyword) {
+      searchConditions.push(
+        { productName: { [Op.like]: `%${keyword}%` } },
+        { purchaseVendor: { [Op.like]: `%${keyword}%` } }
+      );
+
+      if (isValidDate(keyword)) {
+        searchConditions.push({ purchasedDate: { [Op.eq]: keyword } });
+      }
+    }
+
+    const searchCondition =
+      searchConditions.length > 0 ? { [Op.or]: searchConditions } : {};
 
     // Sorting by ASC or DESC
-    const sortOrder = sort === "desc" ? "DESC" : "ASC";
+    const sortOrder = sort === "DESC" ? "DESC" : "ASC";
+    const sortDate = sortBy === "DESC" ? "DESC" : "ASC";
 
     // search, pagination, and sorting
     const { count, rows: purchases } = await Purchase.findAndCountAll({
       where: searchCondition,
       offset: offset,
       limit: parsedLimit,
-      order: [["purchasedDate", sortOrder]],
+      order: [
+        ["productName", sortOrder],
+        ["purchasedDate", sortDate],
+      ],
     });
 
     // Total pages
