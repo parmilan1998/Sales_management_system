@@ -10,6 +10,7 @@ import { Popconfirm } from "antd";
 import { useNavigate } from "react-router-dom";
 const { Option } = Select;
 import StockSearch from "../../Components/Stocks/StockSearch";
+import GridLoader from "react-spinners/GridLoader";
 
 const Stocks = () => {
   const navigate = useNavigate();
@@ -83,7 +84,6 @@ const Stocks = () => {
 
   // Create/update stocks
   const onSubmit = async (data) => {
-
     try {
       let res;
 
@@ -249,119 +249,134 @@ const Stocks = () => {
     },
   ];
   const rowClassName = "h-2";
-  return (
-    <ConfigProvider locale={enUSIntl}>
-      <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
-        <div className="flex flex-col  justify-between pb-5 relative">
-          <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
-            <div className="flex gap-3 mx-5">
-              <h1 className="text-4xl font-semibold font-acme text-blue-600">
-                Stocks List
-              </h1>
-            </div>
-            <div className="ml-auto flex flex-row mr-4 gap-2">
-              <h2 className="mt-3 ">SortBy:</h2>
-              <StockSort
-                sortName={sortName}
-                setSortName={setSortName}
-                sortDate={sortDate}
-                setSortDate={setSortDate}
-              />
-              <StockSearch
-                search={search}
-                setSearch={setSearch}
-                setPage={setPage}
-              />
-            </div>
-          </div>
-          <div className="m-5 border rounded-md border-slate-400">
-            <ProCard>
-              {loading ? (
-                <div>Loading...</div>
-              ) : (
-                <div
-                  style={{
-                    maxWidth: 1000,
-                    margin: "auto",
-                  }}
-                >
-                  <ProForm
-                    submitter={false}
-                    // onFinish={(data) => {
-                    //   console.log({ data });
-                    // }}
-                    formRef={formRef}
-                    initialValues={{
-                      table: stocks.map((stock) => ({
-                        id: stock.stockID,
-                        productName: stock.productName,
-                        productQuantity: stock.productQuantity,
-                        purchasePrice: stock.purchasePrice,
-                        manufacturedDate: stock.manufacturedDate,
-                        expiryDate: stock.expiryDate,
-                        purchasedDate: stock.purchasedDate,
-                      })),
-                    }}
-                  >
-                    <EditableProTable
-                      // rowSelection={{
 
-                      //   onChange: (_, selectedRows) => {
-                      //     console.log({ selectedRows });
-                      //   },
-                      // }}
-                      rowKey="id"
-                      scroll={{ x: true }}
-                      editableFormRef={editableFormRef}
-                      controlled
-                      actionRef={actionRef}
-                      name="table"
-                      columns={columns}
-                      recordCreatorProps={{
-                        position: "top",
-                        width: 20,
-                        record: (index) => ({ id: index + 1 }),
-                      }}
-                      dataSource={stocks}
-                      editable={{
-                        type: "multiple",
-                        editableKeys,
-                        onChange: setEditableRowKeys,
-                        onSave: async (rowKey, data, row) => {
-                          onSubmit(data);
-                          console.log(rowKey, data, row);
-                        },
-                        onDelete: async () => {
-                          fetchStocks();
-                        },
-                        onCancel: async () => {},
-                      }}
-                      rowClassName={() => rowClassName}
-                      locale={{
-                        emptyText: "No Data",
-                        edit: "Edit",
-                        delete: "Delete",
-                        deletePopconfirmMessage:
-                          "Are you sure to delete this record?",
-                        add: "Add",
-                        save: "Save",
-                        cancel: "Cancel",
-                      }}
-                      pagination={{
-                        total: totalPages * limit,
-                        current: page,
-                        pageSize: limit,
-                        onChange: (page) => setPage(page),
-                      }}
-                    />
-                  </ProForm>
-                </div>
-              )}
-            </ProCard>
-          </div>
+  return (
+    <>
+      {loading ? (
+        <div className="flex justify-center items-center w-full h-[75vh]">
+          <GridLoader
+            loading={loading}
+            size={15}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+            color="#4682B4"
+          />
         </div>
-      </div>
-    </ConfigProvider>
+      ) : (
+        <ConfigProvider locale={enUSIntl}>
+          <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
+            <div className="flex flex-col  justify-between pb-5 relative">
+              <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
+                <div className="flex gap-3 mx-5">
+                  <h1 className="text-4xl font-semibold font-acme text-blue-600">
+                    Stocks List
+                  </h1>
+                </div>
+                <div className="ml-auto flex flex-row mr-4 gap-2">
+                  <h2 className="mt-3 ">SortBy:</h2>
+                  <StockSort
+                    sortName={sortName}
+                    setSortName={setSortName}
+                    sortDate={sortDate}
+                    setSortDate={setSortDate}
+                  />
+                  <StockSearch
+                    search={search}
+                    setSearch={setSearch}
+                    setPage={setPage}
+                  />
+                </div>
+              </div>
+              <div className="m-5 border rounded-md border-slate-400">
+                <ProCard>
+                  {loading ? (
+                    <div>Loading...</div>
+                  ) : (
+                    <div
+                      style={{
+                        maxWidth: 1000,
+                        margin: "auto",
+                      }}
+                    >
+                      <ProForm
+                        submitter={false}
+                        // onFinish={(data) => {
+                        //   console.log({ data });
+                        // }}
+                        formRef={formRef}
+                        initialValues={{
+                          table: stocks.map((stock) => ({
+                            id: stock.stockID,
+                            productName: stock.productName,
+                            productQuantity: stock.productQuantity,
+                            purchasePrice: stock.purchasePrice,
+                            manufacturedDate: stock.manufacturedDate,
+                            expiryDate: stock.expiryDate,
+                            purchasedDate: stock.purchasedDate,
+                          })),
+                        }}
+                      >
+                        <EditableProTable
+                          // rowSelection={{
+
+                          //   onChange: (_, selectedRows) => {
+                          //     console.log({ selectedRows });
+                          //   },
+                          // }}
+                          rowKey="id"
+                          scroll={{ x: true }}
+                          editableFormRef={editableFormRef}
+                          controlled
+                          actionRef={actionRef}
+                          name="table"
+                          columns={columns}
+                          recordCreatorProps={{
+                            position: "top",
+                            width: 20,
+                            record: (index) => ({ id: index + 1 }),
+                          }}
+                          dataSource={stocks}
+                          editable={{
+                            type: "multiple",
+                            editableKeys,
+                            onChange: setEditableRowKeys,
+                            onSave: async (rowKey, data, row) => {
+                              onSubmit(data);
+                              console.log(rowKey, data, row);
+                            },
+                            onDelete: async () => {
+                              fetchStocks();
+                            },
+                            onCancel: async () => {},
+                          }}
+                          rowClassName={() => rowClassName}
+                          locale={{
+                            emptyText: "No Data",
+                            edit: "Edit",
+                            delete: "Delete",
+                            deletePopconfirmMessage:
+                              "Are you sure to delete this record?",
+                            add: "Add",
+                            save: "Save",
+                            cancel: "Cancel",
+                          }}
+                          pagination={{
+                            total: totalPages * limit,
+                            current: page,
+                            pageSize: limit,
+                            onChange: (page) => setPage(page),
+                          }}
+                        />
+                      </ProForm>
+                    </div>
+                  )}
+                </ProCard>
+              </div>
+            </div>
+          </div>
+        </ConfigProvider>
+      )}
+    </>
   );
 };
 

@@ -12,10 +12,10 @@ const SingleProductPopUp = ({ rowData }) => {
           <img
             src={`${baseUrl}/${rowData.imageUrl}`}
             alt="card image"
-            className="aspect-video w-full"
+            className="aspect-video w-full h-48 bg-cover object-fill"
           />
         </figure>
-        <div className="p-6">
+        <div className="p-4">
           <header className="mb-4 space-y-2">
             <h3 className="text-xl font-medium text-slate-700">
               {rowData.productName}

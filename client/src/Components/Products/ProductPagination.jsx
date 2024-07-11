@@ -11,7 +11,7 @@ const ProductPagination = ({ page, setPage, totalPages }) => {
   };
 
   return (
-    <div className="flex justify-center items-center gap-4">
+    <div className="flex justify-center items-center py-5 gap-4">
       <div>
         <nav role="navigation" aria-label="Pagination Navigation">
           <ul className="flex list-none items-center justify-center divide-x divide-slate-300 overflow-hidden rounded border border-slate-300 text-sm text-slate-700">

@@ -4,7 +4,7 @@ const User = require("../models/User");
 
 const generateToken = (user) => {
   return jwt.sign({ userID: user.userID }, process.env.JWT_SECRET_KEY, {
-    expiresIn: "1h",
+    expiresIn: "1d",
   });
 };
 
@@ -63,6 +63,7 @@ exports.loginUser = async (req, res) => {
     res.status(200).json({
       message: "Admin login successfully",
       token: token,
+      expiry: new Date(Date.now() + 3600000),
       username: user.username,
       email: user.email,
     });

@@ -6,7 +6,7 @@ import { Button, Modal, Popconfirm } from "antd";
 import { Link } from "react-router-dom";
 import SinglePurchasePopUp from "./SinglePurchasePopUp";
 import { formatDistance, formatDistanceToNow, parseISO } from "date-fns";
-import { GiBeveledStar } from "react-icons/gi";
+import { GiBeveledStar, GiReturnArrow } from "react-icons/gi";
 
 const PurchaseCard = ({ purchase, confirmDelete, cancelDelete }) => {
   const [purchaseRowData, setPurchaseRowData] = useState({});
@@ -25,7 +25,7 @@ const PurchaseCard = ({ purchase, confirmDelete, cancelDelete }) => {
 
   return (
     <div>
-      <div className="grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1 gap-5">
+      <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-5">
         {purchase.map((purchase, index) => (
           <div
             className="overflow-hidden rounded-lg bg-gray-50 border-l-indigo-500 border-indigo-300 border-l-[6px] border-2 text-slate-500 shadow-lg shadow-slate-300"
@@ -83,9 +83,7 @@ const PurchaseCard = ({ purchase, confirmDelete, cancelDelete }) => {
                     </span>
                   </button>
                 </Link>
-                <div className="flex items-center cursor-pointer">
-                
-                </div>
+                <div className="flex items-center cursor-pointer"></div>
               </div>
             </div>
           </div>
