@@ -11,7 +11,7 @@ import { LuPlus } from "react-icons/lu";
 import Barcode from "react-barcode";
 import SalesSearch from "../../Components/Sales/SalesSearch";
 import SalesSort from "../../Components/Sales/SalesSort";
-import { Triangle } from "react-loader-spinner";
+import GridLoader from "react-spinners/GridLoader";
 
 const SalesScreen = () => {
   const navigate = useNavigate();
@@ -139,14 +139,12 @@ const SalesScreen = () => {
     <>
       {loading ? (
         <div className="flex justify-center items-center w-full h-[75vh]">
-          <Triangle
-            visible={true}
-            height="100"
-            width="100"
-            color="#4fa94d"
-            ariaLabel="triangle-loading"
-            wrapperStyle={{}}
-            wrapperClass=""
+          <GridLoader
+            loading={loading}
+            size={15}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+            color="#4682B4"
           />
         </div>
       ) : (

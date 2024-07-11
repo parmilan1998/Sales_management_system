@@ -19,7 +19,7 @@ import SingleCategory from "./Pages/Category/SingleCategory";
 import AddEditSalesScreen from "./Pages/Sales/AddEditSalesScreen";
 import LoginScreen from "./Pages/Admin/LoginScreen";
 import ProfileSettingsScreen from "./Pages/ProfileSettingsScreen";
-import OrderScreen from "./Pages/OrderScreen";
+import OrderScreen from "./Pages/Order/OrderScreen";
 
 const App = () => {
   return (
