@@ -113,7 +113,7 @@ const CreateReport = ({
       };
 
     const res = await reportsApi.post("", payload);
-        const reportID = res.data.report.reportID;
+    const reportID = res.data.report.reportID;
         // Download the generated PDF file
     const downloadResponse = await fetch(
           `http://localhost:5000/api/v1/reports/download/${reportID}`,

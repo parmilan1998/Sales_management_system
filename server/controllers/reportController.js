@@ -24,7 +24,6 @@ const generatePDFReport = async (
   // Initialize jsPDF
   const doc = new jsPDF();
 
-  console.log("hill", totalCOGS, totalPurchases, totalRevenue);
 
   // Add content to the PDF
   doc.text(`Gross Profit Report`, 10, 10);
@@ -119,8 +118,6 @@ exports.createReport = async (req, res) => {
       },
     });
 
-
-
     // Calculate total COGS (Cost of Goods Sold)
     const totalCOGS =
       beginningInventoryCost + purchasesCost - endingInventoryCost;
@@ -145,13 +142,16 @@ exports.createReport = async (req, res) => {
       },
     });
 
+    const totalRevenueFinal = totalRevenue ? parseFloat(totalRevenue.toFixed(2)) : 0;
+    const totalCOGSFinal = totalCOGS ? parseFloat(totalCOGS.toFixed(2)) : 0;
+    const grossProfitFinal = grossProfit ? parseFloat(grossProfit.toFixed(2)) : 0;
 
     // Create a new report
     const newReport = await Reports.create({
       reportName: reportName,
-      totalRevenue: parseFloat(totalRevenue.toFixed(2)),
-      totalCOGS: parseFloat(totalCOGS.toFixed(2)),
-      grossProfit: parseFloat(grossProfit.toFixed(2)),
+      totalRevenue: totalRevenueFinal,
+      totalCOGS: totalCOGSFinal,
+      grossProfit:grossProfitFinal,
       startDate: startDate,
       endDate: endDate,
     });
@@ -161,9 +161,9 @@ exports.createReport = async (req, res) => {
       startDate,
       endDate,
       reportName,
-      grossProfit,
-      totalCOGS,
-      totalRevenue,
+      grossProfitFinal,
+      totalCOGSFinal,
+      totalRevenueFinal,
       totalPurchases,
       totalSales,
       newReport.reportID
@@ -233,7 +233,6 @@ exports.createReport = async (req, res) => {
     });
   }
 };
-
 
 
 // GET -> localhost:5000/api/v1/reports/query

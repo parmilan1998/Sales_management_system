@@ -16,35 +16,30 @@ const ReportList = ({
   setPage,
 }) => {
 
-
-  const handleFileDownload = async (reportID) => {
+  const handleFileView = async (reportID) => {
     try {
       const response = await reportsApi.get(`/download/${reportID}`, {
         responseType: "blob", // Ensure responseType is 'blob' to handle binary data
       });
-
+  
       // Create a blob from the response data
       const blob = new Blob([response.data], { type: "application/pdf" });
-
+  
       // Create a temporary URL for the blob
       const url = window.URL.createObjectURL(blob);
-
-      // Create a link element and click it to trigger the download
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `Gross_Profit_Report_${reportID}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-
-      // Cleanup
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
+  
+      // Open the PDF in a new tab
+      window.open(url, '_blank');
+  
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 30000);
     } catch (error) {
-      console.error("Error downloading file:", error);
-      toast.error("Failed to download file");
+      console.error("Error viewing file:", error);
+      toast.error("Failed to view file");
     }
   };
-
+  
   return (
     <div>
       <div className="mx-4 my-3 flex flex-row gap-2">
@@ -136,7 +131,7 @@ const ReportList = ({
                     data-th="Role"
                     className="before:w-24 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-12 px-6 text-sm transition duration-300 sm:border-t sm:border-l first:border-l-0 border-slate-400 stroke-slate-500 text-blue-600 hover:text-blue-800"
                   >
-                    <button onClick={() => handleFileDownload(item.reportID)}>
+                    <button onClick={() => handleFileView(item.reportID)}>
                       {item.reportFile}
                     </button>
                   </td>
