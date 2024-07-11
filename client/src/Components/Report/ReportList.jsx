@@ -41,7 +41,7 @@ const ReportList = ({
   };
   
   return (
-    <div>
+    <div className=" font-poppins mr-8">
       <div className="mx-4 my-3 flex flex-row gap-2">
         <div>
           <h1 className="text-3xl font-semibold font-acme text-blue-700">

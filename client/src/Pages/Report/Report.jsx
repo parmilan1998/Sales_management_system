@@ -3,6 +3,7 @@ import CreateReport from "../../Components/Report/CreateReport";
 import ReportList from "../../Components/Report/ReportList";
 import reportsApi from "../../api/reports";
 import ReportPagination from "../../Components/Report/ReportPagination";
+import GridLoader from "react-spinners/GridLoader";
 
 const Report = () => {
   const [startDate, setStartDate] = useState();
@@ -14,6 +15,7 @@ const Report = () => {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("DESC");
   const [limit, setLimit] = useState(5);
+  const [loading, setLoading] = useState(true);
 
   const fetchReports = async () => {
     try {
@@ -24,6 +26,7 @@ const Report = () => {
       const { reports, pagination } = res.data;
       setTotalPages(pagination.totalPages);
       setReport(reports);
+      setLoading(false);
       console.log("Report set:", reports);
     } catch (err) {
       console.log(err.message);

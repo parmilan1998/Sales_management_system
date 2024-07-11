@@ -18,7 +18,7 @@ const ProductSearch = ({ search, setSearch, setPage }) => {
           name="id-s03"
           placeholder="Search here"
           aria-label="Search content"
-          className="peer relative h-10 w-full rounded border border-slate-200 px-4 pr-12 text-sm text-cyan-500 outline-none transition-all autofill:bg-white invalid:border-pink-500 invalid:text-pink-500 focus:border-cyan-500 focus:outline-none invalid:focus:border-pink-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+          className="peer relative h-9 w-full rounded border border-slate-200 px-4 pr-12 text-sm text-cyan-500 outline-none transition-all autofill:bg-white invalid:border-pink-500 invalid:text-pink-500 focus:border-cyan-500 focus:outline-none invalid:focus:border-pink-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
         />
         <svg
           xmlns="http://www.w3.org/2000/svg"

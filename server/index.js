@@ -17,16 +17,16 @@ const io =socketIO(server, {
   }
 });
 
-io.on('connection',(socket)=>{
-  console.log('New client connected')
+io.on("connection", (socket) => {
+  console.log("New client connected");
 
-  socket.on('disconnect',()=>{
-    console.log('Client disconnect');
-  })
-})
+  socket.on("disconnect", () => {
+    console.log("Client disconnect");
+  });
+});
 
 // Make the Socket.IO instance available to your routes
-app.set('socketio', io);
+app.set("socketio", io);
 
 const categoryRoute = require("./routes/categoryRoute");
 const productRoute = require("./routes/productRoute");
@@ -35,13 +35,14 @@ const purchaseRoute = require("./routes/purchaseRoute");
 const salesRoute = require("./routes/salesRoute");
 const userRoute = require("./routes/userRoute");
 const reportRoute = require("./routes/reportRoute");
+const orderRoute = require("./routes/orderRoute");
 
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const db = require("./database/db.js");
 
 const Sales = require("./models/sales");
-const SalesDetail = require("./models/salesDetails.js");
+const SalesDetail = require("./models/salesDetails");
 const Product = require("./models/products");
 const Stocks = require("./models/stocks");
 
@@ -62,8 +63,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/public", express.static(path.join(__dirname, "./public")));
 
-
-
 app.use("/api/v1/category", categoryRoute);
 app.use("/api/v1/product", productRoute);
 app.use("/api/v1/stocks", stockRoute);
@@ -71,6 +70,7 @@ app.use("/api/v1/purchase", purchaseRoute);
 app.use("/api/v1/sales", salesRoute);
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/reports", reportRoute);
+app.use("/api/v1/orders", orderRoute);
 
 const PORT = process.env.PORT || 5000;
 

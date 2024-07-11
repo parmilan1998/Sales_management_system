@@ -202,7 +202,7 @@ const AddProduct = () => {
           <div className="mt-6 sm:flex sm:gap-4 flex justify-center">
             <Link to="/products">
               <button
-                className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
+                className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
                 href="#"
               >
                 Cancel
@@ -210,14 +210,14 @@ const AddProduct = () => {
             </Link>
             <button
               onClick={handleClear}
-              className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-blue-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
+              className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-blue-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
               href="#"
             >
               Clear
             </button>
             <button
               type="submit"
-              className="inline-block w-full cursor-pointer rounded-lg bg-green-500 px-5 py-3 text-center text-sm font-semibold text-white sm:w-auto"
+              className="inline-block w-full cursor-pointer rounded-lg bg-green-500 px-12 py-2 text-center text-sm font-semibold text-white sm:w-auto"
               href="#"
             >
               Add Product
