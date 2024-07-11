@@ -362,7 +362,6 @@ exports.querySales = async (req, res) => {
 
     // Search condition
     const searchConditions = [];
-    const includeConditions = [];
     let productName = keyword;
 
     console.log(keyword);
@@ -375,10 +374,6 @@ exports.querySales = async (req, res) => {
         searchConditions.push({ soldDate: { [Op.eq]: keyword } });
       }
 
-      // Add condition for productName in SalesDetail
-      includeConditions.push({
-        productName: { [Op.like]: `%${keyword}%` },
-      });
     }
 
     const searchCondition =
@@ -565,5 +560,19 @@ exports.returnProductFromSale = async (req, res) => {
       message: "Error returning product from sales",
       error: error.message,
     });
+  }
+};
+
+
+// GET -> localhost:5000/api/v1/sales/count
+exports.getSalesCount = async (req, res) => {
+  try {
+    const count = await Sales.count();
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching sales count:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching sales count", error: error.message });
   }
 };
