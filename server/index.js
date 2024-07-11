@@ -5,10 +5,17 @@ const path = require("path");
 const app = express();
 
 //Set up a basic Socket.IO server
-const socketIO = require("socket.io");
-const http = require("http");
-const server = http.createServer(app);
-const io = socketIO(server);
+const socketIO = require('socket.io')
+const http = require('http')
+const server =http.createServer(app)
+const io =socketIO(server, {
+  cors: {
+    origin: "http://localhost:5173", 
+    methods: ["GET", "POST"],
+    allowedHeaders: ["my-custom-header"],
+    credentials: true
+  }
+});
 
 io.on("connection", (socket) => {
   console.log("New client connected");

@@ -38,60 +38,41 @@ const Report = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sort, search]);
 
-  const closePopup = () => {};
 
   return (
-    <>
-      {loading ? (
-        <div className="flex justify-center items-center w-full h-[75vh]">
-          <GridLoader
-            loading={loading}
-            size={15}
-            aria-label="Loading Spinner"
-            data-testid="loader"
-            color="#4682B4"
-          />
-        </div>
-      ) : (
-        <div>
-          <div className="my-2 mx-4">
-            <h1 className="text-3xl font-semibold font-acme text-blue-700">
-              Reports
-            </h1>
-          </div>
-          <div>
-            <CreateReport
-              startDate={startDate}
-              endDate={endDate}
-              setEndDate={setEndDate}
-              fetchReports={fetchReports}
-              closePopup={closePopup}
-            />
-          </div>
-          <div>
-            <ReportList
-              report={report}
-              setReport={setReport}
-              fetchReports={fetchReports}
-              limit={limit}
-              page={page}
-              sort={sort}
-              setSort={setSort}
-              search={search}
-              setSearch={setSearch}
-              setPage={setPage}
-            />
-          </div>
-          <div className="mt-2">
-            <ReportPagination
-              page={page}
-              setPage={setPage}
-              totalPages={totalPages}
-            />
-          </div>
-        </div>
-      )}
-    </>
+    <div>
+      <div className="my-2 mx-4">
+       <h1 className="text-3xl font-semibold font-acme text-blue-700">Reports</h1>
+       </div>
+      <div>
+        <CreateReport
+          startDate={startDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          fetchReports={fetchReports}
+        />
+      </div>
+      <div>
+        <ReportList
+          report={report}
+          setReport={setReport}
+          limit={limit}
+          page={page}
+          sort={sort}
+          setSort={setSort}
+          search={search}
+          setSearch={setSearch}
+          setPage={setPage}
+        />
+      </div>
+      <div className="mt-2">
+        <ReportPagination
+          page={page}
+          setPage={setPage}
+          totalPages={totalPages}
+        />
+      </div>
+    </div>
   );
 };
 

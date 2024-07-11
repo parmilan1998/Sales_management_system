@@ -1,5 +1,5 @@
 const Purchase = require("../models/purchase");
-const { Op, fn, col } = require("sequelize");
+const { Op } = require("sequelize");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 
