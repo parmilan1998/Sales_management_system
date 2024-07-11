@@ -6,7 +6,8 @@ const {
   updateSales,
   // deleteSales,
   querySales,
-  deleteSalesDetail,
+  salesSort,
+  // deleteSalesDetail,
   getSalesById,
   returnProductFromSale
 } = require("../controllers/salesController");
@@ -16,8 +17,9 @@ router.get("/list", getAllSales);
 router.put("/return/:salesID/:productID", returnProductFromSale)
 router.put("/:id", updateSales);
 router.get("/query", querySales);
+router.get("/sort", salesSort);
 router.get("/:id", getSalesById);
 // router.delete("/:id", deleteSales);
-router.delete("/details/:id", deleteSalesDetail);
+// router.delete("/details/:id", deleteSalesDetail);
 
 module.exports = router;
