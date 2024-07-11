@@ -6,12 +6,7 @@ const fs = require("fs");
 
 const {
   createReport,
-  updateReport,
-  deleteReport,
   queryReport,
-  getAllReport,
-  getReport,
-  getReportByID,
 } = require("../controllers/reportController");
 
 const uploadPath = path.resolve(__dirname, "../public/reports");
@@ -65,11 +60,6 @@ const handleFileUpload = (req, res, next) => {
 };
 
 router.post("/", handleFileUpload, createReport);
-router.put("/:id", handleFileUpload, updateReport);
-router.delete("/:id", deleteReport);
 router.get("/query", queryReport);
-router.get("/list", getAllReport);
-router.get("/download/:id", getReport);
-router.get("/:id", getReportByID);
 
 module.exports = router;

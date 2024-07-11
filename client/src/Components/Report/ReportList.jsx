@@ -1,18 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import reportsApi from "../../api/reports";
-import { Popconfirm } from "antd";
 import PropTypes from "prop-types";
 import toast from "react-hot-toast";
-import { FaRegEdit } from "react-icons/fa";
-import { MdDelete } from "react-icons/md";
 import ReportSort from "./ReportSort";
 import ReportSearch from "./ReportSearch";
-import { useForm } from "react-hook-form";
-import CreateReport from "./CreateReport";
-import { FcDownload } from "react-icons/fc";
 
 const ReportList = ({
-  fetchReports,
   report,
   limit,
   page,
@@ -22,59 +15,7 @@ const ReportList = ({
   setSearch,
   setPage,
 }) => {
-  const popupRef = useRef();
-  const [isOpen, setIsOpen] = useState(true);
-  const [isUpdate, setIsUpdate] = useState(false);
-  const [selectedReport, setSelectedReport] = useState(null);
 
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-    reset,
-    setValue,
-  } = useForm();
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (popupRef.current && !popupRef.current.contains(event.target)) {
-        setIsOpen(true);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [popupRef]);
-
-  const openEditPopup = (report) => {
-    setSelectedReport(report);
-    setIsUpdate(true);
-    setIsOpen(false);
-  };
-  const closePopup = () => {
-    setIsOpen(true);
-    setSelectedReport(null);
-    reset();
-  };
-
-  // Reset input fields
-
-  const handleDelete = async (id) => {
-    try {
-      await reportsApi.delete(`/${id}`);
-      toast.success("Report deleted Successfully!", { duration: 2000 });
-      fetchReports();
-    } catch (err) {
-      toast.error(
-        "Can't delete this Report since it is linked with other records!!"
-      );
-      console.log(err);
-    }
-  };
 
   const handleFileDownload = async (reportID) => {
     try {
@@ -156,15 +97,9 @@ const ReportList = ({
               </th>
               <th
                 scope="col"
-                className="hidden h-12 px-6 text-sm font-medium border-l sm:table-cell first:border-l-0 border-slate-400 stroke-slate-700 text-black bg-slate-100"
+                className="hidden h-12 px-6 text-sm font-medium border-l sm:table-cell first:border-l-0 border-slate-400 stroke-slate-700 text-black bg-slate-100  w-6"
               >
                 Report
-              </th>
-              <th
-                scope="col"
-                className="hidden h-12 px-6 text-sm font-medium border-l sm:table-cell first:border-l-0 border-slate-400 stroke-slate-700 text-black bg-slate-100"
-              >
-                Actions
               </th>
             </tr>
             {report.length > 0 ? (
@@ -205,37 +140,6 @@ const ReportList = ({
                       {item.reportFile}
                     </button>
                   </td>
-                  <td
-                    data-th="Username"
-                    className="before:w-24 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-12 px-6 text-sm transition duration-300 sm:border-t sm:border-l first:border-l-0 border-slate-400 stroke-slate-500 text-slate-500"
-                  >
-                    <div>
-                      <button
-                        className=" mr-3"
-                        onClick={() => openEditPopup(item)}
-                      >
-                        <FaRegEdit size={20} color="green" />
-                      </button>
-                
-                      <button onClick={() => handleFileDownload(item.reportID)}>
-                      <FcDownload size={20} />
-                      </button>
-
-                      <Popconfirm
-                        title="Delete the task"
-                        description="Are you sure to delete this task?"
-                        okText="Yes"
-                        cancelText="No"
-                        onConfirm={() => {
-                          handleDelete(item.reportID);
-                        }}
-                      >
-                        <button className=" ml-3">
-                          <MdDelete size={20} color="red" />
-                        </button>
-                      </Popconfirm>
-                    </div>
-                  </td>
                 </tr>
               ))
             ) : (
@@ -248,59 +152,11 @@ const ReportList = ({
           </tbody>
         </table>
       </div>
-      {!isOpen && (
-        <div className="fixed  inset-0 mx-auto flex items-center justify-center max-h-svh z-50 overflow-y-auto">
-          <div
-            ref={popupRef}
-            className="rounded-2xl absolute z-50 border border-blue-100 bg-white p-4 shadow-lg sm:p-6 lg:p-8  w-full md:w-[80%] max-w-[850px]"
-            role="alert"
-          >
-            <div className="flex items-center justify-center gap-4 py-6 font-poppins">
-              <span className="shrink-0 rounded-full bg-blue-400 p-2 text-white">
-                <svg
-                  className="h-4 w-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    clipRule="evenodd"
-                    d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z"
-                    fillRule="evenodd"
-                  />
-                </svg>
-              </span>
-              <p className="font-semibold sm:text-2xl text-gray-700">
-                Update Category
-              </p>
-            </div>
-            <div>
-              <CreateReport
-                isUpdate={true}
-                selectedReport={selectedReport}
-                fetchReports={fetchReports}
-                closePopup={closePopup}
-              />
-            </div>
-
-            <div className="mt-3 sm:flex sm:gap-4 flex justify-center ">
-              <button
-                onClick={closePopup}
-                className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-100 px-5 py-3 text-center text-sm font-semibold text-gray-500 sm:mt-0 sm:w-auto border border-slate-400"
-                href="#"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
 ReportList.propTypes = {
-  fetchReports: PropTypes.func.isRequired,
   report: PropTypes.array,
   limit: PropTypes.number.isRequired,
   page: PropTypes.number.isRequired,

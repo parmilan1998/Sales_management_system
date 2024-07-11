@@ -10,9 +10,6 @@ const CreateReport = ({
   endDate: initialEndDate,
   setEndDate,
   fetchReports,
-  isUpdate,
-  selectedReport,
-  closePopup,
 }) => {
   const [reportType, setReportType] = useState("Weekly");
   const [customReportName, setCustomReportName] = useState("");
@@ -23,29 +20,9 @@ const CreateReport = ({
   const {
     formState: { errors },
     handleSubmit,
-    reset,
+
   } = useForm();
 
-  useEffect(() => {
-    if (isUpdate && selectedReport) {
-      if (
-        selectedReport.reportName !== "Weekly" &&
-        selectedReport.reportName !== "Monthly" &&
-        selectedReport.reportName !== "Half-Yearly" &&
-        selectedReport.reportName !== "Yearly"
-      ) {
-        setReportType("Input");
-        setCustomReportName(selectedReport.reportName)
-        setManualEndDate(selectedReport.endDate);
-        console.log("it is input");
-      } else {
-        setReportType(selectedReport.reportName);
-      }
-
-      setLocalStartDate(selectedReport.startDate);
-      setLocalEndDate(selectedReport.endDate);
-    }
-  }, [isUpdate, selectedReport]);
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -135,15 +112,10 @@ const CreateReport = ({
         endDate: end,
       };
 
-      let res;
-      let downloadResponse;
-      if (isUpdate && selectedReport) {
-        await reportsApi.put(`/${selectedReport.reportID}`, payload);
-      } else {
-        res = await reportsApi.post("", payload);
+    const res = await reportsApi.post("", payload);
         const reportID = res.data.report.reportID;
         // Download the generated PDF file
-        downloadResponse = await fetch(
+    const downloadResponse = await fetch(
           `http://localhost:5000/api/v1/reports/download/${reportID}`,
           {
             method: "GET",
@@ -162,17 +134,17 @@ const CreateReport = ({
         document.body.appendChild(a);
         a.click();
         URL.revokeObjectURL(url);
-      }
-      toast.success(`Report ${isUpdate ? "updated" : "created"} successfully!`);
+      
+      toast.success(`Report created successfully!`);
       fetchReports();
-      closePopup();
+ 
     } catch (error) {
       console.error(
-        `Failed to ${isUpdate ? "update" : "create"} report:`,
+        `Failed to create report:`,
         error
       );
       toast.error(
-        `Failed to ${isUpdate ? "update" : "create"} report: ${error.message}`
+        `Failed to"create report: ${error.message}`
       );
     }
   };
@@ -246,7 +218,7 @@ const CreateReport = ({
               type="submit"
               className="bg-blue-600 text-white text-m rounded-md p-1 border border-blue-700"
             >
-              {isUpdate ? "Update Report" : "Generate Report"}
+              Generate Report
             </button>
           </div>
         </div>
@@ -258,12 +230,8 @@ const CreateReport = ({
 CreateReport.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
-  reportID: PropTypes.number,
   setEndDate: PropTypes.func,
   fetchReports: PropTypes.func,
-  isUpdate: PropTypes.bool,
-  selectedReport: PropTypes.object,
-  closePopup: PropTypes.func,
 };
 
 export default CreateReport;
