@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { SiPowerapps } from "react-icons/si";
 import { Link, useNavigate } from "react-router-dom";
-import { AiOutlineDashboard } from "react-icons/ai";
 import { BiCategoryAlt } from "react-icons/bi";
 import { FaShopify, FaTag } from "react-icons/fa6";
-import { RiStockFill } from "react-icons/ri";
-import { FcSalesPerformance } from "react-icons/fc";
 import { BiSolidReport } from "react-icons/bi";
 import { IoIosLogOut, IoIosSettings } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,8 +11,7 @@ import toast from "react-hot-toast";
 import { Tooltip } from "antd";
 import LoginScreen from "../Pages/Admin/LoginScreen";
 import { jwtDecode } from "jwt-decode";
-import { AiOutlineStock } from "react-icons/ai";
-import { LuWarehouse } from "react-icons/lu";
+import { LuGanttChartSquare } from "react-icons/lu";
 import { MdOutlineProductionQuantityLimits } from "react-icons/md";
 import { MdOutlineCurrencyExchange } from "react-icons/md";
 import { PiWarehouseLight } from "react-icons/pi";
@@ -121,7 +117,7 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center">
-                    <AiOutlineDashboard size={20} />
+                    <LuGanttChartSquare size={20} />
                   </div>
                   <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Dashboard

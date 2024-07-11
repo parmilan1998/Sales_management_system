@@ -4,11 +4,8 @@ const Reports = require("../models/reports");
 const Sales = require("../models/sales");
 const Purchase = require("../models/purchase");
 const Stocks = require("../models/stocks");
-const SalesReport = require("../models/salesReport");
 const path = require("path");
 const fs = require("fs");
-const StocksReport = require("../models/stocksReport")
-const PurchaseReport = require("../models/purchaseReport")
 
 const generatePDFReport = async (
   startDate,
@@ -23,7 +20,6 @@ const generatePDFReport = async (
 ) => {
   // Initialize jsPDF
   const doc = new jsPDF();
-
 
   // Add content to the PDF
   doc.text(`Gross Profit Report`, 10, 10);
@@ -142,16 +138,20 @@ exports.createReport = async (req, res) => {
       },
     });
 
-    const totalRevenueFinal = totalRevenue ? parseFloat(totalRevenue.toFixed(2)) : 0;
+    const totalRevenueFinal = totalRevenue
+      ? parseFloat(totalRevenue.toFixed(2))
+      : 0;
     const totalCOGSFinal = totalCOGS ? parseFloat(totalCOGS.toFixed(2)) : 0;
-    const grossProfitFinal = grossProfit ? parseFloat(grossProfit.toFixed(2)) : 0;
+    const grossProfitFinal = grossProfit
+      ? parseFloat(grossProfit.toFixed(2))
+      : 0;
 
     // Create a new report
     const newReport = await Reports.create({
       reportName: reportName,
       totalRevenue: totalRevenueFinal,
       totalCOGS: totalCOGSFinal,
-      grossProfit:grossProfitFinal,
+      grossProfit: grossProfitFinal,
       startDate: startDate,
       endDate: endDate,
     });
@@ -172,55 +172,6 @@ exports.createReport = async (req, res) => {
     newReport.reportFile = reportFileName;
     await newReport.save();
 
-    const salesInPeriod = await Sales.findAll({
-      where: {
-        soldDate: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
-    });
-
-    // Create entries in SalesReport to link the sales to the new report
-    const salesReportEntries = salesInPeriod.map((sale) => ({
-      reportID: newReport.reportID,
-      salesID: sale.salesID,
-    }));
-    await SalesReport.bulkCreate(salesReportEntries);
-
-
-    const purchaseInPeriod = await Purchase.findAll({
-      where: {
-        purchasedDate: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
-    });
-
-    // Create entries in PurchaseReport to link the purchase to the new report
-    const purchaseReportEntries = purchaseInPeriod.map((purchase) => ({
-      reportID: newReport.reportID,
-      purchaseID: purchase.purchaseID,
-    }));
-    await PurchaseReport.bulkCreate(purchaseReportEntries);
-
-
-    const stockInPeriod = await Stocks.findAll({
-      where: {
-        purchasedDate: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
-    });
-
-    // Create entries in StocksReport to link the stock to the new report
-    const stockReportEntries = stockInPeriod.map((stock) => ({
-      reportID: newReport.reportID,
-      stockID: stock.stockID,
-    }));
-    await StocksReport.bulkCreate(stockReportEntries);
-
-
-
     res.status(201).json({
       message: "Report created successfully",
       report: newReport,
@@ -233,7 +184,6 @@ exports.createReport = async (req, res) => {
     });
   }
 };
-
 
 // GET -> localhost:5000/api/v1/reports/query
 exports.queryReport = async (req, res) => {
