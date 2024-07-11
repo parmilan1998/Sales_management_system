@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import GridLoader from "react-spinners/GridLoader";
+// import io from 'socket.io-client '
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
