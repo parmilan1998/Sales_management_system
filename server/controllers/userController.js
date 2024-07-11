@@ -9,34 +9,32 @@ const generateToken = (user) => {
 };
 
 // POST -> localhost:5000/api/v1/user/register
-// exports.registerUser = async (req, res) => {
-//   try {
-//     const { username, email, password } = req.body;
+exports.registerUser = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
 
-//     // hashing password
-//     const hashedPassword = await bcrypt.hash(password, 10);
+    // hashing password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-//     // Check if user exists already
-//     const userExists = await User.findOne({ where: { email: email } });
-//     if (userExists) {
-//       res.status(409).json({ message: "User already exists" });
-//     }
+    // Check if user exists already
+    const userExists = await User.findOne({ where: { email: email } });
+    if (userExists) {
+      res.status(409).json({ message: "User already exists" });
+    }
 
-//     const user = await User.create({
-//       username,
-//       email,
-//       password: hashedPassword,
-//     });
+    const user = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
 
-//     const token = generateToken(user);
-//     res.status(201).json({
-//       user: user,
-//       token: token,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
+    res.status(201).json({
+      user: user,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // POST -> localhost:5000/api/v1/user/login
 exports.loginUser = async (req, res) => {
@@ -57,16 +55,16 @@ exports.loginUser = async (req, res) => {
         .json({ message: "Please check your password credentials" });
     }
     const token = generateToken(user);
-    // set the cookies
     res.cookie("Authorization", token, {
-      expiresIn: "30d",
+      expiresIn: "1d",
       httpOnly: true,
       sameSite: true,
     });
     res.status(200).json({
       message: "Admin login successfully",
       token: token,
-      userInfo: user.username,
+      username: user.username,
+      email: user.email,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -86,13 +84,14 @@ exports.logOutUser = async (req, res) => {
 // GET -> localhost:5000/api/v1/user
 exports.getUserDetails = async (req, res) => {
   try {
-    const token = req.cookies.Authorization;
+    const token = req.headers.authorization;
+    const splitedToken = token.split(" ")[1];
 
-    if (!token) {
+    if (!splitedToken) {
       return res.status(401).json({ error: "Not authenticated" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const decoded = jwt.verify(splitedToken, process.env.JWT_SECRET_KEY);
     const user = await User.findByPk(decoded.userID, {
       attributes: ["userID", "email", "username"],
     });
@@ -115,24 +114,25 @@ exports.getUserDetails = async (req, res) => {
 // PUT -> localhost:5000/api/v1/user
 exports.updateUserProfile = async (req, res) => {
   try {
-    const token = req.cookies.Authorization;
+    const token = req.headers.authorization;
+    console.log(req.headers);
+    const splitedToken = token && token.split(" ")[1];
 
-    if (!token) {
+    if (!splitedToken) {
       return res.status(401).json({ error: "Not authenticated" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const decoded = jwt.verify(splitedToken, process.env.JWT_SECRET_KEY);
     const user = await User.findByPk(decoded.userID);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const { username, email, password } = req.body;
+    const { username, email } = req.body;
 
     if (username) user.username = username;
     if (email) user.email = email;
-    if (password) user.password = await bcrypt.hash(password, 10);
 
     await user.save();
 
@@ -144,6 +144,40 @@ exports.updateUserProfile = async (req, res) => {
         email: user.email,
       },
     });
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// PUT -> localhost:5000/api/v1/user/change-password
+exports.changePassword = async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    const splitedToken = token.split(" ")[1];
+
+    if (!splitedToken) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const decoded = jwt.verify(splitedToken, process.env.JWT_SECRET_KEY);
+    const user = await User.findByPk(decoded.userID);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Current password is incorrect" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ message: "Password changed successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

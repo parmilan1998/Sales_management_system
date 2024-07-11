@@ -1,5 +1,7 @@
 const Category = require("../models/category");
 const { Op } = require("sequelize");
+const fs = require("fs");
+const path = require("path");
 
 // POST -> localhost:5000/api/v1/category
 exports.createCategory = async (req, res) => {
@@ -9,13 +11,27 @@ exports.createCategory = async (req, res) => {
     if (!categoryName) {
       return res.status(400).json({ message: "Category name is required" });
     }
-    const category = await Category.create({
+    const category = await Category.findOne({
+      where: { categoryName: categoryName },
+    });
+
+    if (category) {
+      return res
+        .status(404)
+        .json({ error: `Category ${categoryName} is already there` });
+    }
+    const creCategory = await Category.create({
       categoryName,
       categoryDescription,
+      imageUrl: req.file ? req.file.filename : null,
     });
+
+    // Emit event for real-time updates
+    req.app.get("socketio").emit("categoryCreated", creCategory);
+
     res.status(201).json({
       message: "Category Created Successfully!",
-      category: category,
+      category: creCategory,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -26,9 +42,18 @@ exports.createCategory = async (req, res) => {
 exports.getCategories = async (req, res) => {
   try {
     const categories = await Category.findAll();
-    res.status(200).json({
-      categories: categories,
-    });
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/category/:id
+exports.getCategory = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const category = await Category.findByPk(id);
+    res.status(200).json(category);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -36,6 +61,7 @@ exports.getCategories = async (req, res) => {
 
 // PUT -> localhost:5000/api/v1/category/:id
 exports.updateCategory = async (req, res) => {
+  console.log({ req });
   try {
     const { id } = req.params;
     const { categoryName, categoryDescription } = req.body;
@@ -44,13 +70,43 @@ exports.updateCategory = async (req, res) => {
     if (!category) {
       res.status(404).json({ message: "Category not found" });
     }
+    if (req.file) {
+      console.log("New file uploaded:", req?.file);
+    }
+    // Delete existing image if it exists
+    if (category.imageUrl) {
+      const filePath = path.join(
+        __dirname,
+        "../public/category",
+        category.imageUrl
+      );
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+          console.warn("File does not exist, cannot delete:", filePath);
+        } else {
+          fs.unlink(filePath, (err) => {
+            if (err) {
+              console.error("Error deleting file:", err);
+            } else {
+              console.log("File deleted successfully:", filePath);
+            }
+          });
+        }
+      });
+    }
+
     // Update category
-    const categoryUpdate = await category.update(req.body);
+    const categoryUpdate = await category.update({
+      categoryName,
+      categoryDescription,
+      imageUrl: req?.file?.filename,
+    });
     res.status(200).json({
       message: "Category Updated Successfully!",
       updateCategory: categoryUpdate,
     });
   } catch (error) {
+    console.log({ error });
     res.status(500).json({ message: error.message });
   }
 };
@@ -75,64 +131,58 @@ exports.deleteCategory = async (req, res) => {
   }
 };
 
-// GET -> localhost:5000/api/v1/category/paginated-list
-exports.categoryPagination = async (req, res) => {
+// GET -> localhost:5000/api/v1/category/query
+exports.queryCategory = async (req, res) => {
   try {
-    let { page, limit } = req.query;
+    // Query parameters
+    const { keyword, page = 1, limit = 6, sort = "ASC" } = req.query;
 
-    page = parseInt(page);
-    limit = parseInt(limit);
+    // Pagination
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
-      return res
-        .status(400)
-        .json({ error: "Invalid page or limit parameters" });
-    }
+    // Search condition
+    const searchCondition = keyword
+      ? { categoryName: { [Op.like]: `%${keyword}%` } }
+      : {};
 
-    const offset = (page - 1) * limit;
+    // Sorting by ASC or DESC
+    const sortBy = sort.toLowerCase() === "desc" ? "DESC" : "ASC";
 
-    const categories = await Category.findAndCountAll({
+    // search, pagination, and sorting
+    const { count, rows: categories } = await Category.findAndCountAll({
+      where: searchCondition,
       offset: offset,
-      limit: limit,
+      limit: parsedLimit,
+      order: [["categoryName", sortBy]],
     });
+
+    // Total pages
+    const totalPages = Math.ceil(count / parsedLimit);
+
     res.status(200).json({
-      categories: categories.rows,
-      totalPages: Math.ceil(categories.count / limit),
-      totalCount: categories.count,
-      currentPage: page,
+      categories,
+      pagination: {
+        currentPage: parsedPage,
+        totalPages,
+        totalCount: count,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// GET -> localhost:5000/api/v1/category/search
-exports.searchCategory = async (req, res) => {
+// GET -> localhost:5000/api/v1/category/count
+exports.getCategoryCount = async (req, res) => {
   try {
-    const { keyword } = req.query;
-    if (!keyword) {
-      return res.status(400).json({ message: "Search keyword is required" });
-    }
-    const searchOutputs = await Category.findAll({
-      where: {
-        [Op.or]: [
-          {
-            categoryName: {
-              [Op.like]: `%${keyword}%`,
-            },
-          },
-          {
-            categoryDescription: {
-              [Op.like]: `%${keyword}%`,
-            },
-          },
-        ],
-      },
-    });
-    res.status(200).json({
-      searchOutputs: searchOutputs,
-    });
+    const count = await Category.count();
+    res.status(200).json({ count });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error fetching category count:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching category count", error: error.message });
   }
 };

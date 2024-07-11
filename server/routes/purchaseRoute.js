@@ -1,12 +1,22 @@
 const express = require("express");
-const purchaseController = require("../controllers/purchaseController");
+const {
+  createPurchase,
+  // deletePurchase,
+  updatePurchase,
+  queryPurchase,
+  getAllPurchases,
+  getPurchaseById,
+  returnPurchase,
+} = require("../controllers/purchaseController");
 
 const router = express.Router();
 
-router.post("/", purchaseController.createPurchase);
-router.get("/", purchaseController.getAllPurchases);
-router.get("/query", purchaseController.queryPurchase);
-router.put("/:id", purchaseController.updatePurchase);
-router.delete("/:id", purchaseController.deletePurchase);
+router.post("/", createPurchase);
+router.get("/list", getAllPurchases);
+router.get("/query", queryPurchase);
+router.get("/:id", getPurchaseById);
+router.put("/return/:id",returnPurchase)
+router.put("/:id", updatePurchase);
+// router.delete("/:id", deletePurchase);
 
 module.exports = router;

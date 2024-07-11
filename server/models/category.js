@@ -1,7 +1,6 @@
 const { DataTypes } = require("sequelize");
 const db = require("../database/db");
 
-
 const Category = db.define(
   "Category",
   {
@@ -28,11 +27,14 @@ const Category = db.define(
         notEmpty: true,
       },
     },
+    imageUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     // Other model options go here
   }
 );
-
 
 module.exports = Category;

@@ -9,7 +9,8 @@ export default {
         acme: '"Acme", sans-serif',
       },
       colors: {
-        primaryDefault: "#232E42",
+        primary: "#232E42",
+        primaryDefault: "#1959AA",
         primaryRed: "#E62F55",
       },
     },

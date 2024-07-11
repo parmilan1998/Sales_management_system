@@ -1,87 +1,53 @@
-const { Op } = require("sequelize");
+const { Op, fn, col, where } = require("sequelize");
 const Product = require("../models/products");
 const Category = require("../models/category");
-const Purchase = require("../models/purchase");
+const Stocks = require("../models/stocks");
+const fs = require("fs");
+const path = require("path");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
-  const products = req.body;
+  const { productName, categoryName, productDescription, unitPrice } = req.body;
+
   try {
-    const createdProduct = await Promise.all(
-      products.map(async (product) => {
-        const {
-          productName,
-          categoryName,
-          productDescription,
-          productQuantity,
-          unitPrice,
-          purchasePrice,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate
-        } = product;
+    // Check if the product already exists
+    const existingProduct = await Product.findOne({
+      where: {
+        productName: productName,
+      },
+    });
 
-        const category = await Category.findOne({
-          where: { categoryName: categoryName },
-        });
+    if (existingProduct) {
+      return res.status(400).json({
+        message: `Product with name ${productName} already exists`,
+        product: existingProduct,
+      });
+    }
+    const category = await Category.findOne({
+      where: { categoryName: categoryName },
+    });
 
-        if (!category) {
-          return res
-            .status(404)
-            .json({ error: `Category ${categoryName} not found` });
-        }
-        const purchase = await Purchase.findOne({
-          where: { productName: productName },
-        });
+    if (!category) {
+      return res
+        .status(404)
+        .json({ error: `Category ${categoryName} not found` });
+    }
 
-        if (!unitPrice) {
-          if (!purchase) {
-            return res
-              .status(404)
-              .json({ error: `Purchase price for ${productName} not found` });
-          }
-          const unitPrice = purchase.purchasePrice * 1.1;
-         
-        }
+    const newProduct = await Product.create({
+      productName,
+      categoryID: category.categoryID,
+      categoryName,
+      productDescription,
+      unitPrice,
+      imageUrl: req.file ? req.file.filename : null,
+    });
 
-        if(!purchasePrice){
-          if (!purchase) {
-            return res
-              .status(404)
-              .json({ error: `Purchase price for ${productName} not found` });
-          }
-          const purchasePrice = purchase.purchasePrice
-        }
-
-        if(!purchasedDate){
-          if (!purchase) {
-            return res
-              .status(404)
-              .json({ error: `Purchase price for ${productName} not found` });
-          }
-          const purchasedDate = purchase.purchasedDate
-        }
-
-        const newProduct = await Product.create({
-          productName,
-          categoryID: category.categoryID,
-          categoryName: category.categoryName,
-          productDescription,
-          productQuantity,
-          unitPrice,
-          purchasePrice,
-          manufacturedDate,
-          expiryDate,
-          purchasedDate
-        });
-
-        return newProduct;
-      })
-    );
+    // Emit event for real-time updates
+    req.app.get("socketio").emit("productCreated", newProduct);
 
     res.status(201).json({
       message: "Product added successfully",
-      result: createdProduct,
+      result: newProduct,
     });
   } catch (error) {
     res
@@ -90,20 +56,44 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// GET -> localhost:5000/api/v1/product
+// GET -> localhost:5000/api/v1/product/list
 exports.getAllProduct = async (req, res) => {
   try {
     const products = await Product.findAll();
-    res.status(200).json({
-      count: products.length,
-      product: products,
+    const productIDs = products.map((product) => product.productID);
+
+    const stockQuantities = await Stocks.findAll({
+      attributes: [
+        "productID",
+        [fn("sum", col("productQuantity")), "totalQuantity"],
+      ],
+      where: {
+        productID: {
+          [Op.in]: productIDs,
+        },
+      },
+      group: ["productID"],
     });
+
+    const stockQuantityMap = stockQuantities.reduce((acc, stock) => {
+      acc[stock.productID] = stock.dataValues.totalQuantity;
+      return acc;
+    }, {});
+
+    const productWithQuantities = products.map((product) => ({
+      ...product.dataValues,
+      totalQuantity: stockQuantityMap[product.productID] || 0,
+    }));
+
+    res.status(200).json(productWithQuantities);
   } catch (error) {
-    res.status(500).send("Error retrieving products");
+    res
+      .status(500)
+      .json({ message: "Error retrieving products", error: error.message });
   }
 };
 
-// GET -> localhost:5000/api/v1/product:id
+// GET -> localhost:5000/api/v1/product/:id
 exports.getProduct = async (req, res) => {
   const { id } = req.params;
   try {
@@ -111,26 +101,56 @@ exports.getProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    res.status(200).json(product);
+
+    const stockQuantity = await Stocks.findOne({
+      attributes: [[fn("sum", col("productQuantity")), "totalQuantity"]],
+      where: {
+        productID: id,
+      },
+      group: ["productID"],
+    });
+
+    const totalQuantity = stockQuantity
+      ? stockQuantity.dataValues.totalQuantity
+      : 0;
+
+    res.status(200).json({
+      ...product.dataValues,
+      totalQuantity,
+    });
   } catch (error) {
-    console.error("Error retrieving product:", error);
-    res.status(500).send("Error retrieving product");
+    res
+      .status(500)
+      .json({ message: "Error retrieving product", error: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/product/fbc/:categoryID
+exports.filterbyCategory = async (req, res) => {
+  const { categoryID } = req.params;
+
+  try {
+    const products = await Product.findAll({
+      where: { categoryID },
+    });
+
+    if (products.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No products found in this category" });
+    }
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
 // PUT -> localhost:5000/api/v1/product:id
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const {
-    productName,
-    categoryName,
-    productDescription,
-    unitPrice,
-    purchasePrice,
-    manufacturedDate,
-    expiryDate,
-    purchasedDate
-  } = req.body;
+  const { productName, categoryName, productDescription, unitPrice } = req.body;
+
+  console.log(req.file);
 
   try {
     const product = await Product.findByPk(id);
@@ -139,9 +159,10 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    let category;
+    let categoryID = product.categoryID;
+
     if (categoryName) {
-      category = await Category.findOne({
+      const category = await Category.findOne({
         where: { categoryName: categoryName },
       });
 
@@ -150,23 +171,63 @@ exports.updateProduct = async (req, res) => {
           .status(404)
           .json({ message: `Category ${categoryName} not found.` });
       }
+
+      categoryID = category.categoryID;
     }
 
-    await product.update({
-      productName,
-      categoryName,
-      productDescription,
-      unitPrice,
-      purchasePrice,
-      manufacturedDate,
-      expiryDate,
-      purchasedDate,
-      categoryID: category ? category.categoryID : null,
-    });
+    // Handle image upload if a new file is provided
+    if (req.file) {
+      console.log("New file uploaded:", req?.file);
+    }
 
-    res.status(200).json({ message: "Product updated successfully" });
+    // Delete existing image if it exists
+    if (product.imageUrl) {
+      const filePath = path.join(
+        __dirname,
+        "../public/products",
+        product.imageUrl
+      );
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+          console.warn("File does not exist, cannot delete:", filePath);
+        } else {
+          fs.unlink(filePath, (err) => {
+            if (err) {
+              console.error("Error deleting file:", err);
+            } else {
+              console.log("File deleted successfully:", filePath);
+            }
+          });
+        }
+      });
+
+      // Update product with new image path
+      await product.update({
+        productName,
+        productDescription,
+        categoryName,
+        unitPrice,
+        categoryID,
+        imageUrl: req?.file?.filename, // Update imageUrl with the new file path
+      });
+    } else {
+      // Update product without changing the image
+      await product.update({
+        productName,
+        productDescription,
+        categoryName,
+        unitPrice,
+        categoryID,
+      });
+    }
+
+    // Respond with success message
+    return res.status(200).json({
+      message: "Product updated successfully",
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error updating product" });
+    console.error("Error updating product:", error);
+    return res.status(500).json({ message: "Error updating product" });
   }
 };
 
@@ -181,17 +242,17 @@ exports.deleteProduct = async (req, res) => {
     }
 
     await product.destroy();
-    res.status(200).send("Product deleted successfully");
+    res.status(200).json("Product deleted successfully");
   } catch (error) {
-    res.status(500).send("Error deleting product");
+    res.status(500).json("Error deleting product");
   }
 };
 
 // GET -> localhost:5000/api/v1/product/query
 exports.queryProducts = async (req, res) => {
+  const { categoryID } = req.query;
+  const { page = 1, limit = 8, sort = "ASC", keyword } = req.query;
   try {
-    const { page = 1, limit = 8, sort = "ASC", keyword } = req.query;
-
     // Pagination
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
@@ -210,9 +271,17 @@ exports.queryProducts = async (req, res) => {
     const sortBy = sort.toLowerCase() === "desc" ? "DESC" : "ASC";
 
     // Search condition
-    const searchCondition = keyword
-      ? { productName: { [Op.like]: `%${keyword}%` } }
-      : {};
+
+    let searchCondition = {};
+    if (categoryID) {
+      searchCondition = { ...searchCondition, categoryID };
+    }
+    if (keyword) {
+      searchCondition = {
+        ...searchCondition,
+        productName: { [Op.like]: `%${keyword}%` },
+      };
+    }
 
     const { count, rows: products } = await Product.findAndCountAll({
       where: searchCondition,
@@ -221,8 +290,37 @@ exports.queryProducts = async (req, res) => {
       order: [["productName", sortBy]],
     });
 
+    // Get product IDs from the products found
+    const productIDs = products.map((product) => product.productID);
+
+    // Find total quantities for the found products
+    const stockQuantities = await Stocks.findAll({
+      attributes: [
+        "productID",
+        [fn("sum", col("productQuantity")), "totalQuantity"],
+      ],
+      where: {
+        productID: {
+          [Op.in]: productIDs,
+        },
+      },
+      group: ["productID"],
+    });
+
+    // Create a map of productID to totalQuantity
+    const stockQuantityMap = stockQuantities.reduce((acc, stock) => {
+      acc[stock.productID] = stock.dataValues.totalQuantity;
+      return acc;
+    }, {});
+
+    // Add totalQuantity to each product
+    const productWithQuantities = products.map((product) => ({
+      ...product.dataValues,
+      totalQuantity: stockQuantityMap[product.productID] || 0,
+    }));
+
     res.status(200).json({
-      products: products,
+      products: productWithQuantities,
       pagination: {
         totalPages: Math.ceil(count / parsedLimit),
         totalCount: count,
@@ -231,5 +329,16 @@ exports.queryProducts = async (req, res) => {
     });
   } catch (error) {
     res.status(500).send({ message: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/product/count
+exports.getProductCount = async (req, res) => {
+  try {
+    const count = await Product.count();
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching product count:", error);
+    res.status(500).json({ message: "Error fetching product count", error: error.message });
   }
 };
