@@ -397,14 +397,58 @@ exports.updateReport = async (req, res) => {
         },
       },
     });
-
     // Create new entries in SalesReport to link the sales to the updated report
     const salesReportEntries = salesInPeriod.map((sale) => ({
       reportID: id,
       salesID: sale.salesID,
     }));
-
     await SalesReport.bulkCreate(salesReportEntries);
+
+
+    // Clear existing SalesReport entries for the report
+    await PurchaseReport.destroy({
+      where: {
+        reportID: id,
+      },
+    });
+    
+    const purchaseInPeriod = await Purchase.findAll({
+      where: {
+        purchasedDate: {
+          [Op.between]: [startDate, endDate],
+        },
+      },
+    });
+
+    // Create entries in PurchaseReport to link the purchase to the new report
+    const purchaseReportEntries = purchaseInPeriod.map((purchase) => ({
+      reportID: id,
+      purchaseID: purchase.purchaseID,
+    }));
+    await PurchaseReport.bulkCreate(purchaseReportEntries);
+    
+
+     // Clear existing SalesReport entries for the report
+     await StocksReport.destroy({
+      where: {
+        reportID: id,
+      },
+    });
+    const stockInPeriod = await Stocks.findAll({
+      where: {
+        purchasedDate: {
+          [Op.between]: [startDate, endDate],
+        },
+      },
+    });
+
+    // Create entries in StocksReport to link the stock to the new report
+    const stockReportEntries = stockInPeriod.map((stock) => ({
+      reportID: id,
+      stockID: stock.stockID,
+    }));
+    await StocksReport.bulkCreate(stockReportEntries);
+
 
     res.status(200).json({
       message: "Report updated successfully",
