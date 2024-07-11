@@ -2,7 +2,7 @@ const Purchase = require("../models/purchase");
 const { Op, fn, col } = require("sequelize");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
-const Reports = require("../models/reports");
+
 
 
 // POST -> localhost:5000/api/v1/purchase

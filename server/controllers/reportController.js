@@ -7,6 +7,8 @@ const Stocks = require("../models/stocks");
 const SalesReport = require("../models/salesReport");
 const path = require("path");
 const fs = require("fs");
+const StocksReport = require("../models/stocksReport")
+const PurchaseReport = require("../models/purchaseReport")
 
 const generatePDFReport = async (
   startDate,
