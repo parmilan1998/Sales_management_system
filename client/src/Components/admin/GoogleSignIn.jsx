@@ -5,28 +5,29 @@ import { auth, provider } from "./config";
 import { signInWithPopup } from "firebase/auth";
 import Dashboard from "../../Pages/Dashboard";
 import { useNavigate } from "react-router-dom";
+import { login } from "../../features/authSlice";
+import { useDispatch } from "react-redux";
 
 const GoogleSignInButton = () => {
   const [value, setValue] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleClick = () => {
     signInWithPopup(auth, provider)
       .then((result) => {
-        setValue(result.user.email);
-        navigate("/home");
-        localStorage.setItem("email", result.user.email);
-        console.log("navigate");
-        navigate("/home");
+        const user = result.user;
+        setValue(user.email);
+        dispatch(login({ email: user.email }));
+        localStorage.setItem("email", user.email);
+        navigate("/");
       })
       .catch((error) => {
-        console.log(error);
+        console.log({ error });
       });
   };
 
-  useEffect(() => {
-    setValue(localStorage.getItem("email"));
-  }, []);
+  console.log({ value });
 
   return (
     <div>
