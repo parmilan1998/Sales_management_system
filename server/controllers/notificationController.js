@@ -51,7 +51,7 @@ exports.getOutOfStockProducts = async (req, res) => {
       ],
       group: ["productID"],
       having: {
-        totalQuantity: 0,
+        totalQuantity: 0, 
       },
       include: [
         {

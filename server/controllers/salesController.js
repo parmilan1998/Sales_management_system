@@ -130,6 +130,32 @@ exports.createSales = async (req, res) => {
       );
     }
 
+    // Fetch and emit low stock products
+    try {
+      const lowStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/low-stock"
+      );
+      io.emit("lowStockUpdated", lowStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching low stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
+
+    // Fetch and emit out of stock products
+    try {
+      const outOfStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/out-of-stock"
+      );
+      io.emit("outOfStockUpdated", outOfStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching out of stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
+
     res.status(201).json({
       message: "Sales added successfully",
       sales: createdSales,
@@ -307,6 +333,32 @@ exports.updateSales = async (req, res) => {
     // Fetch and emit the updated total product quantity
     const totalQuantity = await Stocks.sum("productQuantity");
     io.emit("totalProductQuantityUpdated", totalQuantity);
+
+    // Fetch and emit low stock products
+    try {
+      const lowStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/low-stock"
+      );
+      io.emit("lowStockUpdated", lowStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching low stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
+
+    // Fetch and emit out of stock products
+    try {
+      const outOfStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/out-of-stock"
+      );
+      io.emit("outOfStockUpdated", outOfStockResponse.data);
+    } catch (err) {
+      console.error( 
+        "Error fetching out of stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
 
     res.status(200).json({
       message: `Sales record with ID '${id}' updated successfully`,
