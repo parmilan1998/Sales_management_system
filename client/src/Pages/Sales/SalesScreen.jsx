@@ -148,7 +148,7 @@ const SalesScreen = () => {
           />
         </div>
       ) : (
-        <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
+        <div className="max-w-screen-xl z-0 mx-auto h-[100%] lg:px-8 font-poppins cursor-pointer">
           <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
             <div className="flex items-center gap-6">
               <h1 className="text-3xl font-medium font-acme">
@@ -162,7 +162,7 @@ const SalesScreen = () => {
                 New Sale
               </Link>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex lg:flex-row md:flex-row flex-col  items-center gap-2">
               <h1>SortBy:</h1>
               <SalesSort
                 sortName={sortName}

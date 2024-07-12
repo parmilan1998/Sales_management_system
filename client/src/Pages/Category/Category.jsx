@@ -207,7 +207,7 @@ const Category = () => {
               />
               <button
                 onClick={openAddPopup}
-                className="flex mr-1 my-2 py-1 px-1 w-10 h-8 justify-center items-center text-white text-2xl rounded-lg bg-blue-600 "
+                className="flex mr-1 my-4 py-1 px-1 w-10 h-8 justify-center items-center text-white text-2xl rounded-lg bg-blue-600 "
               >
                 <Tooltip title="Add Category">
                   <IoMdAddCircleOutline

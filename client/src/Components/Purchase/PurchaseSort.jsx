@@ -11,7 +11,6 @@ const PurchaseSort = ({ sortDate, setSortName, setSortDate, sortName }) => {
   const handleSortName = () => {
     const newSortOrder = sortName === "ASC" ? "DESC" : "ASC";
     setSortName(newSortOrder);
-
   };
 
   const handleSortDate = () => {

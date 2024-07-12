@@ -15,22 +15,21 @@ const ReportList = ({
   setSearch,
   setPage,
 }) => {
-
   const handleFileView = async (reportID) => {
     try {
       const response = await reportsApi.get(`/download/${reportID}`, {
         responseType: "blob", // Ensure responseType is 'blob' to handle binary data
       });
-  
+
       // Create a blob from the response data
       const blob = new Blob([response.data], { type: "application/pdf" });
-  
+
       // Create a temporary URL for the blob
       const url = window.URL.createObjectURL(blob);
-  
+
       // Open the PDF in a new tab
-      window.open(url, '_blank');
-  
+      window.open(url, "_blank");
+
       setTimeout(() => {
         window.URL.revokeObjectURL(url);
       }, 30000);
@@ -39,30 +38,32 @@ const ReportList = ({
       toast.error("Failed to view file");
     }
   };
-  
+
   return (
     <div className=" font-poppins mr-8">
-      <div className="mx-4 my-3 flex flex-row gap-2">
-        <div>
+      <div className="mx-4 my-3 flex lg:flex-row md:flex-row flex-col  items-center gap-2">
+        <div className="flex justify-start ">
           <h1 className="text-3xl font-semibold font-acme text-blue-700">
             ReportList
           </h1>
         </div>
-        <div className="ml-2 mt-2 font-poppins ">
-          <h2>sortBy:</h2>
-        </div>
-        <div className="mr-2">
-          <ReportSort sort={sort} setSort={setSort} />
-        </div>
-        <div className=" ml-auto ">
-          <ReportSearch
-            search={search}
-            setSearch={setSearch}
-            setPage={setPage}
-          />
+        <div className="flex flex-row items-center gap-2 justify-end">
+          <div className="lg:ml-0 md:ml-0 ml-16 mt-2 font-poppins ">
+            <h2>sortBy:</h2>
+          </div>
+          <div className="mr-2">
+            <ReportSort sort={sort} setSort={setSort} />
+          </div>
+          <div className=" ml-auto ">
+            <ReportSearch
+              search={search}
+              setSearch={setSearch}
+              setPage={setPage}
+            />
+          </div>
         </div>
       </div>
-      <div className="w-full mx-3 px-2">
+      <div className="w-full pr-6 mr-8 lg:pr-0 lg:ml-6 md:pr-0 md:ml-6">
         <table className="w-full text-left border border-separate rounded border-slate-400 ">
           <tbody>
             <tr>
