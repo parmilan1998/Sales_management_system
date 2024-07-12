@@ -53,7 +53,7 @@ const Purchase = () => {
           />
         </div>
       ) : (
-        <div className=" max-w-screen-xl mx-auto lg:px-8 font-poppins">
+        <div className=" max-w-screen-xl h-[100%] mx-auto lg:px-8 font-poppins">
           <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
             <div className="flex items-center gap-6">
               <h1 className="text-3xl font-medium font-acme">All Purchases </h1>

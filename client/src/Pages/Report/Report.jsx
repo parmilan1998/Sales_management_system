@@ -38,12 +38,13 @@ const Report = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sort, search]);
 
-
   return (
-    <div>
+    <div className="max-w-screen-xl z-0 mx-auto h-[100%] lg:px-8 font-poppins cursor-pointer">
       <div className="my-2 mx-4">
-       <h1 className="text-3xl font-semibold font-acme text-blue-700">Reports</h1>
-       </div>
+        <h1 className="text-3xl font-semibold font-acme text-blue-700">
+          Reports
+        </h1>
+      </div>
       <div>
         <CreateReport
           startDate={startDate}

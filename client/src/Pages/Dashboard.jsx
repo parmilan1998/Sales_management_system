@@ -108,7 +108,7 @@ const Dashboard = () => {
       const response = await fetch(url);
       const data = await response.json();
       setSales(data);
-      console.log("hello",data);
+      console.log("hello", data);
       updateChartData(data);
     } catch (error) {
       console.error("Error fetching sales data:", error);
@@ -141,7 +141,6 @@ const Dashboard = () => {
       salesData.forEach((sale) => {
         const monthIndex = sale.month - 1; // Assuming month is returned as 1-based index
         salesByPeriod[monthIndex] = sale.totalRevenue;
-
       });
     } else {
       // Labels for last 5 years
@@ -179,7 +178,6 @@ const Dashboard = () => {
 
   // Socket event listeners
   useEffect(() => {
-
     socket.on("categoryCount", (newCategory) => {
       setCategory(newCategory);
     });
@@ -197,7 +195,6 @@ const Dashboard = () => {
     });
 
     socket.on("salesUpdated", (newSalesData) => {
-
       console.log("hi", newSalesData);
       setSales(newSalesData);
       updateChartData(newSalesData);
@@ -231,10 +228,10 @@ const Dashboard = () => {
   };
 
   return (
-    <div className=" max-w-screen-xl mx-auto lg:px-4 font-poppins cursor-pointer">
-      <h1 className="text-2xl font-acme text-gray-700 pb-4">Dashboard</h1>
+    <div className=" max-w-screen-xl lg:px-8 h-[100%] mx-auto font-poppins cursor-pointer">
+      <h1 className="text-2xl font-acme text-gray-700 py-4">Dashboard</h1>
       <div className="grid grid-cols-1 gap-6 w-full">
-        <div className="flex flex-row gap-3">
+        <div className="flex lg:flex-col md:flex-col sm:flex-row gap-3">
           <div className="bg-slate-50 rounded w-full h-30 p-5 flex flex-col justify-between">
             <h1 className="text-xl text-neutral-400">Categories</h1>
             <span className="text-4xl text-neutral-800 font-medium font-acme">

@@ -20,9 +20,7 @@ const CreateReport = ({
   const {
     formState: { errors },
     handleSubmit,
-
   } = useForm();
-
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -112,47 +110,41 @@ const CreateReport = ({
         endDate: end,
       };
 
-    const res = await reportsApi.post("", payload);
-    const reportID = res.data.report.reportID;
-        // Download the generated PDF file
-    const downloadResponse = await fetch(
-          `http://localhost:5000/api/v1/reports/download/${reportID}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/pdf",
-            },
-          }
-        );
+      const res = await reportsApi.post("", payload);
+      const reportID = res.data.report.reportID;
+      // Download the generated PDF file
+      const downloadResponse = await fetch(
+        `http://localhost:5000/api/v1/reports/download/${reportID}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/pdf",
+          },
+        }
+      );
 
-        const blob = await downloadResponse.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-        a.download = `Gross_Profit_Report_${start}_to_${end}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(url);
-      
+      const blob = await downloadResponse.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = `Gross_Profit_Report_${start}_to_${end}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+
       toast.success(`Report created successfully!`);
       fetchReports();
- 
     } catch (error) {
-      console.error(
-        `Failed to create report:`,
-        error
-      );
-      toast.error(
-        `Failed to"create report: ${error.message}`
-      );
+      console.error(`Failed to create report:`, error);
+      toast.error(`Failed to"create report: ${error.message}`);
     }
   };
 
   return (
     <div className="flex mx-5 bg-slate-100 p-4 mb-8 rounded-md border border-slate-200 font-poppins">
       <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-        <div className="flex flex-row justify-between items-center gap-2">
+        <div className="flex lg:flex-row md:flex-row flex-col justify-between items-center gap-2">
           <div className="flex flex-col gap-1">
             <label>Report Type:</label>
             <select
