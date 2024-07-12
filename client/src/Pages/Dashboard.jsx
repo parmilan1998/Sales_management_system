@@ -231,7 +231,7 @@ const Dashboard = () => {
     <div className=" max-w-screen-xl lg:px-8 h-[100%] mx-auto font-poppins cursor-pointer">
       <h1 className="text-2xl font-acme text-gray-700 py-4">Dashboard</h1>
       <div className="grid grid-cols-1 gap-6 w-full">
-        <div className="flex lg:flex-col md:flex-col sm:flex-row gap-3">
+        <div className="flex lg:flex-row md:flex-row flex-col gap-3">
           <div className="bg-slate-50 rounded w-full h-30 p-5 flex flex-col justify-between">
             <h1 className="text-xl text-neutral-400">Categories</h1>
             <span className="text-4xl text-neutral-800 font-medium font-acme">
