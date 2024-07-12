@@ -3,8 +3,6 @@ const { Op, fn, col } = require("sequelize");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 
-
-
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
   try {
@@ -467,7 +465,6 @@ exports.returnPurchase = async (req, res) => {
 
     stock.productQuantity -= returnQuantity;
     await stock.save();
-
 
     res.status(200).json({
       message: `Returned ${returnQuantity} units for purchase record with ID '${id}' successfully`,

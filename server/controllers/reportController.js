@@ -7,8 +7,8 @@ const Stocks = require("../models/stocks");
 const SalesReport = require("../models/salesReport");
 const path = require("path");
 const fs = require("fs");
-const StocksReport = require("../models/stocksReport")
-const PurchaseReport = require("../models/purchaseReport")
+const StocksReport = require("../models/stocksReport");
+const PurchaseReport = require("../models/purchaseReport");
 
 const generatePDFReport = async (
   startDate,
@@ -119,8 +119,6 @@ exports.createReport = async (req, res) => {
       },
     });
 
-
-
     // Calculate total COGS (Cost of Goods Sold)
     const totalCOGS =
       beginningInventoryCost + purchasesCost - endingInventoryCost;
@@ -144,7 +142,6 @@ exports.createReport = async (req, res) => {
         },
       },
     });
-
 
     // Create a new report
     const newReport = await Reports.create({
@@ -187,7 +184,6 @@ exports.createReport = async (req, res) => {
     }));
     await SalesReport.bulkCreate(salesReportEntries);
 
-
     const purchaseInPeriod = await Purchase.findAll({
       where: {
         purchasedDate: {
@@ -203,7 +199,6 @@ exports.createReport = async (req, res) => {
     }));
     await PurchaseReport.bulkCreate(purchaseReportEntries);
 
-
     const stockInPeriod = await Stocks.findAll({
       where: {
         purchasedDate: {
@@ -218,8 +213,6 @@ exports.createReport = async (req, res) => {
       stockID: stock.stockID,
     }));
     await StocksReport.bulkCreate(stockReportEntries);
-
-
 
     res.status(201).json({
       message: "Report created successfully",
@@ -404,14 +397,13 @@ exports.updateReport = async (req, res) => {
     }));
     await SalesReport.bulkCreate(salesReportEntries);
 
-
     // Clear existing SalesReport entries for the report
     await PurchaseReport.destroy({
       where: {
         reportID: id,
       },
     });
-    
+
     const purchaseInPeriod = await Purchase.findAll({
       where: {
         purchasedDate: {
@@ -426,10 +418,9 @@ exports.updateReport = async (req, res) => {
       purchaseID: purchase.purchaseID,
     }));
     await PurchaseReport.bulkCreate(purchaseReportEntries);
-    
 
-     // Clear existing SalesReport entries for the report
-     await StocksReport.destroy({
+    // Clear existing SalesReport entries for the report
+    await StocksReport.destroy({
       where: {
         reportID: id,
       },
@@ -448,7 +439,6 @@ exports.updateReport = async (req, res) => {
       stockID: stock.stockID,
     }));
     await StocksReport.bulkCreate(stockReportEntries);
-
 
     res.status(200).json({
       message: "Report updated successfully",

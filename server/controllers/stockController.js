@@ -230,11 +230,15 @@ exports.queryStocks = async (req, res) => {
 // GET -> localhost:5000/api/v1/stocks/total
 exports.getTotalProductQuantity = async (req, res) => {
   try {
-    const totalQuantity = await Stocks.sum('productQuantity');
+    const totalQuantity = await Stocks.sum("productQuantity");
     res.status(200).json({ totalQuantity });
   } catch (error) {
     console.error("Error fetching total product quantity:", error);
-    res.status(500).json({ message: "Error fetching total product quantity", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Error fetching total product quantity",
+        error: error.message,
+      });
   }
 };
-

@@ -23,7 +23,16 @@ const ProductScreen = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchProducts(null, page, limit, sort, search, setProducts, setTotalPages);
+    fetchProducts(
+      null,
+      page,
+      limit,
+      sort,
+      search,
+      setProducts,
+      setTotalPages,
+      setLoading(false)
+    );
   }, [page, limit, sort, search]);
 
   const confirmDelete = async (id) => {
