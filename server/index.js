@@ -5,16 +5,16 @@ const path = require("path");
 const app = express();
 
 //Set up a basic Socket.IO server
-const socketIO = require('socket.io')
-const http = require('http')
-const server =http.createServer(app)
-const io =socketIO(server, {
+const socketIO = require("socket.io");
+const http = require("http");
+const server = http.createServer(app);
+const io = socketIO(server, {
   cors: {
-    origin: "http://localhost:5173", 
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
     allowedHeaders: ["my-custom-header"],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
 io.on("connection", (socket) => {
@@ -35,7 +35,7 @@ const purchaseRoute = require("./routes/purchaseRoute");
 const salesRoute = require("./routes/salesRoute");
 const userRoute = require("./routes/userRoute");
 const reportRoute = require("./routes/reportRoute");
-// const orderRoute = require("./routes/orderRoute");
+const notificationRoute = require("./routes/notificationRoute");
 
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
@@ -70,7 +70,7 @@ app.use("/api/v1/purchase", purchaseRoute);
 app.use("/api/v1/sales", salesRoute);
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/reports", reportRoute);
-// app.use("/api/v1/orders", orderRoute);
+app.use("/api/v1/notification", notificationRoute);
 
 const PORT = process.env.PORT || 5000;
 
