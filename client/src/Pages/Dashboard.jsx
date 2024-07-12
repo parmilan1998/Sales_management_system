@@ -17,7 +17,7 @@ import {
 
 import { Bar } from "react-chartjs-2";
 import salesApi from "../api/sales";
-import Notification from "../Components/Notification";
+
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -293,9 +293,10 @@ const Dashboard = () => {
         <div className="bg-slate-50 rounded w-full h-64 col-span-2"></div>
         <div className="bg-slate-50 rounded w-full h-64 col-span-1"></div>
       </div> */}
-      <Notification />
+    
     </div>
   );
 };
 
 export default Dashboard;
+ 
