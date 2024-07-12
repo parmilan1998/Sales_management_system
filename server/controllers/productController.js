@@ -43,7 +43,11 @@ exports.createProduct = async (req, res) => {
     });
 
     // Emit event for real-time updates
-    req.app.get("socketio").emit("productCreated", newProduct);
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated product count
+    const count = await Product.count();
+    io.emit("productCount", count);
 
     res.status(201).json({
       message: "Product added successfully",
@@ -242,6 +246,14 @@ exports.deleteProduct = async (req, res) => {
     }
 
     await product.destroy();
+    
+    // Emit event for real-time updates
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated product count
+    const count = await Product.count();
+    io.emit("productCount", count);
+
     res.status(200).json("Product deleted successfully");
   } catch (error) {
     res.status(500).json("Error deleting product");

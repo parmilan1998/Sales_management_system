@@ -107,6 +107,7 @@ const Dashboard = () => {
       const response = await fetch(url);
       const data = await response.json();
       setSales(data);
+      console.log("hello",data);
       updateChartData(data);
     } catch (error) {
       console.error("Error fetching sales data:", error);
@@ -139,6 +140,7 @@ const Dashboard = () => {
       salesData.forEach((sale) => {
         const monthIndex = sale.month - 1; // Assuming month is returned as 1-based index
         salesByPeriod[monthIndex] = sale.totalRevenue;
+
       });
     } else {
       // Labels for last 5 years
@@ -176,23 +178,26 @@ const Dashboard = () => {
 
   // Socket event listeners
   useEffect(() => {
-    socket.on("updateCategory", (newCategory) => {
+
+    socket.on("categoryCount", (newCategory) => {
       setCategory(newCategory);
     });
 
-    socket.on("updateProduct", (newProduct) => {
+    socket.on("productCount", (newProduct) => {
       setProduct(newProduct);
     });
 
-    socket.on("updateStock", (newStock) => {
+    socket.on("totalProductQuantityUpdated", (newStock) => {
       setStock(newStock);
     });
 
-    socket.on("updateSaleCount", (newSaleCount) => {
+    socket.on("saleCount", (newSaleCount) => {
       setSaleCount(newSaleCount);
     });
 
-    socket.on("updateSalesData", (newSalesData) => {
+    socket.on("salesUpdated", (newSalesData) => {
+
+      console.log("hi", newSalesData);
       setSales(newSalesData);
       updateChartData(newSalesData);
     });
