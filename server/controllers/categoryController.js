@@ -27,7 +27,11 @@ exports.createCategory = async (req, res) => {
     });
 
     // Emit event for real-time updates
-    req.app.get("socketio").emit("categoryCreated", creCategory);
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated category count
+    const count = await Category.count();
+    io.emit("categoryCount", count);
 
     res.status(201).json({
       message: "Category Created Successfully!",
@@ -122,6 +126,14 @@ exports.deleteCategory = async (req, res) => {
     }
     // Delete category
     const deletedCategory = await category.destroy();
+
+    // Emit event for real-time updates
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated category count
+    const count = await Category.count();
+    io.emit("categoryCount", count);
+
     res.status(200).json({
       message: "Category deleted successfully",
       deletedCategory: deletedCategory,
