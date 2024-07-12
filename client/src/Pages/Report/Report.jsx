@@ -3,6 +3,7 @@ import CreateReport from "../../Components/Report/CreateReport";
 import ReportList from "../../Components/Report/ReportList";
 import reportsApi from "../../api/reports";
 import ReportPagination from "../../Components/Report/ReportPagination";
+import GridLoader from "react-spinners/GridLoader";
 
 const Report = () => {
   const [startDate, setStartDate] = useState();
@@ -14,6 +15,7 @@ const Report = () => {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("DESC");
   const [limit, setLimit] = useState(5);
+  const [loading, setLoading] = useState(true);
 
   const fetchReports = async () => {
     try {
@@ -24,6 +26,7 @@ const Report = () => {
       const { reports, pagination } = res.data;
       setTotalPages(pagination.totalPages);
       setReport(reports);
+      setLoading(false);
       console.log("Report set:", reports);
     } catch (err) {
       console.log(err.message);
@@ -35,29 +38,25 @@ const Report = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sort, search]);
 
-  const closePopup = () => {
-   
-  };
-
   return (
-    <div>
+    <div className="max-w-screen-xl z-0 mx-auto h-[100%] lg:px-8 font-poppins cursor-pointer">
       <div className="my-2 mx-4">
-       <h1 className="text-3xl font-semibold font-acme text-blue-700">Reports</h1>
-       </div>
+        <h1 className="text-3xl font-semibold font-acme text-blue-700">
+          Reports
+        </h1>
+      </div>
       <div>
         <CreateReport
           startDate={startDate}
           endDate={endDate}
           setEndDate={setEndDate}
           fetchReports={fetchReports}
-          closePopup={closePopup}
         />
       </div>
       <div>
         <ReportList
           report={report}
           setReport={setReport}
-          fetchReports={fetchReports}
           limit={limit}
           page={page}
           sort={sort}

@@ -5,13 +5,13 @@ import Navbar from "../Components/Navbar";
 
 const RootLayout = () => {
   return (
-    <div className="flex flex-row h-screen overflow-hidden">
-      <div className="fixed h-full z-50">
+    <div className="grid grid-cols-12 bg-gray-200">
+      <div className="lg:col-span-2">
         <Sidebar />
       </div>
-      <div className="flex-1 flex flex-col overflow-hidden lg:pl-72">
-        {/* <Navbar /> */}
-        <div className="flex-1 overflow-y-auto bg-gray-200 px-4 lg:py-12 py-20">
+      <div className="col-span-10 lg:pl-16 flex flex-col w-full h-[100%] bg-gray-200">
+        <Navbar />
+        <div className="py-2 bg-gray-200 h-[100%]">
           <Outlet />
         </div>
       </div>

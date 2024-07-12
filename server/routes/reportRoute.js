@@ -6,12 +6,8 @@ const fs = require("fs");
 
 const {
   createReport,
-  updateReport,
-  deleteReport,
   queryReport,
-  getAllReport,
   getReport,
-  getReportByID,
 } = require("../controllers/reportController");
 
 const uploadPath = path.resolve(__dirname, "../public/reports");
@@ -38,7 +34,7 @@ const upload = multer({
   limits: {
     fileSize: maxSize,
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: ( file, cb) => {
     if (file.mimetype === "application/pdf") {
       cb(null, true);
     } else {
@@ -65,11 +61,7 @@ const handleFileUpload = (req, res, next) => {
 };
 
 router.post("/", handleFileUpload, createReport);
-router.put("/:id", handleFileUpload, updateReport);
-router.delete("/:id", deleteReport);
 router.get("/query", queryReport);
-router.get("/list", getAllReport);
-router.get("/download/:id", getReport);
-router.get("/:id", getReportByID);
+router.get("/download/:id",getReport)
 
 module.exports = router;

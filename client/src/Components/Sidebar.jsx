@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { SiPowerapps } from "react-icons/si";
 import { Link, useNavigate } from "react-router-dom";
-import { AiOutlineDashboard } from "react-icons/ai";
 import { BiCategoryAlt } from "react-icons/bi";
-import { FaTag } from "react-icons/fa6";
-import { RiStockFill } from "react-icons/ri";
-import { FcSalesPerformance } from "react-icons/fc";
+import { FaShopify, FaTag } from "react-icons/fa6";
 import { BiSolidReport } from "react-icons/bi";
-import { MdNotificationsActive } from "react-icons/md";
 import { IoIosLogOut, IoIosSettings } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, logOutAdmin } from "../features/authSlice";
 import toast from "react-hot-toast";
 import { Tooltip } from "antd";
 import LoginScreen from "../Pages/Admin/LoginScreen";
+import { jwtDecode } from "jwt-decode";
+import { LuGanttChartSquare } from "react-icons/lu";
+import { MdOutlineProductionQuantityLimits } from "react-icons/md";
+import { MdOutlineCurrencyExchange } from "react-icons/md";
+import { PiWarehouseLight } from "react-icons/pi";
 
 export default function Sidebar() {
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
@@ -37,6 +38,27 @@ export default function Sidebar() {
       toast.error("Logout failed. Please try again.");
     }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      const expTime = decodedToken.exp;
+
+      const expiryTime = (expTime - currentTime) * 1000;
+
+      if (expiryTime > 0) {
+        const timer = setTimeout(() => {
+          dispatch(logout());
+        }, expiryTime);
+
+        return () => clearTimeout(timer);
+      } else {
+        dispatch(logout());
+      }
+    }
+  }, [dispatch]);
 
   return (
     <>
@@ -85,19 +107,19 @@ export default function Sidebar() {
         </div>
         <nav
           aria-label="side navigation"
-          className="flex-1 text-white overflow-auto"
+          className="flex-1 text-white overflow-y-scroll no-scrollbar"
         >
           <div>
-            <ul className="flex flex-1 flex-col gap-1 pt-5">
+            <ul className="flex flex-1 flex-col gap-1 pt-0">
               <li className="px-3">
                 <Link
                   to="/"
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center">
-                    <AiOutlineDashboard size={20} />
+                    <LuGanttChartSquare size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Dashboard
                   </div>
                 </Link>
@@ -110,7 +132,7 @@ export default function Sidebar() {
                   <div className="flex items-center self-center ">
                     <BiCategoryAlt size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Category
                   </div>
                   {/* <span className="inline-flex items-center justify-center rounded-full bg-pink-100 px-2 text-xs text-pink-500 ">
@@ -124,9 +146,9 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <FaTag size={20} />
+                    <MdOutlineProductionQuantityLimits size={22} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Products
                   </div>
                 </Link>
@@ -137,9 +159,9 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <RiStockFill size={20} />
+                    <PiWarehouseLight size={24} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Stocks
                   </div>
                 </Link>
@@ -152,7 +174,7 @@ export default function Sidebar() {
                   <div className="flex items-center self-center ">
                     <FaTag size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Purchase
                   </div>
                 </Link>
@@ -163,9 +185,9 @@ export default function Sidebar() {
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
-                    <FcSalesPerformance size={20} />
+                    <MdOutlineCurrencyExchange size={22} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Sales
                   </div>
                 </Link>
@@ -178,7 +200,7 @@ export default function Sidebar() {
                   <div className="flex items-center self-center ">
                     <BiSolidReport size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Reports
                   </div>
                 </Link>
@@ -191,8 +213,21 @@ export default function Sidebar() {
                   <div className="flex items-center self-center ">
                     <IoIosSettings size={20} />
                   </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-md">
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Settings
+                  </div>
+                </Link>
+              </li>
+              <li className="px-3">
+                <Link
+                  to="/order"
+                  className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
+                >
+                  <div className="flex items-center self-center ">
+                    <FaShopify size={20} />
+                  </div>
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
+                    Orders
                   </div>
                 </Link>
               </li>
@@ -231,7 +266,7 @@ export default function Sidebar() {
                         />
                       </svg>
                     </div>
-                    <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-base">
+                    <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                       Logout
                     </div>
                   </Link>

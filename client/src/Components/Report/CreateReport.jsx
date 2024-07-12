@@ -10,9 +10,6 @@ const CreateReport = ({
   endDate: initialEndDate,
   setEndDate,
   fetchReports,
-  isUpdate,
-  selectedReport,
-  closePopup,
 }) => {
   const [reportType, setReportType] = useState("Weekly");
   const [customReportName, setCustomReportName] = useState("");
@@ -23,29 +20,7 @@ const CreateReport = ({
   const {
     formState: { errors },
     handleSubmit,
-    reset,
   } = useForm();
-
-  useEffect(() => {
-    if (isUpdate && selectedReport) {
-      if (
-        selectedReport.reportName !== "Weekly" &&
-        selectedReport.reportName !== "Monthly" &&
-        selectedReport.reportName !== "Half-Yearly" &&
-        selectedReport.reportName !== "Yearly"
-      ) {
-        setReportType("Input");
-        setCustomReportName(selectedReport.reportName)
-        setManualEndDate(selectedReport.endDate);
-        console.log("it is input");
-      } else {
-        setReportType(selectedReport.reportName);
-      }
-
-      setLocalStartDate(selectedReport.startDate);
-      setLocalEndDate(selectedReport.endDate);
-    }
-  }, [isUpdate, selectedReport]);
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -135,58 +110,47 @@ const CreateReport = ({
         endDate: end,
       };
 
-      let res;
-      let downloadResponse;
-      if (isUpdate && selectedReport) {
-        await reportsApi.put(`/${selectedReport.reportID}`, payload);
-      } else {
-        res = await reportsApi.post("", payload);
-        const reportID = res.data.report.reportID;
-        // Download the generated PDF file
-        downloadResponse = await fetch(
-          `http://localhost:5000/api/v1/reports/download/${reportID}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/pdf",
-            },
-          }
-        );
+      const res = await reportsApi.post("", payload);
+      const reportID = res.data.report.reportID;
+      // Download the generated PDF file
+      const downloadResponse = await fetch(
+        `http://localhost:5000/api/v1/reports/download/${reportID}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/pdf",
+          },
+        }
+      );
 
-        const blob = await downloadResponse.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-        a.download = `Gross_Profit_Report_${start}_to_${end}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-      toast.success(`Report ${isUpdate ? "updated" : "created"} successfully!`);
+      const blob = await downloadResponse.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = `Gross_Profit_Report_${start}_to_${end}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast.success(`Report created successfully!`);
       fetchReports();
-      closePopup();
     } catch (error) {
-      console.error(
-        `Failed to ${isUpdate ? "update" : "create"} report:`,
-        error
-      );
-      toast.error(
-        `Failed to ${isUpdate ? "update" : "create"} report: ${error.message}`
-      );
+      console.error(`Failed to create report:`, error);
+      toast.error(`Failed to"create report: ${error.message}`);
     }
   };
 
   return (
-    <div className="flex mx-5 bg-slate-100 p-2 border border-slate-300">
+    <div className="flex mx-5 bg-slate-100 p-4 mb-8 rounded-md border border-slate-200 font-poppins">
       <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-        <div className="flex flex-row justify-between items-center gap-2">
+        <div className="flex lg:flex-row md:flex-row flex-col justify-between items-center gap-2">
           <div className="flex flex-col gap-1">
             <label>Report Type:</label>
             <select
               value={reportType}
               onChange={handleReportTypeChange}
-              className="border border-slate-400"
+              className="border border-slate-300 text-sm rounded-md px-3 py-1 focus:outline-blue-300"
             >
               <option value="Weekly">Weekly</option>
               <option value="Monthly">Monthly</option>
@@ -204,7 +168,7 @@ const CreateReport = ({
                 name="reportName"
                 value={customReportName}
                 onChange={(e) => setCustomReportName(e.target.value)}
-                className="border border-slate-400"
+                className="border border-slate-300 text-sm rounded-md px-3 py-1 focus:outline-blue-300"
               />
               {errors.reportName && <p>This field is required</p>}
             </div>
@@ -216,7 +180,7 @@ const CreateReport = ({
               name="startDate"
               value={startDate}
               onChange={handleStartDateChange}
-              className="border border-slate-400"
+              className="border border-slate-300 text-sm rounded-md px-3 py-1 focus:outline-blue-300"
             />
             {errors.startDate && <p>This field is required</p>}
           </div>
@@ -228,7 +192,7 @@ const CreateReport = ({
                 name="endDate"
                 value={manualEndDate}
                 onChange={handleEndDateChange}
-                className="border border-slate-400"
+                className="border border-slate-300 text-sm rounded-md px-3 py-1 focus:outline-blue-300"
               />
             ) : (
               <input
@@ -236,17 +200,17 @@ const CreateReport = ({
                 name="endDate"
                 value={endDate}
                 readOnly
-                className="border border-slate-400"
+                className="border border-slate-300 text-sm rounded-md px-3 py-1 focus:outline-blue-300"
               />
             )}
             {errors.endDate && <p>This field is required</p>}
           </div>
-          <div className="pt-1 mr-2 ">
+          <div className="pt-1 mr-2 px-4">
             <button
               type="submit"
-              className="bg-blue-600 text-white text-m rounded-md p-1 border border-blue-700"
+              className="bg-blue-600 text-white text-m rounded-md px-4 py-1.5 border border-blue-400"
             >
-              {isUpdate ? "Update Report" : "Generate Report"}
+              Generate Report
             </button>
           </div>
         </div>
@@ -258,12 +222,8 @@ const CreateReport = ({
 CreateReport.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
-  reportID: PropTypes.number,
   setEndDate: PropTypes.func,
   fetchReports: PropTypes.func,
-  isUpdate: PropTypes.bool,
-  selectedReport: PropTypes.object,
-  closePopup: PropTypes.func,
 };
 
 export default CreateReport;

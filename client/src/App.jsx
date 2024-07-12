@@ -19,6 +19,8 @@ import SingleCategory from "./Pages/Category/SingleCategory";
 import AddEditSalesScreen from "./Pages/Sales/AddEditSalesScreen";
 import LoginScreen from "./Pages/Admin/LoginScreen";
 import ProfileSettingsScreen from "./Pages/ProfileSettingsScreen";
+import OrderScreen from "./Pages/Order/OrderScreen";
+// import GoogleSignInButton from "./Components/admin/GoogleSignIn";
 
 const App = () => {
   return (
@@ -41,8 +43,10 @@ const App = () => {
             <Route path="/sales/add/:id" element={<AddEditSalesScreen />} />
             <Route path="/reports" element={<Report />} />
             <Route path="/profile" element={<ProfileSettingsScreen />} />
+            <Route path="/order" element={<OrderScreen />} />
             <Route path="/stocks" element={<Stocks />} />
             <Route path="*" element={<PageNotFound />} />
+            {/* <Route path="/" element={<GoogleSignInButton />} /> */}
           </Route>
           <Route path="/user/login" element={<LoginScreen />} />
         </Routes>

@@ -48,6 +48,13 @@ exports.createStocks = async (req, res) => {
         productQuantity:
           existingStock.productQuantity + parseInt(productQuantity),
       });
+      // Emit event for stock update
+      const io = req.app.get("socketio");
+
+      // Fetch and emit the updated total product quantity
+      const totalQuantity = await Stocks.sum("productQuantity");
+      io.emit("totalProductQuantityUpdated", totalQuantity);
+
       return res.status(201).json({
         message: "Stocks updated Successfully!",
         stocks: updatedStock,
@@ -76,6 +83,13 @@ exports.createStocks = async (req, res) => {
       purchasedDate,
       purchaseID: null,
     });
+
+    // Emit event for stock update
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
 
     return res.status(201).json({
       message: "Stocks Created Successfully!",
@@ -123,6 +137,13 @@ exports.updateStocks = async (req, res) => {
       purchasedDate,
     });
 
+    // Emit event for stock update
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
+
     res.status(200).json({
       message: "Stock updated successfully",
       updateStock: stockUpdate,
@@ -141,6 +162,14 @@ exports.deleteStocks = async (req, res) => {
       return res.status(404).json({ message: "Stock not found" });
     }
     const stockDelete = await stocks.destroy();
+
+    // Emit event for stock update
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
+
     res.status(200).json({
       message: "Stock deleted successfully",
       deleteStock: stockDelete,
@@ -165,7 +194,7 @@ exports.queryStocks = async (req, res) => {
       limit = 6,
       sort = "ASC",
       sortBy = "ASC",
-    } = req.query; 
+    } = req.query;
 
     // Pagination
     const parsedPage = parseInt(page);
@@ -183,8 +212,9 @@ exports.queryStocks = async (req, res) => {
       }
     }
 
-    const searchCondition = searchConditions.length > 0 ? { [Op.or]: searchConditions } : {};
-    
+    const searchCondition =
+      searchConditions.length > 0 ? { [Op.or]: searchConditions } : {};
+
     // Sorting by ASC or DESC
     const sortOrder = sort === "DESC" ? "DESC" : "ASC";
     const sortDate = sortBy === "DESC" ? "DESC" : "ASC";
@@ -213,5 +243,21 @@ exports.queryStocks = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/stocks/total
+exports.getTotalProductQuantity = async (req, res) => {
+  try {
+    const totalQuantity = await Stocks.sum("productQuantity");
+    res.status(200).json({ totalQuantity });
+  } catch (error) {
+    console.error("Error fetching total product quantity:", error);
+    res
+      .status(500)
+      .json({
+        message: "Error fetching total product quantity",
+        error: error.message,
+      });
   }
 };

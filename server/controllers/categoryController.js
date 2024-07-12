@@ -25,6 +25,14 @@ exports.createCategory = async (req, res) => {
       categoryDescription,
       imageUrl: req.file ? req.file.filename : null,
     });
+
+    // Emit event for real-time updates
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated category count
+    const count = await Category.count();
+    io.emit("categoryCount", count);
+
     res.status(201).json({
       message: "Category Created Successfully!",
       category: creCategory,
@@ -118,6 +126,14 @@ exports.deleteCategory = async (req, res) => {
     }
     // Delete category
     const deletedCategory = await category.destroy();
+
+    // Emit event for real-time updates
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated category count
+    const count = await Category.count();
+    io.emit("categoryCount", count);
+
     res.status(200).json({
       message: "Category deleted successfully",
       deletedCategory: deletedCategory,
@@ -167,5 +183,18 @@ exports.queryCategory = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/category/count
+exports.getCategoryCount = async (req, res) => {
+  try {
+    const count = await Category.count();
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching category count:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching category count", error: error.message });
   }
 };

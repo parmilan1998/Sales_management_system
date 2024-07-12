@@ -1,5 +1,5 @@
 const Purchase = require("../models/purchase");
-const { Op, fn, col } = require("sequelize");
+const { Op } = require("sequelize");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 
@@ -64,6 +64,8 @@ exports.createPurchase = async (req, res) => {
       },
     });
 
+    let updatedStock;
+
     if (existingStock) {
       // Update product quantity for the existing product
       existingStock.productQuantity += purchaseQuantity;
@@ -73,9 +75,9 @@ exports.createPurchase = async (req, res) => {
       } else {
         existingStock.relatedPurchaseIDs = `${createdPurchase.purchaseID}`;
       }
-      await existingStock.save();
+      updatedStock = await existingStock.save();
     } else {
-      await Stocks.create({
+      updatedStock = await Stocks.create({
         productName,
         productID: product.productID,
         purchaseID: createdPurchase.purchaseID,
@@ -87,6 +89,13 @@ exports.createPurchase = async (req, res) => {
         relatedPurchaseIDs: `${createdPurchase.purchaseID}`,
       });
     }
+
+    // Emit event for stock update
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
@@ -261,25 +270,47 @@ exports.updatePurchase = async (req, res) => {
       }
     }
 
-    // Update the existing purchase record
-    existingPurchase.productID = newProduct.productID;
-    existingPurchase.productName = productName;
-    if (purchaseQuantity !== undefined)
-      existingPurchase.purchaseQuantity = purchaseQuantity;
-    if (purchasePrice !== undefined) {
-      existingPurchase.purchasePrice = purchasePrice;
-      existingPurchase.COGP =
-        purchasePrice * (purchaseQuantity || existingPurchase.purchaseQuantity);
-    }
-    if (purchaseVendor !== undefined)
-      existingPurchase.purchaseVendor = purchaseVendor;
-    if (vendorContact !== undefined)
-      existingPurchase.vendorContact = vendorContact;
-    if (purchasedDate !== undefined)
-      existingPurchase.purchasedDate = purchasedDate;
+    let newCOGP;
 
-    // Save the updated purchase record
-    await existingPurchase.save();
+    if (purchasePrice !== undefined) {
+      if (purchaseQuantity !== undefined) {
+        newCOGP = purchasePrice * purchaseQuantity;
+      } else {
+        newCOGP = purchasePrice * existingPurchase.purchaseQuantity;
+      }
+    } else {
+      if (purchaseQuantity !== undefined) {
+        newCOGP = existingPurchase.purchasePrice * purchaseQuantity;
+      } else {
+        newCOGP =
+          existingPurchase.purchasePrice * existingPurchase.purchaseQuantity;
+      }
+    }
+
+    // Update the existing purchase record using update method
+    await existingPurchase.update({
+      productID: newProduct.productID,
+      productName,
+      purchaseQuantity:
+        purchaseQuantity !== undefined
+          ? purchaseQuantity
+          : existingPurchase.purchaseQuantity,
+      purchasePrice:
+        purchasePrice !== undefined
+          ? purchasePrice
+          : existingPurchase.purchasePrice,
+      COGP: newCOGP,
+      purchaseVendor,
+      vendorContact,
+      purchasedDate,
+    });
+
+    // Emit event for stock update
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
 
     res.status(200).json({
       message: `Purchase record with ID '${id}' updated successfully`,
@@ -291,43 +322,43 @@ exports.updatePurchase = async (req, res) => {
   }
 };
 
-// DELETE -> localhost:5000/api/v1/purchase/:id
-exports.deletePurchase = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const purchase = await Purchase.findByPk(id);
-    if (!purchase) {
-      return res.status(404).json({ message: "Purchase not found" });
-    }
+// // DELETE -> localhost:5000/api/v1/purchase/:id
+// exports.deletePurchase = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const purchase = await Purchase.findByPk(id);
+//     if (!purchase) {
+//       return res.status(404).json({ message: "Purchase not found" });
+//     }
 
-    // Remove related purchaseID from purchaseID in Stocks table
-    const stockEntries = await Stocks.findAll({
-      where: {
-        relatedPurchaseIDs: {
-          [Op.like]: `%${id}%`,
-        },
-      },
-    });
+//     // Remove related purchaseID from purchaseID in Stocks table
+//     const stockEntries = await Stocks.findAll({
+//       where: {
+//         relatedPurchaseIDs: {
+//           [Op.like]: `%${id}%`,
+//         },
+//       },
+//     });
 
-    for (const stock of stockEntries) {
-      if (purchase.purchaseID == stock.purchaseID) {
-        stock.purchaseID = null;
-      }
+//     for (const stock of stockEntries) {
+//       if (purchase.purchaseID == stock.purchaseID) {
+//         stock.purchaseID = null;
+//       }
 
-      await stock.save();
+//       await stock.save();
 
-      const destroyPurchase = await purchase.destroy();
+//       const destroyPurchase = await purchase.destroy();
 
-      res.status(200).json({
-        message: "Purchase deleted successfully",
-        deletePurchase: destroyPurchase,
-      });
-    }
-  } catch (error) {
-    console.error("Error deleting purchase:", error);
-    res.status(500).send("Error deleting purchase");
-  }
-};
+//       res.status(200).json({
+//         message: "Purchase deleted successfully",
+//         deletePurchase: destroyPurchase,
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error deleting purchase:", error);
+//     res.status(500).send("Error deleting purchase");
+//   }
+// };
 
 const isValidDate = (dateString) => {
   const date = new Date(dateString);
@@ -396,5 +427,74 @@ exports.queryPurchase = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+//PUT ->localhost:5000/api/v1/purchase/return/:id
+exports.returnPurchase = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { returnQuantity } = req.body;
+
+    // Find the existing purchase record
+    const existingPurchase = await Purchase.findByPk(id);
+
+    if (!existingPurchase) {
+      return res
+        .status(404)
+        .json({ error: `Purchase record with ID '${id}' not found` });
+    }
+
+    // Find the associated stock entries for the purchase ID
+    const stock = await Stocks.findOne({
+      where: {
+        relatedPurchaseIDs: {
+          [Op.substring]: `${existingPurchase.purchaseID}`,
+        },
+      },
+    });
+
+    if (!stock) {
+      return res.status(404).json({
+        error: `Stock entry for purchase ID '${existingPurchase.purchaseID}' not found`,
+      });
+    }
+
+    if (returnQuantity <= 0) {
+      return res
+        .status(400)
+        .json({ error: `Return quantity must be greater than zero` });
+    }
+
+    if (returnQuantity > stock.productQuantity) {
+      return res
+        .status(400)
+        .json({ error: `Return quantity exceeds available stock` });
+    }
+
+    existingPurchase.purchaseQuantity -= returnQuantity;
+    await existingPurchase.save();
+
+    // Calculate COGP for the returned quantity
+    const returnCOGP = existingPurchase.purchasePrice * returnQuantity;
+
+    // Update purchase quantity and COGP
+    existingPurchase.purchaseQuantity -= returnQuantity;
+    existingPurchase.COGP -= returnCOGP; // Update COGP for the returned quantity
+    await existingPurchase.save();
+
+    stock.productQuantity -= returnQuantity;
+    await stock.save();
+
+    res.status(200).json({
+      message: `Returned ${returnQuantity} units for purchase record with ID '${id}' successfully`,
+      updatedStock: stock,
+    });
+  } catch (error) {
+    console.error("Error returning purchase:", error);
+    res
+      .status(500)
+      .json({ message: "Error returning purchase", error: error.message });
   }
 };
