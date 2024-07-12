@@ -107,7 +107,7 @@ export default function Sidebar() {
         </div>
         <nav
           aria-label="side navigation"
-          className="flex-1 text-white overflow-auto"
+          className="flex-1 text-white overflow-y-scroll no-scrollbar"
         >
           <div>
             <ul className="flex flex-1 flex-col gap-1 pt-0">
