@@ -6,7 +6,6 @@ import categoryApi from "../api/category";
 import productApi from "../api/products";
 import stockApi from "../api/stocks";
 
-
 import {
   Chart as ChartJS,
   BarElement,
@@ -59,15 +58,14 @@ const Dashboard = () => {
     }
   };
 
-
-   // Fetch data on mount
-   useEffect(() => {
+  // Fetch data on mount
+  useEffect(() => {
     fetchCategory();
     fetchProducts();
     fetchStocks();
     fetchSaleCount();
     fetchSalesData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortType, year]);
 
   const fetchProducts = async () => {
@@ -109,6 +107,7 @@ const Dashboard = () => {
       const response = await fetch(url);
       const data = await response.json();
       setSales(data);
+      console.log("hello",data);
       updateChartData(data);
     } catch (error) {
       console.error("Error fetching sales data:", error);
@@ -141,6 +140,7 @@ const Dashboard = () => {
       salesData.forEach((sale) => {
         const monthIndex = sale.month - 1; // Assuming month is returned as 1-based index
         salesByPeriod[monthIndex] = sale.totalRevenue;
+
       });
     } else {
       // Labels for last 5 years
@@ -178,23 +178,26 @@ const Dashboard = () => {
 
   // Socket event listeners
   useEffect(() => {
-    socket.on("updateCategory", (newCategory) => {
+
+    socket.on("categoryCount", (newCategory) => {
       setCategory(newCategory);
     });
 
-    socket.on("updateProduct", (newProduct) => {
+    socket.on("productCount", (newProduct) => {
       setProduct(newProduct);
     });
 
-    socket.on("updateStock", (newStock) => {
+    socket.on("totalProductQuantityUpdated", (newStock) => {
       setStock(newStock);
     });
 
-    socket.on("updateSaleCount", (newSaleCount) => {
+    socket.on("saleCount", (newSaleCount) => {
       setSaleCount(newSaleCount);
     });
 
-    socket.on("updateSalesData", (newSalesData) => {
+    socket.on("salesUpdated", (newSalesData) => {
+
+      console.log("hi", newSalesData);
       setSales(newSalesData);
       updateChartData(newSalesData);
     });
@@ -207,9 +210,8 @@ const Dashboard = () => {
       socket.off("updateSaleCount");
       socket.off("updateSalesData");
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
 
   const options = {
     scales: {
@@ -224,7 +226,7 @@ const Dashboard = () => {
         },
       },
     },
-    maintainAspectRatio: false, 
+    maintainAspectRatio: false,
   };
 
   return (
@@ -257,35 +259,34 @@ const Dashboard = () => {
             </span>
           </div>
         </div>
-      
-          <div className="w-full bg-slate-50 py-2 h-96 rounded border border-slate-300">
-            <div className="m-2 flex flex-row   gap-2 ">
-              <label className="mt-1.5 text-sm">Sort Type:</label>
-              <select
-                value={sortType}
-                onChange={(e) => setSortType(e.target.value)}
-                className="border rounded-md border-slate-300 h-8 mt-1 text-sm"
-              >
-                <option value="year">Year</option>
-                <option value="month">Month</option>
-              </select>
-              {sortType === "month" && (
-                <>
-                  <label className="mt-1.5">Year:</label>
-                  <DatePicker
-                    onChange={(date) => setYear(date.year())}
-                    picker="year"
-                    value={moment(year, "YYYY")}
-                    className="w-24 mt-0.5"
-                  />
-                </>
-              )}
-            </div>
-            <div className="h-80 px-3">
-            <Bar data={data} options={options}></Bar>
-            </div>
+
+        <div className="w-full bg-slate-50 py-2 h-96 rounded border border-slate-300">
+          <div className="m-2 flex flex-row   gap-2 ">
+            <label className="mt-1.5 text-sm">Sort Type:</label>
+            <select
+              value={sortType}
+              onChange={(e) => setSortType(e.target.value)}
+              className="border rounded-md border-slate-300 h-8 mt-1 text-sm"
+            >
+              <option value="year">Year</option>
+              <option value="month">Month</option>
+            </select>
+            {sortType === "month" && (
+              <>
+                <label className="mt-1.5">Year:</label>
+                <DatePicker
+                  onChange={(date) => setYear(date.year())}
+                  picker="year"
+                  value={moment(year, "YYYY")}
+                  className="w-24 mt-0.5"
+                />
+              </>
+            )}
           </div>
-        
+          <div className="h-80 px-3">
+            <Bar data={data} options={options}></Bar>
+          </div>
+        </div>
       </div>
       {/* <div className="grid grid-cols-3 gap-6 py-4">
         <div className="bg-slate-50 rounded w-full h-64 col-span-2"></div>

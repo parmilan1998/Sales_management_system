@@ -3,8 +3,6 @@ const { Op } = require("sequelize");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 
-
-
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
   try {
@@ -93,8 +91,11 @@ exports.createPurchase = async (req, res) => {
     }
 
     // Emit event for stock update
-    req.app.get("socketio").emit("stockUpdated", updatedStock);
-    req.app.get("socketio").emit("purchaseCreated", createdPurchase);
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
@@ -261,16 +262,28 @@ exports.updatePurchase = async (req, res) => {
         newStock.relatedPurchaseIDs = `${existingPurchase.purchaseID}`;
       }
       await newStock.save();
-
-      // Emit event for stock update
-      req.app.get("socketio").emit("stockUpdated", newStock);
     } else {
       // If product name is not changing, just update the quantity difference
       if (quantityDifference !== 0) {
         newStock.productQuantity += quantityDifference;
         await newStock.save();
-        // Emit event for stock update
-        req.app.get("socketio").emit("stockUpdated", newStock);
+      }
+    }
+
+    let newCOGP;
+
+    if (purchasePrice !== undefined) {
+      if (purchaseQuantity !== undefined) {
+        newCOGP = purchasePrice * purchaseQuantity;
+      } else {
+        newCOGP = purchasePrice * existingPurchase.purchaseQuantity;
+      }
+    } else {
+      if (purchaseQuantity !== undefined) {
+        newCOGP = existingPurchase.purchasePrice * purchaseQuantity;
+      } else {
+        newCOGP =
+          existingPurchase.purchasePrice * existingPurchase.purchaseQuantity;
       }
     }
 
@@ -282,16 +295,22 @@ exports.updatePurchase = async (req, res) => {
         purchaseQuantity !== undefined
           ? purchaseQuantity
           : existingPurchase.purchaseQuantity,
-      purchasePrice,
-      COGP:
-        purchasePrice * (purchaseQuantity || existingPurchase.purchaseQuantity),
+      purchasePrice:
+        purchasePrice !== undefined
+          ? purchasePrice
+          : existingPurchase.purchasePrice,
+      COGP: newCOGP,
       purchaseVendor,
       vendorContact,
       purchasedDate,
     });
 
-    // Emit event for purchase update
-    req.app.get("socketio").emit("purchaseUpdated", existingPurchase);
+    // Emit event for stock update
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
 
     res.status(200).json({
       message: `Purchase record with ID '${id}' updated successfully`,
@@ -467,7 +486,6 @@ exports.returnPurchase = async (req, res) => {
 
     stock.productQuantity -= returnQuantity;
     await stock.save();
-
 
     res.status(200).json({
       message: `Returned ${returnQuantity} units for purchase record with ID '${id}' successfully`,

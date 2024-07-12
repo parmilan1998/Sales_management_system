@@ -1,9 +1,9 @@
-const {Sequelize, Op } = require("sequelize");
+const { Sequelize, Op } = require("sequelize");
 const Sales = require("../models/sales");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 const SalesDetail = require("../models/salesDetails");
-
+const axios = require("axios");
 // POST -> localhost:5000/api/v1/sales
 exports.createSales = async (req, res) => {
   try {
@@ -99,8 +99,36 @@ exports.createSales = async (req, res) => {
       createdSales.push(newSale);
     }
 
-    // Emit event to notify clients about the new sales
-    req.app.get("socketio").emit("salesCreated", createdSales);
+    // Emit event for real-time updates
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated sales count
+    const count = await Sales.count();
+    io.emit("saleCount", count);
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
+
+    // Fetch and emit all sales data
+    try {
+      const { data: salesData } = await axios.get(
+        "http://localhost:5000/api/v1/sales/sort",
+        {
+          params: {
+            sortType: "year",
+            year: new Date().getFullYear(),
+          },
+        }
+      );
+
+      io.emit("salesUpdated", salesData);
+    } catch (err) {
+      console.error(
+        "Error fetching sales data:",
+        err.response ? err.response.data : err.message
+      );
+    }
 
     res.status(201).json({
       message: "Sales added successfully",
@@ -253,10 +281,32 @@ exports.updateSales = async (req, res) => {
     existingSale.totalRevenue = totalRevenue;
     await existingSale.save();
 
-    // Emit event to notify clients about the updated sale
-    req.app.get("socketio").emit("salesUpdated", existingSale);
+    // Emit event for real-time updates
+    const io = req.app.get("socketio");
 
+    // Fetch and emit all sales data
+    try {
+      const { data: salesData } = await axios.get(
+        "http://localhost:5000/api/v1/sales/sort",
+        {
+          params: {
+            sortType: "year",
+            year: new Date().getFullYear(),
+          },
+        }
+      );
 
+      io.emit("salesUpdated", salesData);
+    } catch (err) {
+      console.error(
+        "Error fetching sales data:",
+        err.response ? err.response.data : err.message
+      );
+    }
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
 
     res.status(200).json({
       message: `Sales record with ID '${id}' updated successfully`,
@@ -373,7 +423,6 @@ exports.querySales = async (req, res) => {
       if (isValidDate(keyword)) {
         searchConditions.push({ soldDate: { [Op.eq]: keyword } });
       }
-
     }
 
     const searchCondition =
@@ -441,7 +490,6 @@ exports.querySales = async (req, res) => {
   }
 };
 
-
 // GET -> localhost:5000/api/v1/sales/sort
 exports.salesSort = async (req, res) => {
   const { sortType, year } = req.query;
@@ -449,11 +497,11 @@ exports.salesSort = async (req, res) => {
   try {
     let salesData;
 
-    if (sortType === 'month' && year) {
+    if (sortType === "month" && year) {
       salesData = await Sales.findAll({
         attributes: [
-          [Sequelize.fn('MONTH', Sequelize.col('soldDate')), 'month'],
-          [Sequelize.fn('SUM', Sequelize.col('totalRevenue')), 'totalRevenue'],
+          [Sequelize.fn("MONTH", Sequelize.col("soldDate")), "month"],
+          [Sequelize.fn("SUM", Sequelize.col("totalRevenue")), "totalRevenue"],
         ],
         where: {
           soldDate: {
@@ -461,26 +509,29 @@ exports.salesSort = async (req, res) => {
             [Op.lte]: new Date(`${year}-12-31`),
           },
         },
-        group: ['month'],
-        order: [[Sequelize.fn('MONTH', Sequelize.col('soldDate')), 'ASC']],
+        group: ["month"],
+        order: [[Sequelize.fn("MONTH", Sequelize.col("soldDate")), "ASC"]],
       });
-    } else if (sortType === 'year') {
+    } else if (sortType === "year") {
       salesData = await Sales.findAll({
         attributes: [
-          [Sequelize.fn('YEAR', Sequelize.col('soldDate')), 'year'],
-          [Sequelize.fn('SUM', Sequelize.col('totalRevenue')), 'totalRevenue'],
+          [Sequelize.fn("YEAR", Sequelize.col("soldDate")), "year"],
+          [Sequelize.fn("SUM", Sequelize.col("totalRevenue")), "totalRevenue"],
         ],
-        group: ['year'],
-        order: [[Sequelize.fn('YEAR', Sequelize.col('soldDate')), 'ASC']],
+        group: ["year"],
+        order: [[Sequelize.fn("YEAR", Sequelize.col("soldDate")), "ASC"]],
       });
     } else {
-      return res.status(400).json({ message: 'Invalid sortType or year' });
+      return res.status(400).json({ message: "Invalid sortType or year" });
     }
 
     res.status(200).json(salesData);
   } catch (error) {
-    console.error('Error fetching sales data:', error);
-    res.status(500).json({ message: 'An error occurred while fetching sales data', error: error.message });
+    console.error("Error fetching sales data:", error);
+    res.status(500).json({
+      message: "An error occurred while fetching sales data",
+      error: error.message,
+    });
   }
 };
 
@@ -549,7 +600,6 @@ exports.returnProductFromSale = async (req, res) => {
     // Emit event to notify clients about the updated sale
     req.app.get("socketio").emit("salesUpdated", existingSale);
 
-
     res.status(200).json({
       message: `Returned ${returnQuantity} units of product with ID '${productID}' from sales record '${salesID}' successfully`,
       updatedSale: existingSale,
@@ -562,7 +612,6 @@ exports.returnProductFromSale = async (req, res) => {
     });
   }
 };
-
 
 // GET -> localhost:5000/api/v1/sales/count
 exports.getSalesCount = async (req, res) => {
