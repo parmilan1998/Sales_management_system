@@ -6,7 +6,6 @@ import categoryApi from "../api/category";
 import productApi from "../api/products";
 import stockApi from "../api/stocks";
 
-
 import {
   Chart as ChartJS,
   BarElement,
@@ -59,15 +58,14 @@ const Dashboard = () => {
     }
   };
 
-
-   // Fetch data on mount
-   useEffect(() => {
+  // Fetch data on mount
+  useEffect(() => {
     fetchCategory();
     fetchProducts();
     fetchStocks();
     fetchSaleCount();
     fetchSalesData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortType, year]);
 
   const fetchProducts = async () => {
@@ -207,9 +205,8 @@ const Dashboard = () => {
       socket.off("updateSaleCount");
       socket.off("updateSalesData");
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
 
   const options = {
     scales: {
@@ -224,66 +221,10 @@ const Dashboard = () => {
         },
       },
     },
-    maintainAspectRatio: false, 
+    maintainAspectRatio: false,
   };
 
   return (
-<<<<<<< HEAD
-    <>
-      {/* {loading ? (
-        <div className="flex justify-center items-center w-full h-[75vh]">
-          <GridLoader
-            loading={loading}
-            size={15}
-            aria-label="Loading Spinner"
-            data-testid="loader"
-            color="#4682B4"
-          />
-        </div>
-      ) : ( */}
-      <div className=" max-w-screen-xl mx-auto lg:px-4 font-poppins cursor-pointer">
-        <h1 className="text-2xl font-acme text-gray-700 pb-4">Dashboard</h1>
-        <div className="grid grid-cols-2 gap-6 w-full">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="bg-slate-50 rounded w-full h-40 p-5 flex flex-col justify-between">
-              <h1 className="text-xl text-neutral-400">Categories</h1>
-              <span className="text-4xl text-neutral-800 font-medium font-acme">
-                3,786
-              </span>
-              <h1 className="text-base text-neutral-400">Since last month</h1>
-            </div>
-            <div className="bg-slate-50 rounded w-full h-40 p-5 flex flex-col justify-between">
-              <h1 className="text-xl text-neutral-400">Products</h1>
-              <span className="text-4xl text-neutral-800 font-medium font-acme">
-                4,532
-              </span>
-              <h1 className="text-base text-neutral-400">Since last month</h1>
-            </div>
-            <div className="bg-slate-50 rounded w-full h-40 p-5 flex flex-col justify-between">
-              <h1 className="text-xl text-neutral-400">Sales</h1>
-              <span className="text-4xl text-neutral-800 font-medium font-acme">
-                8,452
-              </span>
-              <h1 className="text-base text-neutral-400">Since last month</h1>
-            </div>
-            <div className="bg-slate-50 rounded w-full h-40 p-5 flex flex-col justify-between">
-              <h1 className="text-xl text-neutral-400">Stocks</h1>
-              <span className="text-4xl text-neutral-800 font-medium font-acme">
-                5,536
-              </span>
-              <h1 className="text-base text-neutral-400">Since last month</h1>
-            </div>
-          </div>
-          <div className="w-full bg-slate-50 rounded"></div>
-        </div>
-        {/* <div className="grid grid-cols-3 gap-6 py-4">
-          <div className="bg-slate-50 rounded w-full h-64 col-span-2"></div>
-          <div className="bg-slate-50 rounded w-full h-64 col-span-1"></div>
-        </div> */}
-      </div>
-      {/* )} */}
-    </>
-=======
     <div className=" max-w-screen-xl mx-auto lg:px-4 font-poppins cursor-pointer">
       <h1 className="text-2xl font-acme text-gray-700 pb-4">Dashboard</h1>
       <div className="grid grid-cols-1 gap-6 w-full">
@@ -313,42 +254,40 @@ const Dashboard = () => {
             </span>
           </div>
         </div>
-      
-          <div className="w-full bg-slate-50 py-2 h-96 rounded border border-slate-300">
-            <div className="m-2 flex flex-row   gap-2 ">
-              <label className="mt-1.5 text-sm">Sort Type:</label>
-              <select
-                value={sortType}
-                onChange={(e) => setSortType(e.target.value)}
-                className="border rounded-md border-slate-300 h-8 mt-1 text-sm"
-              >
-                <option value="year">Year</option>
-                <option value="month">Month</option>
-              </select>
-              {sortType === "month" && (
-                <>
-                  <label className="mt-1.5">Year:</label>
-                  <DatePicker
-                    onChange={(date) => setYear(date.year())}
-                    picker="year"
-                    value={moment(year, "YYYY")}
-                    className="w-24 mt-0.5"
-                  />
-                </>
-              )}
-            </div>
-            <div className="h-80 px-3">
-            <Bar data={data} options={options}></Bar>
-            </div>
+
+        <div className="w-full bg-slate-50 py-2 h-96 rounded border border-slate-300">
+          <div className="m-2 flex flex-row   gap-2 ">
+            <label className="mt-1.5 text-sm">Sort Type:</label>
+            <select
+              value={sortType}
+              onChange={(e) => setSortType(e.target.value)}
+              className="border rounded-md border-slate-300 h-8 mt-1 text-sm"
+            >
+              <option value="year">Year</option>
+              <option value="month">Month</option>
+            </select>
+            {sortType === "month" && (
+              <>
+                <label className="mt-1.5">Year:</label>
+                <DatePicker
+                  onChange={(date) => setYear(date.year())}
+                  picker="year"
+                  value={moment(year, "YYYY")}
+                  className="w-24 mt-0.5"
+                />
+              </>
+            )}
           </div>
-        
+          <div className="h-80 px-3">
+            <Bar data={data} options={options}></Bar>
+          </div>
+        </div>
       </div>
       {/* <div className="grid grid-cols-3 gap-6 py-4">
         <div className="bg-slate-50 rounded w-full h-64 col-span-2"></div>
         <div className="bg-slate-50 rounded w-full h-64 col-span-1"></div>
       </div> */}
     </div>
->>>>>>> 893b9c862fa665a85a1cfbef1f7c9516d01d99c1
   );
 };
 
