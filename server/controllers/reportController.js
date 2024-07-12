@@ -4,11 +4,8 @@ const Reports = require("../models/reports");
 const Sales = require("../models/sales");
 const Purchase = require("../models/purchase");
 const Stocks = require("../models/stocks");
-const SalesReport = require("../models/salesReport");
 const path = require("path");
 const fs = require("fs");
-const StocksReport = require("../models/stocksReport");
-const PurchaseReport = require("../models/purchaseReport");
 
 const generatePDFReport = async (
   startDate,
@@ -23,8 +20,6 @@ const generatePDFReport = async (
 ) => {
   // Initialize jsPDF
   const doc = new jsPDF();
-
-  console.log("hill", totalCOGS, totalPurchases, totalRevenue);
 
   // Add content to the PDF
   doc.text(`Gross Profit Report`, 10, 10);
@@ -143,12 +138,20 @@ exports.createReport = async (req, res) => {
       },
     });
 
+    const totalRevenueFinal = totalRevenue
+      ? parseFloat(totalRevenue.toFixed(2))
+      : 0;
+    const totalCOGSFinal = totalCOGS ? parseFloat(totalCOGS.toFixed(2)) : 0;
+    const grossProfitFinal = grossProfit
+      ? parseFloat(grossProfit.toFixed(2))
+      : 0;
+
     // Create a new report
     const newReport = await Reports.create({
       reportName: reportName,
-      totalRevenue: parseFloat(totalRevenue.toFixed(2)),
-      totalCOGS: parseFloat(totalCOGS.toFixed(2)),
-      grossProfit: parseFloat(grossProfit.toFixed(2)),
+      totalRevenue: totalRevenueFinal,
+      totalCOGS: totalCOGSFinal,
+      grossProfit: grossProfitFinal,
       startDate: startDate,
       endDate: endDate,
     });
@@ -158,9 +161,9 @@ exports.createReport = async (req, res) => {
       startDate,
       endDate,
       reportName,
-      grossProfit,
-      totalCOGS,
-      totalRevenue,
+      grossProfitFinal,
+      totalCOGSFinal,
+      totalRevenueFinal,
       totalPurchases,
       totalSales,
       newReport.reportID
@@ -168,51 +171,6 @@ exports.createReport = async (req, res) => {
 
     newReport.reportFile = reportFileName;
     await newReport.save();
-
-    const salesInPeriod = await Sales.findAll({
-      where: {
-        soldDate: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
-    });
-
-    // Create entries in SalesReport to link the sales to the new report
-    const salesReportEntries = salesInPeriod.map((sale) => ({
-      reportID: newReport.reportID,
-      salesID: sale.salesID,
-    }));
-    await SalesReport.bulkCreate(salesReportEntries);
-
-    const purchaseInPeriod = await Purchase.findAll({
-      where: {
-        purchasedDate: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
-    });
-
-    // Create entries in PurchaseReport to link the purchase to the new report
-    const purchaseReportEntries = purchaseInPeriod.map((purchase) => ({
-      reportID: newReport.reportID,
-      purchaseID: purchase.purchaseID,
-    }));
-    await PurchaseReport.bulkCreate(purchaseReportEntries);
-
-    const stockInPeriod = await Stocks.findAll({
-      where: {
-        purchasedDate: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
-    });
-
-    // Create entries in StocksReport to link the stock to the new report
-    const stockReportEntries = stockInPeriod.map((stock) => ({
-      reportID: newReport.reportID,
-      stockID: stock.stockID,
-    }));
-    await StocksReport.bulkCreate(stockReportEntries);
 
     res.status(201).json({
       message: "Report created successfully",
@@ -224,286 +182,6 @@ exports.createReport = async (req, res) => {
       message: "An error occurred while creating the report",
       error: error.message,
     });
-  }
-};
-
-// PUT -> localhost:5000/api/v1/reports/:id
-exports.updateReport = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { startDate, endDate, reportName } = req.body;
-
-    if (!startDate || !endDate) {
-      return res.status(400).json({
-        message: "startDate and endDate are required",
-      });
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (start > end) {
-      return res.status(400).json({
-        message: "startDate must be less than or equal to endDate",
-      });
-    }
-
-    // Fetch the report to be updated
-    const report = await Reports.findByPk(id);
-    if (!report) {
-      return res.status(404).json({
-        message: "Report not found",
-      });
-    }
-    // Check if reportName, startDate, or endDate have changed
-    const isNameChanged = report.reportName !== reportName;
-    const isStartDateChanged = report.startDate !== startDate;
-    const isEndDateChanged = report.endDate !== endDate;
-
-    // Delete old PDF if necessary
-    if (isNameChanged || isStartDateChanged || isEndDateChanged) {
-      const uploadPath = path.resolve(__dirname, "../public/reports");
-      const oldFileName = report.reportFile;
-      const oldFilePath = path.join(uploadPath, oldFileName);
-
-      // Check if old file exists and delete it
-      if (fs.existsSync(oldFilePath)) {
-        fs.unlinkSync(oldFilePath);
-      }
-    }
-
-    // Calculate beginning inventory cost
-    const beginningInventory = await Stocks.findAll({
-      attributes: ["purchasePrice", "productQuantity"],
-      where: {
-        purchasedDate: {
-          [Op.lte]: start,
-        },
-      },
-    });
-
-    const beginningInventoryCost = beginningInventory.reduce((total, stock) => {
-      return total + stock.purchasePrice * stock.productQuantity;
-    }, 0);
-
-    // Calculate purchases cost during the period
-    const purchases = await Purchase.findAll({
-      attributes: ["purchasePrice", "purchaseQuantity"],
-      where: {
-        purchasedDate: {
-          [Op.between]: [start, end],
-        },
-      },
-    });
-
-    const purchasesCost = purchases.reduce((total, purchase) => {
-      return total + purchase.purchasePrice * purchase.purchaseQuantity;
-    }, 0);
-
-    // Calculate ending inventory cost
-    const endingInventory = await Stocks.findAll({
-      attributes: ["purchasePrice", "productQuantity"],
-      where: {
-        purchasedDate: {
-          [Op.lte]: end,
-        },
-      },
-    });
-
-    const endingInventoryCost = endingInventory.reduce((total, stock) => {
-      return total + stock.purchasePrice * stock.productQuantity;
-    }, 0);
-
-    // Calculate total revenue within the specified period
-    const totalRevenue =
-      (await Sales.sum("totalRevenue", {
-        where: {
-          soldDate: {
-            [Op.between]: [start, end],
-          },
-        },
-      })) || 0;
-
-    // Calculate total COGS (Cost of Goods Sold)
-    const totalCOGS =
-      beginningInventoryCost + purchasesCost - endingInventoryCost;
-
-    // Calculate gross profit
-    const grossProfit = totalRevenue - totalCOGS;
-
-    const totalPurchases = await Purchase.count({
-      where: {
-        purchasedDate: {
-          [Op.between]: [start, end],
-        },
-      },
-    });
-    // Count total number of sales
-    const totalSales = await Sales.count({
-      where: {
-        soldDate: {
-          [Op.between]: [start, end],
-        },
-      },
-    });
-
-    // Update the report
-    const oldReport = await report.update({
-      reportName: reportName || report.reportName,
-      totalRevenue: parseFloat(totalRevenue.toFixed(2)),
-      totalCOGS: parseFloat(totalCOGS.toFixed(2)),
-      grossProfit: parseFloat(grossProfit.toFixed(2)),
-      startDate: startDate || report.startDate,
-      endDate: endDate || report.endDate,
-    });
-
-    if (isNameChanged || isStartDateChanged || isEndDateChanged) {
-      const newReportFileName = await generatePDFReport(
-        startDate,
-        endDate,
-        reportName,
-        grossProfit,
-        totalCOGS,
-        totalRevenue,
-        totalPurchases,
-        totalSales,
-        oldReport.reportID
-      );
-      // Update the reportFile
-      await report.update({
-        reportFile: newReportFileName,
-      });
-    }
-
-    // Clear existing SalesReport entries for the report
-    await SalesReport.destroy({
-      where: {
-        reportID: id,
-      },
-    });
-
-    // Retrieve sales within the new period
-    const salesInPeriod = await Sales.findAll({
-      where: {
-        soldDate: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
-    });
-    // Create new entries in SalesReport to link the sales to the updated report
-    const salesReportEntries = salesInPeriod.map((sale) => ({
-      reportID: id,
-      salesID: sale.salesID,
-    }));
-    await SalesReport.bulkCreate(salesReportEntries);
-
-    // Clear existing SalesReport entries for the report
-    await PurchaseReport.destroy({
-      where: {
-        reportID: id,
-      },
-    });
-
-    const purchaseInPeriod = await Purchase.findAll({
-      where: {
-        purchasedDate: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
-    });
-
-    // Create entries in PurchaseReport to link the purchase to the new report
-    const purchaseReportEntries = purchaseInPeriod.map((purchase) => ({
-      reportID: id,
-      purchaseID: purchase.purchaseID,
-    }));
-    await PurchaseReport.bulkCreate(purchaseReportEntries);
-
-    // Clear existing SalesReport entries for the report
-    await StocksReport.destroy({
-      where: {
-        reportID: id,
-      },
-    });
-    const stockInPeriod = await Stocks.findAll({
-      where: {
-        purchasedDate: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
-    });
-
-    // Create entries in StocksReport to link the stock to the new report
-    const stockReportEntries = stockInPeriod.map((stock) => ({
-      reportID: id,
-      stockID: stock.stockID,
-    }));
-    await StocksReport.bulkCreate(stockReportEntries);
-
-    res.status(200).json({
-      message: "Report updated successfully",
-      report: report,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "An error occurred while updating the report",
-      error: error.message,
-    });
-  }
-};
-
-// DELETE -> localhost:5000/api/v1/reports/:id
-exports.deleteReport = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const report = await Reports.findByPk(id);
-    if (!report) {
-      return res.status(404).json({ message: "Report not found" });
-    }
-
-    // Delete associated SalesReport entries
-    await SalesReport.destroy({
-      where: {
-        reportID: id,
-      },
-    });
-
-    // Delete the main report record
-    await report.destroy();
-
-    res.status(200).json({
-      message: `Report deleted successfully`,
-      deletedReport: report,
-    });
-  } catch (error) {
-    console.error("Error deleting report:", error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while deleting the report" });
-  }
-};
-
-// GET -> localhost:5000/api/v1/reports/list
-exports.getAllReport = async (req, res) => {
-  try {
-    const reports = await Reports.findAll();
-    res.status(200).json({
-      reports: reports,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// GET -> localhost:5000/api/v1/reports/:id
-exports.getReportByID = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const report = await Reports.findByPk(id);
-    res.status(200).json(report);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 };
 
