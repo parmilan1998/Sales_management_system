@@ -5,12 +5,15 @@ import Navbar from "../Components/Navbar";
 
 const RootLayout = () => {
   return (
-    <div className="grid grid-cols-4 bg-slate-200">
-      <div className="col-span-1">
+    <div className="grid grid-cols-12 bg-gray-200">
+      <div className="lg:col-span-2">
         <Sidebar />
       </div>
-      <div className="col-span-3 my-3 bg-gray-200">
-        <Outlet />
+      <div className="col-span-10 lg:pl-16 flex flex-col w-full h-[100%] bg-gray-200">
+        <Navbar />
+        <div className="py-2 bg-gray-200 h-[100%]">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

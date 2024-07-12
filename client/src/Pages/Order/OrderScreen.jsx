@@ -50,8 +50,8 @@ const OrderScreen = () => {
           />
         </div>
       ) : (
-        <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
-          <div className="flex justify-between items-center mx-4 mb-4 mt-2">
+        <div className="max-w-screen-xl h-[100%] z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
+          <div className="flex lg:flex-row md:flex-row flex-col justify-between items-center mx-4 mb-4 mt-2">
             <div className="flex gap-2 mt-2 mr-0 items-center">
               <h2 className="text-3xl text-gray-600 font-semibold mt-0">
                 Products Here!{" "}

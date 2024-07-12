@@ -63,7 +63,7 @@ const ProfileSettingsScreen = () => {
           />
         </div>
       ) : (
-        <div className="max-w-screen-xl lg:px-8 font-poppins">
+        <div className="max-w-screen-xl lg:px-8 h-screen font-poppins">
           <div className="overflow-hidden rounded pb-12 mx-auto bg-gray-300 text-center text-slate-500">
             <figure className="p-6 pb-0">
               <h1 className="text-3xl text-center font-medium py-8 text-cyan-600">
