@@ -356,3 +356,38 @@ exports.getProductCount = async (req, res) => {
       .json({ message: "Error fetching product count", error: error.message });
   }
 };
+
+// GET -> localhost:5000/api/v1/product-details
+exports.fetchProductDetails = async (req, res) => {
+  try {
+    const stocks = await Stocks.findAll({
+      include: {
+        model: Product,
+        attributes: ["productID", "productName", "unitPrice", "imageUrl"],
+      },
+      attributes: [
+        "stockID",
+        "manufacturedDate",
+        "expiryDate",
+        "productQuantity",
+      ],
+    });
+
+    const productDetails = stocks.map((stock) => {
+      return {
+        productID: stock.Product.productID,
+        stockID: stock.stockID,
+        productName: stock.Product.productName,
+        unitPrice: stock.Product.unitPrice,
+        image: stock.Product.imageUrl,
+        productQuantity: stock.productQuantity,
+        manufacturedDate: stock.manufacturedDate,
+        expiryDate: stock.expiryDate,
+      };
+    });
+
+    res.json(productDetails);
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+};
