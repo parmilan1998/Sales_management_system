@@ -10,6 +10,7 @@ import PurchaseSearch from "../../Components/Purchase/PurchaseSearch";
 import PurchasePagination from "../../Components/Purchase/PurchasePagination";
 import { Link } from "react-router-dom";
 import GridLoader from "react-spinners/GridLoader";
+import { motion } from "framer-motion";
 
 const Purchase = () => {
   const [purchase, setPurchase] = useState([]);
@@ -20,6 +21,8 @@ const Purchase = () => {
   const [sortName, setSortName] = useState("ASC");
   const [sortDate, setSortDate] = useState("ASC");
   const [loading, setLoading] = useState(true);
+
+  const text = "No purchases are available".split(" ");
 
   const fetchPurchases = async () => {
     const url = `http://localhost:5000/api/v1/purchase/query?page=${page}&limit=${limit}&sort=${sortName}&sortBy=${sortDate}&keyword=${search}`;
@@ -66,28 +69,53 @@ const Purchase = () => {
               </Link>
             </div>
             <div className="flex items-center gap-2">
-              <h1>SortBy:</h1>
-              <PurchaseSort
-                sortName={sortName}
-                setSortName={setSortName}
-                sortDate={sortDate}
-                setSortDate={setSortDate}
-              />
-              <PurchaseSearch
-                search={search}
-                setSearch={setSearch}
-                setPage={setPage}
-              />
+              <>
+                <h1>SortBy:</h1>
+                <PurchaseSort
+                  sortName={sortName}
+                  setSortName={setSortName}
+                  sortDate={sortDate}
+                  setSortDate={setSortDate}
+                />
+                <PurchaseSearch
+                  search={search}
+                  setSearch={setSearch}
+                  setPage={setPage}
+                />
+              </>
             </div>
           </div>
-          <div>
-            <PurchaseCard purchase={purchase} />
-          </div>
-          <PurchasePagination
-            page={page}
-            setPage={setPage}
-            totalPages={totalPages}
-          />
+          {purchase.length === 0 ? (
+            <div className="flex-grow flex lg:py-10 items-center justify-center text-lg text-gray-500">
+              {text.map((el, i) => (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{
+                    duration: 0.25,
+                    delay: i / 10,
+                  }}
+                  key={i}
+                  style={{ marginRight: "0.5em" }}
+                >
+                  {el}
+                  {"  "}
+                </motion.span>
+              ))}
+            </div>
+          ) : (
+            <>
+              {" "}
+              <div>
+                <PurchaseCard purchase={purchase} />
+              </div>
+              <PurchasePagination
+                page={page}
+                setPage={setPage}
+                totalPages={totalPages}
+              />
+            </>
+          )}
         </div>
       )}
     </>

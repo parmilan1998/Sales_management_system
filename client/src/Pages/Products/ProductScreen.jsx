@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import fetchProducts from "../../api/fetchProducts";
 import productApi from "../../api/products";
-
+import { motion } from "framer-motion";
 import ProductSearch from "../../Components/Products/ProductSearch";
 import ProductTable from "../../Components/Products/ProductTable";
 import ProductPagination from "../../Components/Products/ProductPagination";
@@ -21,6 +21,8 @@ const ProductScreen = () => {
   const [sort, setSort] = useState("ASC");
   const [limit, setLimit] = useState(8);
   const [loading, setLoading] = useState(true);
+
+  const text = "No products available".split(" ");
 
   useEffect(() => {
     fetchProducts(
@@ -113,8 +115,22 @@ const ProductScreen = () => {
             </div>
           </div>
           {products.length === 0 ? (
-            <div className="flex-grow flex items-center justify-center text-lg text-gray-500">
-              <p>No available products</p>
+            <div className="flex-grow flex lg:py-10 items-center justify-center text-lg text-gray-500">
+              {text.map((el, i) => (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{
+                    duration: 0.25,
+                    delay: i / 10,
+                  }}
+                  key={i}
+                  style={{ marginRight: "0.5em" }}
+                >
+                  {el}
+                  {"  "}
+                </motion.span>
+              ))}
             </div>
           ) : (
             <div className="flex-grow">
