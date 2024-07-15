@@ -5,7 +5,7 @@ import Navbar from "../Components/Navbar";
 
 const RootLayout = () => {
   return (
-    <div className="grid grid-cols-12 bg-gray-200">
+    <div className="min-h-screen grid grid-cols-12 bg-gray-200">
       <div className="lg:col-span-2">
         <Sidebar />
       </div>

@@ -18,6 +18,7 @@ const PurchaseCard = ({ purchase, confirmDelete, cancelDelete }) => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+  const [selectedId, setSelectedId] = useState(null);
 
   //   const date = parseISO(purchase.createdAt);
   //   const timePeriod = formatDistanceToNow(date);

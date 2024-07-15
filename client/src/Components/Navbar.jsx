@@ -6,9 +6,9 @@ import { IoIosSettings } from "react-icons/io";
 import { Tooltip } from "antd";
 import { Link } from "react-router-dom";
 import { Dropdown, Space, Badge } from "antd";
-import { DownOutlined } from "@ant-design/icons";
 import warn from "../assets/warn.png";
 import error from "../assets/error.png";
+
 
 const socket = io("http://localhost:5000");
 
@@ -18,65 +18,83 @@ const Navbar = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const lowStockResponse = await axios.get(
-          "http://localhost:5000/api/v1/notification/low-stock"
-        );
-        const lowStockProducts = lowStockResponse.data.data;
-        const lowStockNotifications = lowStockProducts.map((product) => ({
-          message: product.message,
-          type: "lowStock",
-        }));
+        const [lowStockResponse, outOfStockResponse] = await Promise.all([
+          axios.get("http://localhost:5000/api/v1/notification/low-stock"),
+          axios.get("http://localhost:5000/api/v1/notification/out-of-stock"),
+        ]);
 
-        const outOfStockResponse = await axios.get(
-          "http://localhost:5000/api/v1/notification/out-of-stock"
+        const lowStockNotifications = lowStockResponse.data.data.map(
+          (product) => ({
+            message: product.message,
+            type: "lowStock",
+          })
         );
-        const outOfStockProducts = outOfStockResponse.data.data;
-        const outOfStockNotifications = outOfStockProducts.map((product) => ({
-          message: product.message,
-          type: "outOfStock",
-        }));
 
-        setNotifications([...lowStockNotifications, ...outOfStockNotifications]);
+        const outOfStockNotifications = outOfStockResponse.data.data.map(
+          (product) => ({
+            message: product.message,
+            type: "outOfStock",
+          })
+        );
+
+        setNotifications([
+          ...lowStockNotifications,
+          ...outOfStockNotifications,
+        ]);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
     };
 
     const handleLowStockUpdate = (lowStockProducts) => {
-      const newNotifications = lowStockProducts.map((product) => ({
+      console.log("Low stock update received:", lowStockProducts);
+      const newNotifications = lowStockProducts.data.map((product) => ({
         message: product.message,
         type: "lowStock",
       }));
-      setNotifications((prev) => [...prev, ...newNotifications]);
+      setNotifications(newNotifications);
     };
 
     const handleOutOfStockUpdate = (outOfStockProducts) => {
-      const newNotifications = outOfStockProducts.map((product) => ({
+      console.log("Out of stock update received:", outOfStockProducts);
+      const newNotifications = outOfStockProducts.data.map((product) => ({
         message: product.message,
         type: "outOfStock",
       }));
-      setNotifications((prev) => [...prev, ...newNotifications]);
+      setNotifications(newNotifications);
     };
 
     fetchNotifications();
+
     socket.on("lowStockUpdated", handleLowStockUpdate);
     socket.on("outOfStockUpdated", handleOutOfStockUpdate);
 
     return () => {
       socket.off("lowStockUpdated", handleLowStockUpdate);
       socket.off("outOfStockUpdated", handleOutOfStockUpdate);
-      socket.close();
     };
   }, []);
+
+  useEffect(() => {
+    console.log("Notifications state updated:", notifications);
+  }, [notifications]);
 
   const items = notifications.map((notification, index) => ({
     key: index,
     label: (
       <div>
         {notification.type === "lowStock" ? (
-          <img src={warn} alt="Low Stock" style={{ width: 20, marginRight: 10 }} />
+          <img
+            src={warn}
+            alt="Low Stock"
+            style={{ width: 20, marginRight: 10 }}
+          />
         ) : (
-          <img src={error} alt="Out of Stock" style={{ width: 20, marginRight: 10 }} />
+          <img
+            src={error}
+            alt="Out of Stock"
+            style={{ width: 20, marginRight: 10 }}
+          />
         )}
         {notification.message}
       </div>
@@ -91,18 +109,19 @@ const Navbar = () => {
         <div className="flex pt-4 items-center justify-end">
           <div className="flex items-center justify-end gap-4">
             <div className="sm:flex sm:gap-4 space-x-6 flex justify-end">
-            <Badge count={notificationCount} overflowCount={99}>
-              <Dropdown
-                menu={{
-                  items,
-                }}
-              >
-                <a onClick={(e) => e.preventDefault()}>
-                  <Space>
-                    <IoNotifications size={22} />
-                  </Space>
-                </a>
-              </Dropdown>
+              <Badge count={notificationCount} overflowCount={99}>
+                <Dropdown
+                  menu={{
+                    items,
+                  }}
+                  overlayClassName="h-40 overflow-auto"
+                >
+                  <a onClick={(e) => e.preventDefault()}>
+                    <Space>
+                      <IoNotifications size={22} />
+                    </Space>
+                  </a>
+                </Dropdown>
               </Badge>
               <div className="hidden sm:flex">
                 <Link to="/profile" className="text-gray-600">
