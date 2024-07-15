@@ -8,39 +8,35 @@ import { Link } from "react-router-dom";
 import { Dropdown, Space, Badge } from "antd";
 import warn from "../assets/warn.png";
 import error from "../assets/error.png";
-
+import "../App.css";
 
 const socket = io("http://localhost:5000");
 
 const Navbar = () => {
   const [notifications, setNotifications] = useState([]);
+  const [animate, setAnimate] = useState(false);
+  const notificationCount = notifications.length;
 
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const [lowStockResponse, outOfStockResponse] = await Promise.all([
-          axios.get("http://localhost:5000/api/v1/notification/low-stock"),
-          axios.get("http://localhost:5000/api/v1/notification/out-of-stock"),
-        ]);
+        const lowStockResponse = await axios.get(
+          "http://localhost:5000/api/v1/notification/low-stock"
+        );
+        console.log("rr", lowStockResponse.data.data);
 
         const lowStockNotifications = lowStockResponse.data.data.map(
-          (product) => ({
-            message: product.message,
-            type: "lowStock",
-          })
+          (product) => {
+            const type =
+              product.totalQuantity == 0 ? "outOfStock" : "lowStock";
+            return {
+              message: product.message,
+              type,
+            };
+          }
         );
-
-        const outOfStockNotifications = outOfStockResponse.data.data.map(
-          (product) => ({
-            message: product.message,
-            type: "outOfStock",
-          })
-        );
-
-        setNotifications([
-          ...lowStockNotifications,
-          ...outOfStockNotifications,
-        ]);
+        setNotifications([...lowStockNotifications]);
+        setAnimate(true);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
@@ -53,37 +49,39 @@ const Navbar = () => {
         type: "lowStock",
       }));
       setNotifications(newNotifications);
-    };
-
-    const handleOutOfStockUpdate = (outOfStockProducts) => {
-      console.log("Out of stock update received:", outOfStockProducts);
-      const newNotifications = outOfStockProducts.data.map((product) => ({
-        message: product.message,
-        type: "outOfStock",
-      }));
-      setNotifications(newNotifications);
+      setAnimate(true);
     };
 
     fetchNotifications();
 
     socket.on("lowStockUpdated", handleLowStockUpdate);
-    socket.on("outOfStockUpdated", handleOutOfStockUpdate);
 
     return () => {
       socket.off("lowStockUpdated", handleLowStockUpdate);
-      socket.off("outOfStockUpdated", handleOutOfStockUpdate);
     };
   }, []);
 
   useEffect(() => {
+    if (notificationCount > 0) {
+      setAnimate(true);
+    }
+  }, [notificationCount]);
+
+  useEffect(() => {
     console.log("Notifications state updated:", notifications);
+
+    const timer = setTimeout(() => {
+      setAnimate(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, [notifications]);
 
   const items = notifications.map((notification, index) => ({
     key: index,
     label: (
       <div>
-        {notification.type === "lowStock" ? (
+        {notification.type == "lowStock" ? (
           <img
             src={warn}
             alt="Low Stock"
@@ -101,8 +99,6 @@ const Navbar = () => {
     ),
   }));
 
-  const notificationCount = notifications.length;
-
   return (
     <header>
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 bg-gray-200 w-full font-poppins">
@@ -117,7 +113,7 @@ const Navbar = () => {
                   overlayClassName="h-40 overflow-auto"
                 >
                   <a onClick={(e) => e.preventDefault()}>
-                    <Space>
+                    <Space className={animate ? "bell" : ""}>
                       <IoNotifications size={22} />
                     </Space>
                   </a>
