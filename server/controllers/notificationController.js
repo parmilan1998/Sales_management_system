@@ -13,8 +13,7 @@ exports.getLowStockProducts = async (req, res) => {
       group: ["productID"],
       having: {
         totalQuantity: {
-          [Op.gt]: 0,
-          [Op.lte]: 10,
+          [Op.lt]: 10,
         },
       },
       include: [
@@ -25,54 +24,36 @@ exports.getLowStockProducts = async (req, res) => {
       ],
     });
 
+    const notifications = lowStockProducts
+      .map((stock) => {
+        const productName = stock.Product.productName;
+        const totalQuantity = stock.dataValues.totalQuantity;
+
+        if (totalQuantity == 0) {
+          return {
+            productId: stock.productID,
+            productName,
+            totalQuantity,
+            message: `The  ${productName} is out of stock.`,
+          };
+        } else if (totalQuantity < 10) {
+          return {
+            productId: stock.productID,
+            productName,
+            totalQuantity,
+            message: `The  ${productName} has low stock (only ${totalQuantity} left).`,
+          };
+        }
+      })
+      .filter((notification) => notification !== undefined);
+
     res.status(200).json({
-      count: lowStockProducts.count,
-      data: lowStockProducts.map((stock) => ({
-        productId: stock.productID,
-        productName: stock.Product.productName,
-        totalQuantity: stock.dataValues.totalQuantity,
-        message: `The product ${stock.Product.productName} has low stock (only ${stock.dataValues.totalQuantity} left).`,
-      })),
+      count: notifications.length,
+      data: notifications,
     });
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch low stock products.",
-      error: error.message,
-    });
-  }
-};
-
-// GET -> localhost:5000/api/v1/notification/out-of-stock
-exports.getOutOfStockProducts = async (req, res) => {
-  try {
-    const outOfStockProducts = await Stocks.findAll({
-      attributes: [
-        "productID",
-        [fn("SUM", col("productQuantity")), "totalQuantity"],
-      ],
-      group: ["productID"],
-      having: {
-        totalQuantity: 0, 
-      },
-      include: [
-        {
-          model: Product,
-          attributes: ["productName"],
-        },
-      ],
-    });
-
-    res.status(200).json({
-      data: outOfStockProducts.map((stock) => ({
-        productId: stock.productID,
-        productName: stock.Product.productName,
-        totalQuantity: stock.dataValues.totalQuantity,
-        message: `The product ${stock.Product.productName} is out of stock.`,
-      })),
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch out of stock products.",
       error: error.message,
     });
   }
