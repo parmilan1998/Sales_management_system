@@ -13,6 +13,9 @@ const ProfileSettingsScreen = () => {
   const [user, setUser] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const baseUrl = "http://localhost:5000/public/profile";
+  console.log(baseUrl);
+
   const showPasswordModal = () => {
     setIsPasswordModalOpen(true);
   };
@@ -71,7 +74,7 @@ const ProfileSettingsScreen = () => {
               </h1>
               <span className="relative inline-flex h-20 w-20 items-center justify-center rounded-full text-white">
                 <img
-                  src="https://i.pravatar.cc/80?img=22"
+                  src={`${baseUrl}/${user.profileImage}`}
                   alt="user name"
                   title="user name"
                   width="80"
