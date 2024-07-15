@@ -4,6 +4,7 @@ const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 const SalesDetail = require("../models/salesDetails");
 const axios = require("axios");
+
 // POST -> localhost:5000/api/v1/sales
 exports.createSales = async (req, res) => {
   try {
@@ -354,7 +355,7 @@ exports.updateSales = async (req, res) => {
       );
       io.emit("outOfStockUpdated", outOfStockResponse.data);
     } catch (err) {
-      console.error( 
+      console.error(
         "Error fetching out of stock data:",
         err.response ? err.response.data : err.message
       );
