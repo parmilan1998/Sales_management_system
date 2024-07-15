@@ -26,3 +26,11 @@
   display: inline-block;
   animation: vibrate 0.6s infinite;
 }
+
+.low-stock {
+  background-color: rgba(255, 94, 0, 0.521);
+}
+
+.out-of-stock {
+  background-color: rgba(248, 7, 7, 0.623);
+}
