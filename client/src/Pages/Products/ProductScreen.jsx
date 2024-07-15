@@ -72,7 +72,7 @@ const ProductScreen = () => {
           />
         </div>
       ) : (
-        <div className="max-w-screen-xl z-0 h-[100%] mx-auto lg:px-8 font-poppins cursor-pointer">
+        <div className="max-w-screen-xl z-0 lg:h-[100%] h-screen mx-auto lg:px-8 font-poppins cursor-pointer">
           <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-1">
             <div className="flex flex-row gap-2 items-center">
               <h1 className="text-3xl font-semibold font-acme text-cyan-600">
@@ -103,7 +103,6 @@ const ProductScreen = () => {
                 setSearch={setSearch}
                 setPage={setPage}
               />
-
               <Link to="/products/add">
                 <Tooltip title="Add Product">
                   <button className="flex mr-4 justify-center items-center text-white text-2xl px-2 py-2  gap-1 font-medium rounded-full bg-cyan-500">
@@ -113,18 +112,26 @@ const ProductScreen = () => {
               </Link>
             </div>
           </div>
-          <ProductTable
-            products={products}
-            page={page}
-            limit={limit}
-            confirmDelete={confirmDelete}
-            cancelDelete={cancelDelete}
-          />
-          <ProductPagination
-            page={page}
-            totalPages={totalPages}
-            setPage={setPage}
-          />
+          {products.length === 0 ? (
+            <div className="flex-grow flex items-center justify-center text-lg text-gray-500">
+              <p>No available products</p>
+            </div>
+          ) : (
+            <div className="flex-grow">
+              <ProductTable
+                products={products}
+                page={page}
+                limit={limit}
+                confirmDelete={confirmDelete}
+                cancelDelete={cancelDelete}
+              />
+              <ProductPagination
+                page={page}
+                totalPages={totalPages}
+                setPage={setPage}
+              />
+            </div>
+          )}
         </div>
       )}
     </>
