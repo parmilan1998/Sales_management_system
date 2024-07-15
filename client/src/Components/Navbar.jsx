@@ -23,7 +23,7 @@ const Navbar = () => {
         const lowStockResponse = await axios.get(
           "http://localhost:5000/api/v1/notification/low-stock"
         );
-        console.log("rr", lowStockResponse.data.data);
+
 
         const lowStockNotifications = lowStockResponse.data.data.map(
           (product) => {
@@ -44,7 +44,8 @@ const Navbar = () => {
     const handleLowStockUpdate = (lowStockProducts) => {
       console.log("Low stock update received:", lowStockProducts);
       const newNotifications = lowStockProducts.data.map((product) =>  {
-        const type = product.totalQuantity === 0 ? "outOfStock" : "lowStock"; 
+        const type = product.totalQuantity == 0 ? "outOfStock" : "lowStock"; 
+        console.log("hell",type);
         return {
           message: product.message,
           type,
