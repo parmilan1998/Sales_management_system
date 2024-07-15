@@ -34,14 +34,14 @@ exports.getLowStockProducts = async (req, res) => {
             productId: stock.productID,
             productName,
             totalQuantity,
-            message: `The product ${productName} is out of stock.`,
+            message: `The  ${productName} is out of stock.`,
           };
         } else if (totalQuantity < 10) {
           return {
             productId: stock.productID,
             productName,
             totalQuantity,
-            message: `The product ${productName} has low stock (only ${totalQuantity} left).`,
+            message: `The  ${productName} has low stock (only ${totalQuantity} left).`,
           };
         }
       })

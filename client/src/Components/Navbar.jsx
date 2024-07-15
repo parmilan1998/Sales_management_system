@@ -24,7 +24,6 @@ const Navbar = () => {
           "http://localhost:5000/api/v1/notification/low-stock"
         );
 
-
         const lowStockNotifications = lowStockResponse.data.data.map(
           (product) => {
             const type = product.totalQuantity == 0 ? "outOfStock" : "lowStock";
@@ -43,9 +42,8 @@ const Navbar = () => {
 
     const handleLowStockUpdate = (lowStockProducts) => {
       console.log("Low stock update received:", lowStockProducts);
-      const newNotifications = lowStockProducts.data.map((product) =>  {
-        const type = product.totalQuantity == 0 ? "outOfStock" : "lowStock"; 
-        console.log("hell",type);
+      const newNotifications = lowStockProducts.data.map((product) => {
+        const type = product.totalQuantity == 0 ? "outOfStock" : "lowStock";
         return {
           message: product.message,
           type,
@@ -82,18 +80,23 @@ const Navbar = () => {
   const items = notifications.map((notification, index) => ({
     key: index,
     label: (
-      <div>
+      <div
+        className={`flex flex-row ${
+          notification.type === "lowStock" ? "low-stock" : "out-of-stock"
+        } font-serif`}
+        style={{ padding: "8px", borderRadius: "5px" }}
+      >
         {notification.type == "lowStock" ? (
           <img
             src={warn}
             alt="Low Stock"
-            style={{ width: 20, marginRight: 10 }}
+            style={{ width: 20, marginRight: 7 }}
           />
         ) : (
           <img
             src={error}
             alt="Out of Stock"
-            style={{ width: 20, marginRight: 10 }}
+            style={{ width: 20, marginRight: 7 }}
           />
         )}
         {notification.message}
