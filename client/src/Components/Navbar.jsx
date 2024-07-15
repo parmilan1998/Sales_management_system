@@ -1,67 +1,134 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import io from "socket.io-client";
 import { IoNotifications } from "react-icons/io5";
-import { IoIosLogOut, IoIosSettings } from "react-icons/io";
+import { IoIosSettings } from "react-icons/io";
 import { Tooltip } from "antd";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-import { logout, logOutAdmin } from "../features/authSlice";
-import toast from "react-hot-toast";
-import LoginScreen from "../Pages/Admin/LoginScreen";
+import { Link } from "react-router-dom";
+import { Dropdown, Space, Badge } from "antd";
+import warn from "../assets/warn.png";
+import error from "../assets/error.png";
+
+
+const socket = io("http://localhost:5000");
 
 const Navbar = () => {
-  const user = useSelector((state) => state.auth.user);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/user/login");
-    }
-  }, [user, navigate]);
+    const fetchNotifications = async () => {
+      try {
+        const [lowStockResponse, outOfStockResponse] = await Promise.all([
+          axios.get("http://localhost:5000/api/v1/notification/low-stock"),
+          axios.get("http://localhost:5000/api/v1/notification/out-of-stock"),
+        ]);
 
-  const handleLogout = async () => {
-    try {
-      await dispatch(logOutAdmin());
-      dispatch(logout());
-      navigate("/");
-      toast.success("Logged out successfully!");
-    } catch (error) {
-      toast.error("Logout failed. Please try again.");
-    }
-  };
+        const lowStockNotifications = lowStockResponse.data.data.map(
+          (product) => ({
+            message: product.message,
+            type: "lowStock",
+          })
+        );
+
+        const outOfStockNotifications = outOfStockResponse.data.data.map(
+          (product) => ({
+            message: product.message,
+            type: "outOfStock",
+          })
+        );
+
+        setNotifications([
+          ...lowStockNotifications,
+          ...outOfStockNotifications,
+        ]);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    const handleLowStockUpdate = (lowStockProducts) => {
+      console.log("Low stock update received:", lowStockProducts);
+      const newNotifications = lowStockProducts.data.map((product) => ({
+        message: product.message,
+        type: "lowStock",
+      }));
+      setNotifications(newNotifications);
+    };
+
+    const handleOutOfStockUpdate = (outOfStockProducts) => {
+      console.log("Out of stock update received:", outOfStockProducts);
+      const newNotifications = outOfStockProducts.data.map((product) => ({
+        message: product.message,
+        type: "outOfStock",
+      }));
+      setNotifications(newNotifications);
+    };
+
+    fetchNotifications();
+
+    socket.on("lowStockUpdated", handleLowStockUpdate);
+    socket.on("outOfStockUpdated", handleOutOfStockUpdate);
+
+    return () => {
+      socket.off("lowStockUpdated", handleLowStockUpdate);
+      socket.off("outOfStockUpdated", handleOutOfStockUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log("Notifications state updated:", notifications);
+  }, [notifications]);
+
+  const items = notifications.map((notification, index) => ({
+    key: index,
+    label: (
+      <div>
+        {notification.type === "lowStock" ? (
+          <img
+            src={warn}
+            alt="Low Stock"
+            style={{ width: 20, marginRight: 10 }}
+          />
+        ) : (
+          <img
+            src={error}
+            alt="Out of Stock"
+            style={{ width: 20, marginRight: 10 }}
+          />
+        )}
+        {notification.message}
+      </div>
+    ),
+  }));
+
+  const notificationCount = notifications.length;
 
   return (
     <header>
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 bg-gray-200 w-full font-poppins">
-        <div className="flex py-4 items-center justify-end">
+        <div className="flex pt-4 items-center justify-end">
           <div className="flex items-center justify-end gap-4">
             <div className="sm:flex sm:gap-4 space-x-6 flex justify-end">
-              <a href="#" className="text-gray-600">
-                <IoNotifications size={22} />
-              </a>
+              <Badge count={notificationCount} overflowCount={99}>
+                <Dropdown
+                  menu={{
+                    items,
+                  }}
+                  overlayClassName="h-40 overflow-auto"
+                >
+                  <a onClick={(e) => e.preventDefault()}>
+                    <Space>
+                      <IoNotifications size={22} />
+                    </Space>
+                  </a>
+                </Dropdown>
+              </Badge>
               <div className="hidden sm:flex">
                 <Link to="/profile" className="text-gray-600">
                   <Tooltip title="Admin Profile">
                     <IoIosSettings size={22} />
                   </Tooltip>
                 </Link>
-              </div>
-              <div className="hidden sm:flex">
-                {user ? (
-                  <div>
-                    <Tooltip title="Logout">
-                      <button
-                        onClick={handleLogout}
-                        href="#"
-                        className="text-gray-600 font-bold"
-                      >
-                        <IoIosLogOut size={22} />
-                      </button>
-                    </Tooltip>{" "}
-                  </div>
-                ) : (
-                  <LoginScreen />
-                )}
               </div>
             </div>
             <div className="block md:hidden">

@@ -43,7 +43,11 @@ exports.createProduct = async (req, res) => {
     });
 
     // Emit event for real-time updates
-    req.app.get("socketio").emit("productCreated", newProduct);
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated product count
+    const count = await Product.count();
+    io.emit("productCount", count);
 
     res.status(201).json({
       message: "Product added successfully",
@@ -242,6 +246,14 @@ exports.deleteProduct = async (req, res) => {
     }
 
     await product.destroy();
+    
+    // Emit event for real-time updates
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated product count
+    const count = await Product.count();
+    io.emit("productCount", count);
+
     res.status(200).json("Product deleted successfully");
   } catch (error) {
     res.status(500).json("Error deleting product");
@@ -339,6 +351,43 @@ exports.getProductCount = async (req, res) => {
     res.status(200).json({ count });
   } catch (error) {
     console.error("Error fetching product count:", error);
-    res.status(500).json({ message: "Error fetching product count", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching product count", error: error.message });
+  }
+};
+
+// GET -> localhost:5000/api/v1/product-details
+exports.fetchProductDetails = async (req, res) => {
+  try {
+    const stocks = await Stocks.findAll({
+      include: {
+        model: Product,
+        attributes: ["productID", "productName", "unitPrice", "imageUrl"],
+      },
+      attributes: [
+        "stockID",
+        "manufacturedDate",
+        "expiryDate",
+        "productQuantity",
+      ],
+    });
+
+    const productDetails = stocks.map((stock) => {
+      return {
+        productID: stock.Product.productID,
+        stockID: stock.stockID,
+        productName: stock.Product.productName,
+        unitPrice: stock.Product.unitPrice,
+        image: stock.Product.imageUrl,
+        productQuantity: stock.productQuantity,
+        manufacturedDate: stock.manufacturedDate,
+        expiryDate: stock.expiryDate,
+      };
+    });
+
+    res.json(productDetails);
+  } catch (error) {
+    res.status(500).json(error.message);
   }
 };

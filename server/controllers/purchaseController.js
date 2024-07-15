@@ -1,9 +1,8 @@
 const Purchase = require("../models/purchase");
-const { Op, fn, col } = require("sequelize");
+const { Op } = require("sequelize");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
-
-
+const axios = require("axios");
 
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
@@ -93,8 +92,37 @@ exports.createPurchase = async (req, res) => {
     }
 
     // Emit event for stock update
-    req.app.get("socketio").emit("stockUpdated", updatedStock);
-    req.app.get("socketio").emit("purchaseCreated", createdPurchase);
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
+
+    // Fetch and emit low stock products
+    try {
+      const lowStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/low-stock"
+      );
+      io.emit("lowStockUpdated", lowStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching low stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
+
+    // Fetch and emit out of stock products
+    try {
+      const outOfStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/out-of-stock"
+      );
+      io.emit("outOfStockUpdated", outOfStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching out of stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
 
     res.status(201).json({
       message: "Purchase Created Successfully!",
@@ -261,16 +289,28 @@ exports.updatePurchase = async (req, res) => {
         newStock.relatedPurchaseIDs = `${existingPurchase.purchaseID}`;
       }
       await newStock.save();
-
-      // Emit event for stock update
-      req.app.get("socketio").emit("stockUpdated", newStock);
     } else {
       // If product name is not changing, just update the quantity difference
       if (quantityDifference !== 0) {
         newStock.productQuantity += quantityDifference;
         await newStock.save();
-        // Emit event for stock update
-        req.app.get("socketio").emit("stockUpdated", newStock);
+      }
+    }
+
+    let newCOGP;
+
+    if (purchasePrice !== undefined) {
+      if (purchaseQuantity !== undefined) {
+        newCOGP = purchasePrice * purchaseQuantity;
+      } else {
+        newCOGP = purchasePrice * existingPurchase.purchaseQuantity;
+      }
+    } else {
+      if (purchaseQuantity !== undefined) {
+        newCOGP = existingPurchase.purchasePrice * purchaseQuantity;
+      } else {
+        newCOGP =
+          existingPurchase.purchasePrice * existingPurchase.purchaseQuantity;
       }
     }
 
@@ -282,16 +322,48 @@ exports.updatePurchase = async (req, res) => {
         purchaseQuantity !== undefined
           ? purchaseQuantity
           : existingPurchase.purchaseQuantity,
-      purchasePrice,
-      COGP:
-        purchasePrice * (purchaseQuantity || existingPurchase.purchaseQuantity),
+      purchasePrice:
+        purchasePrice !== undefined
+          ? purchasePrice
+          : existingPurchase.purchasePrice,
+      COGP: newCOGP,
       purchaseVendor,
       vendorContact,
       purchasedDate,
     });
 
-    // Emit event for purchase update
-    req.app.get("socketio").emit("purchaseUpdated", existingPurchase);
+    // Emit event for stock update
+    const io = req.app.get("socketio");
+
+    // Fetch and emit the updated total product quantity
+    const totalQuantity = await Stocks.sum("productQuantity");
+    io.emit("totalProductQuantityUpdated", totalQuantity);
+
+    // Fetch and emit low stock products
+    try {
+      const lowStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/low-stock"
+      );
+      io.emit("lowStockUpdated", lowStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching low stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
+
+    // Fetch and emit out of stock products
+    try {
+      const outOfStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/out-of-stock"
+      );
+      io.emit("outOfStockUpdated", outOfStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching out of stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
 
     res.status(200).json({
       message: `Purchase record with ID '${id}' updated successfully`,
@@ -467,7 +539,6 @@ exports.returnPurchase = async (req, res) => {
 
     stock.productQuantity -= returnQuantity;
     await stock.save();
-
 
     res.status(200).json({
       message: `Returned ${returnQuantity} units for purchase record with ID '${id}' successfully`,

@@ -1,12 +1,12 @@
 import React from "react";
 import { AiFillDropboxCircle } from "react-icons/ai";
 import { MdPlayArrow } from "react-icons/md";
-import googleLogo from "../../assets/google.png";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login, loginAdmin } from "../../features/authSlice";
+import GoogleSignInButton from "../../Components/admin/GoogleSignIn";
 
 const LoginScreen = () => {
   const navigate = useNavigate();
@@ -70,7 +70,7 @@ const LoginScreen = () => {
       <div className="absolute bg-white rounded-3xl h-[450px] w-16 top-[18%] left-[44%] lg:flex hidden"></div>
       <div className="flex lg:w-[54%] py-12 w-full items-center flex-col font-poppins">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <h1 className="lg:text-3xl tracking-wide text-gray-500 text-base font-acme font-medium text-center py-12">
+          <h1 className="lg:text-3xl tracking-wide text-gray-500 text-base font-acme font-medium text-center py-8">
             Login your account
           </h1>
           <div className="flex flex-col mb-6 space-y-3">
@@ -117,17 +117,8 @@ const LoginScreen = () => {
               </span>
             </span>
           </div>
-          <div className="flex justify-center py-8 font-poppins">
-            <button className="font-poppins gap-1 border w-full rounded-md flex justify-center py-2 border-gray-400">
-              <img
-                src={googleLogo}
-                alt="Google Logo"
-                className="w-6 h-6 object-fill"
-              />
-              SignIn with google
-            </button>
-          </div>
         </form>
+        <GoogleSignInButton />
       </div>
     </div>
   );

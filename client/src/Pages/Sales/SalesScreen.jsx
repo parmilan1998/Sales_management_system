@@ -11,7 +11,7 @@ import { LuPlus } from "react-icons/lu";
 import Barcode from "react-barcode";
 import SalesSearch from "../../Components/Sales/SalesSearch";
 import SalesSort from "../../Components/Sales/SalesSort";
-import { Triangle } from "react-loader-spinner";
+import GridLoader from "react-spinners/GridLoader";
 
 const SalesScreen = () => {
   const navigate = useNavigate();
@@ -139,22 +139,20 @@ const SalesScreen = () => {
     <>
       {loading ? (
         <div className="flex justify-center items-center w-full h-[75vh]">
-          <Triangle
-            visible={true}
-            height="100"
-            width="100"
-            color="#4fa94d"
-            ariaLabel="triangle-loading"
-            wrapperStyle={{}}
-            wrapperClass=""
+          <GridLoader
+            loading={loading}
+            size={15}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+            color="#4682B4"
           />
         </div>
       ) : (
-        <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
+        <div className="max-w-screen-xl z-0 mx-auto h-[100%] lg:px-8 font-poppins cursor-pointer">
           <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
             <div className="flex items-center gap-6">
               <h1 className="text-3xl font-medium font-acme">
-                All Sales Here!{" "}
+                All Sales Here!
               </h1>
               <Link
                 to="/sales/add"
@@ -164,7 +162,7 @@ const SalesScreen = () => {
                 New Sale
               </Link>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex lg:flex-row md:flex-row flex-col  items-center gap-2">
               <h1>SortBy:</h1>
               <SalesSort
                 sortName={sortName}
@@ -179,7 +177,7 @@ const SalesScreen = () => {
               />
             </div>
           </div>
-          <div className="py-5">
+          <div>
             <SalesTable
               expandedRowRender={(record) => expandedRowRender(record)}
               columns={columns}
