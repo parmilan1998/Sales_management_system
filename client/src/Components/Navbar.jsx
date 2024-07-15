@@ -27,8 +27,7 @@ const Navbar = () => {
 
         const lowStockNotifications = lowStockResponse.data.data.map(
           (product) => {
-            const type =
-              product.totalQuantity == 0 ? "outOfStock" : "lowStock";
+            const type = product.totalQuantity == 0 ? "outOfStock" : "lowStock";
             return {
               message: product.message,
               type,

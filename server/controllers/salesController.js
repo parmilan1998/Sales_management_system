@@ -144,7 +144,6 @@ exports.createSales = async (req, res) => {
       );
     }
 
-
     res.status(201).json({
       message: "Sales added successfully",
       sales: createdSales,

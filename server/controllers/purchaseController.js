@@ -110,7 +110,7 @@ exports.createPurchase = async (req, res) => {
         err.response ? err.response.data : err.message
       );
     }
-    
+
     res.status(201).json({
       message: "Purchase Created Successfully!",
       purchase: createdPurchase,

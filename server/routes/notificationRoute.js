@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {
-  getLowStockProducts
+  getLowStockProducts,
 } = require("../controllers/notificationController");
 
 router.get("/low-stock", getLowStockProducts);

@@ -13,7 +13,7 @@ exports.getLowStockProducts = async (req, res) => {
       group: ["productID"],
       having: {
         totalQuantity: {
-          [Op.lt]: 10, 
+          [Op.lt]: 10,
         },
       },
       include: [
@@ -24,26 +24,28 @@ exports.getLowStockProducts = async (req, res) => {
       ],
     });
 
-    const notifications = lowStockProducts.map((stock) => {
-      const productName = stock.Product.productName;
-      const totalQuantity = stock.dataValues.totalQuantity;
+    const notifications = lowStockProducts
+      .map((stock) => {
+        const productName = stock.Product.productName;
+        const totalQuantity = stock.dataValues.totalQuantity;
 
-      if (totalQuantity == 0) {
-        return {
-          productId: stock.productID,
-          productName,
-          totalQuantity,
-          message: `The product ${productName} is out of stock.`,
-        };
-      } else if (totalQuantity < 10) {
-        return {
-          productId: stock.productID,
-          productName,
-          totalQuantity,
-          message: `The product ${productName} has low stock (only ${totalQuantity} left).`,
-        };
-      }
-    }).filter(notification => notification !== undefined); 
+        if (totalQuantity == 0) {
+          return {
+            productId: stock.productID,
+            productName,
+            totalQuantity,
+            message: `The product ${productName} is out of stock.`,
+          };
+        } else if (totalQuantity < 10) {
+          return {
+            productId: stock.productID,
+            productName,
+            totalQuantity,
+            message: `The product ${productName} has low stock (only ${totalQuantity} left).`,
+          };
+        }
+      })
+      .filter((notification) => notification !== undefined);
 
     res.status(200).json({
       count: notifications.length,
@@ -56,5 +58,3 @@ exports.getLowStockProducts = async (req, res) => {
     });
   }
 };
-
-
