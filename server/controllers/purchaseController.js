@@ -111,19 +111,6 @@ exports.createPurchase = async (req, res) => {
       );
     }
 
-    // Fetch and emit out of stock products
-    try {
-      const outOfStockResponse = await axios.get(
-        "http://localhost:5000/api/v1/notification/out-of-stock"
-      );
-      io.emit("outOfStockUpdated", outOfStockResponse.data);
-    } catch (err) {
-      console.error(
-        "Error fetching out of stock data:",
-        err.response ? err.response.data : err.message
-      );
-    }
-
     res.status(201).json({
       message: "Purchase Created Successfully!",
       purchase: createdPurchase,
@@ -348,19 +335,6 @@ exports.updatePurchase = async (req, res) => {
     } catch (err) {
       console.error(
         "Error fetching low stock data:",
-        err.response ? err.response.data : err.message
-      );
-    }
-
-    // Fetch and emit out of stock products
-    try {
-      const outOfStockResponse = await axios.get(
-        "http://localhost:5000/api/v1/notification/out-of-stock"
-      );
-      io.emit("outOfStockUpdated", outOfStockResponse.data);
-    } catch (err) {
-      console.error(
-        "Error fetching out of stock data:",
         err.response ? err.response.data : err.message
       );
     }
