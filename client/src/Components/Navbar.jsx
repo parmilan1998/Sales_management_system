@@ -43,10 +43,13 @@ const Navbar = () => {
 
     const handleLowStockUpdate = (lowStockProducts) => {
       console.log("Low stock update received:", lowStockProducts);
-      const newNotifications = lowStockProducts.data.map((product) => ({
-        message: product.message,
-        type: "lowStock",
-      }));
+      const newNotifications = lowStockProducts.data.map((product) =>  {
+        const type = product.totalQuantity === 0 ? "outOfStock" : "lowStock"; 
+        return {
+          message: product.message,
+          type,
+        };
+      });
       setNotifications(newNotifications);
       setAnimate(true);
     };
@@ -68,7 +71,6 @@ const Navbar = () => {
 
   useEffect(() => {
     console.log("Notifications state updated:", notifications);
-
     const timer = setTimeout(() => {
       setAnimate(false);
     }, 1000);
