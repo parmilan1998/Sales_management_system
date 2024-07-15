@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const Stocks = require("../models/stocks");
 const Product = require("../models/products");
+const axios = require("axios");
 
 // POST -> localhost:5000/api/v1/stocks
 exports.createStocks = async (req, res) => {
@@ -55,6 +56,32 @@ exports.createStocks = async (req, res) => {
       const totalQuantity = await Stocks.sum("productQuantity");
       io.emit("totalProductQuantityUpdated", totalQuantity);
 
+      // Fetch and emit low stock products
+      try {
+        const lowStockResponse = await axios.get(
+          "http://localhost:5000/api/v1/notification/low-stock"
+        );
+        io.emit("lowStockUpdated", lowStockResponse.data);
+      } catch (err) {
+        console.error(
+          "Error fetching low stock data:",
+          err.response ? err.response.data : err.message
+        );
+      }
+
+      // Fetch and emit out of stock products
+      try {
+        const outOfStockResponse = await axios.get(
+          "http://localhost:5000/api/v1/notification/out-of-stock"
+        );
+        io.emit("outOfStockUpdated", outOfStockResponse.data);
+      } catch (err) {
+        console.error(
+          "Error fetching out of stock data:",
+          err.response ? err.response.data : err.message
+        );
+      }
+
       return res.status(201).json({
         message: "Stocks updated Successfully!",
         stocks: updatedStock,
@@ -90,6 +117,32 @@ exports.createStocks = async (req, res) => {
     // Fetch and emit the updated total product quantity
     const totalQuantity = await Stocks.sum("productQuantity");
     io.emit("totalProductQuantityUpdated", totalQuantity);
+
+    // Fetch and emit low stock products
+    try {
+      const lowStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/low-stock"
+      );
+      io.emit("lowStockUpdated", lowStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching low stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
+
+    // Fetch and emit out of stock products
+    try {
+      const outOfStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/out-of-stock"
+      );
+      io.emit("outOfStockUpdated", outOfStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching out of stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
 
     return res.status(201).json({
       message: "Stocks Created Successfully!",
@@ -144,6 +197,32 @@ exports.updateStocks = async (req, res) => {
     const totalQuantity = await Stocks.sum("productQuantity");
     io.emit("totalProductQuantityUpdated", totalQuantity);
 
+    // Fetch and emit low stock products
+    try {
+      const lowStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/low-stock"
+      );
+      io.emit("lowStockUpdated", lowStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching low stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
+
+    // Fetch and emit out of stock products
+    try {
+      const outOfStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/out-of-stock"
+      );
+      io.emit("outOfStockUpdated", outOfStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching out of stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
+
     res.status(200).json({
       message: "Stock updated successfully",
       updateStock: stockUpdate,
@@ -169,6 +248,32 @@ exports.deleteStocks = async (req, res) => {
     // Fetch and emit the updated total product quantity
     const totalQuantity = await Stocks.sum("productQuantity");
     io.emit("totalProductQuantityUpdated", totalQuantity);
+
+    // Fetch and emit low stock products
+    try {
+      const lowStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/low-stock"
+      );
+      io.emit("lowStockUpdated", lowStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching low stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
+
+    // Fetch and emit out of stock products
+    try {
+      const outOfStockResponse = await axios.get(
+        "http://localhost:5000/api/v1/notification/out-of-stock"
+      );
+      io.emit("outOfStockUpdated", outOfStockResponse.data);
+    } catch (err) {
+      console.error(
+        "Error fetching out of stock data:",
+        err.response ? err.response.data : err.message
+      );
+    }
 
     res.status(200).json({
       message: "Stock deleted successfully",
@@ -253,11 +358,9 @@ exports.getTotalProductQuantity = async (req, res) => {
     res.status(200).json({ totalQuantity });
   } catch (error) {
     console.error("Error fetching total product quantity:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error fetching total product quantity",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fetching total product quantity",
+      error: error.message,
+    });
   }
 };

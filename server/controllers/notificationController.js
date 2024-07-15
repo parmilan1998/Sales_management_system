@@ -13,6 +13,7 @@ exports.getLowStockProducts = async (req, res) => {
       group: ["productID"],
       having: {
         totalQuantity: {
+          [Op.gt]: 0,
           [Op.lte]: 10,
         },
       },
