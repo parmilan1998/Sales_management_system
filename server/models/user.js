@@ -37,6 +37,10 @@ const User = db.define(
         notEmpty: true,
       },
     },
+    profileImage: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
 
   {
