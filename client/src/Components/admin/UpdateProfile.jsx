@@ -24,8 +24,8 @@ const UpdateProfile = ({ setIsModalOpen, user, fetchDetails }) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
 
-    if (!username || !email) {
-      toast.error("Required username, email");
+    if (!username || !email || !profileImage) {
+      toast.error("Required username, email and profile image");
       return;
     }
 
