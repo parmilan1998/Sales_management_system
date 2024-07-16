@@ -1,7 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 
 const ProductPagination = ({ page, setPage, totalPages }) => {
+  useEffect(() => {
+    if (totalPages <= 1 && page !== 1) {
+      setPage(1);
+    }
+  }, [totalPages, page, setPage]);
+
   const getPageNumbers = (totalPages) => {
     const pages = [];
     for (let i = 1; i <= totalPages; i++) {
@@ -10,93 +16,82 @@ const ProductPagination = ({ page, setPage, totalPages }) => {
     return pages;
   };
 
-  return (
-    <div className="flex justify-center items-center py-5 gap-4">
-      <div>
-        <nav role="navigation" aria-label="Pagination Navigation">
-          <ul className="flex list-none items-center justify-center divide-x divide-slate-300 overflow-hidden rounded border border-slate-300 text-sm text-slate-700">
-            <li>
-              <button
-                onClick={() => setPage(page - 1)}
-                disabled={page <= 1}
-                aria-label="Previous page"
-                className="inline-flex h-10 items-center justify-center gap-4 stroke-slate-700 px-4 text-sm font-medium text-slate-700 transition duration-300 hover:bg-emerald-50 hover:stroke-emerald-500 hover:text-emerald-500 focus:bg-emerald-50 focus:stroke-emerald-600 focus:text-emerald-600 focus-visible:outline-none"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="-mx-1 h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  role="graphics-symbol"
-                  aria-labelledby="title-35 desc-35"
-                >
-                  <title id="title-35">Previous page</title>
-                  <desc id="desc-35">link to previous page</desc>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-            </li>
-            {getPageNumbers(totalPages).map((pageNumber) => (
-              <li key={pageNumber}>
-                <button
-                  onClick={() => setPage(pageNumber)}
-                  disabled={page === pageNumber}
-                  aria-label={`Goto Page ${pageNumber}`}
-                  className={`inline-flex h-10 items-center justify-center stroke-slate-700 px-4 text-sm font-medium text-slate-700 transition duration-300 ${
-                    page === pageNumber
-                      ? "bg-cyan-500 text-white"
-                      : "hover:bg-emerald-50 hover:text-cyan-500 focus:bg-cyan-50 focus:text-cyan-600 focus-visible:outline-none"
-                  }`}
-                >
-                  {pageNumber}
-                </button>
-              </li>
-            ))}
+  if (totalPages <= 1) {
+    return null;
+  }
 
-            <li>
-              <button
-                onClick={() => setPage(page + 1)}
-                disabled={page >= totalPages}
-                aria-label="Next page"
-                className="inline-flex h-10 items-center justify-center gap-4 stroke-slate-700 px-4 text-sm font-medium text-slate-700 transition duration-300 hover:bg-emerald-50 hover:stroke-emerald-500 hover:text-emerald-500 focus:bg-emerald-50 focus:stroke-emerald-600 focus:text-emerald-600 focus-visible:outline-none"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="-mx-1 h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  role="graphics-symbol"
-                  aria-labelledby="title-36 desc-36"
-                >
-                  <title id="title-36">Next page</title>
-                  <desc id="desc-36">link to next page</desc>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </div>
+  return (
+    <div>
+      <ol className="flex justify-center gap-1 text-xs font-medium">
+        <li>
+          <button
+            onClick={() => setPage(page - 1)}
+            disabled={page <= 1}
+            aria-label="Previous page"
+            className="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 transition duration-300 hover:bg-emerald-50 hover:stroke-emerald-500 hover:text-emerald-500 focus:bg-emerald-50 focus:stroke-emerald-600 focus:text-emerald-600  focus-visible:outline-none"
+          >
+            <span className="sr-only">Prev Page</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-3 w-3"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </li>
+        {getPageNumbers(totalPages).map((pageNumber) => (
+          <li key={pageNumber}>
+            <button
+              onClick={() => setPage(pageNumber)}
+              disabled={page === pageNumber}
+              aria-label={`Goto Page ${pageNumber}`}
+              className={` items-center block size-8 rounded border border-gray-100 text-center leading-8 transition duration-300 ${
+                page === pageNumber
+                  ? "border-blue-600 bg-blue-600 text-white"
+                  : "hover:bg-emerald-50 hover:text-cyan-500 focus:bg-cyan-50 focus:text-cyan-600 focus-visible:outline-none"
+              }`}
+            >
+              {pageNumber}
+            </button>
+          </li>
+        ))}
+        <li>
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page >= totalPages}
+            aria-label="Next page"
+            className="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 transition duration-300 hover:bg-emerald-50 hover:stroke-emerald-500 hover:text-emerald-500 focus:bg-emerald-50 focus:stroke-emerald-600 focus:text-emerald-600  focus-visible:outline-none"
+          >
+            <span className="sr-only">Next Page</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-3 w-3"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </li>
+      </ol>
     </div>
   );
 };
 
 ProductPagination.propTypes = {
   page: PropTypes.number.isRequired,
-  setPage: PropTypes.func.isRequired,
   totalPages: PropTypes.number.isRequired,
+  setPage: PropTypes.func.isRequired,
 };
 
 export default ProductPagination;
