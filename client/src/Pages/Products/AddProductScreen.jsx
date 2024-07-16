@@ -3,9 +3,26 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
+import { IoMdAddCircleOutline } from "react-icons/io";
 
 const AddProduct = () => {
   const [category, setCategory] = useState([]);
+  const [unitTypes, setUnitTypes] = useState(["piece", "kg", "bottle"]);
+  const [newUnitType, setNewUnitType] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+
+  const handleAddUnitType = () => {
+    if (newUnitType && !unitTypes.includes(newUnitType)) {
+      setUnitTypes([...unitTypes, newUnitType]);
+      setNewUnitType("");
+      setIsAdding(false);
+    }
+  };
+
+  const handleIconClick = () => {
+    setIsAdding(!isAdding);
+  };
+
   const navigate = useNavigate();
   const {
     register,
@@ -162,28 +179,57 @@ const AddProduct = () => {
           <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
             {" "}
             <div className="mb-4">
-              <label htmlFor="unitType" className="flex pb-2 text-gray-600">
-                Unit Type
-              </label>
-              <select
-                {...register("unitType", {
-                  required: "Category Name is required",
-                })}
-                type="text"
-                name="unitType"
-                id="unitType"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-              >
-                <option value="" className="text-gray-200 opacity-5">
-                  Ex - Pair
-                </option>
-                {/* {category.map((category, index) => ( */}
-                <option value="piece">Piece</option>
-                <option value="kg">Kg</option>
-                <option value="bottles">Bottle</option>
-                <option value="pairs">Pair</option>
-                {/* ))} */}
-              </select>
+              <div className="flex flex-row gap-3">
+                <label
+                  htmlFor="unitType"
+                  className="flex pb-2 text-gray-600 my-2"
+                >
+                  Unit Type
+                </label>
+                <div className=" my-1.5">
+                  <button
+                    type="button"
+                    onClick={handleIconClick}
+                    className="py-1 px-1 rounded bg-blue-500 text-white text-sm focus:outline-none"
+                  >
+                    <IoMdAddCircleOutline size={20} />
+                  </button>
+                </div>
+              </div>
+              {isAdding ? (
+                <div className="mb-2">
+                  <input
+                    type="text"
+                    value={newUnitType}
+                    onChange={(e) => setNewUnitType(e.target.value)}
+                    placeholder="Add new unit type"
+                    className="w-full py-1.5 px-3 mb-2 rounded border border-gray-300 text-sm focus:outline-cyan-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddUnitType}
+                    className="py-1.5 px-3 rounded bg-blue-500 text-white text-sm focus:outline-none"
+                  >
+                    Add
+                  </button>
+                </div>
+              ) : (
+                <select
+                  type="text"
+                  name="unitType"
+                  id="unitType"
+                  className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                >
+                  <option value="" className="text-gray-200 opacity-5">
+                    Ex - Pair
+                  </option>
+                  {unitTypes.map((type, index) => (
+                    <option key={index} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              )}
               {errors.unitType && (
                 <p className="text-red-500 py-1 text-sm">
                   {errors.unitType.message}
