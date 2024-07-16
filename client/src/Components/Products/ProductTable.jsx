@@ -60,6 +60,7 @@ const ProductTable = ({
             >
               Category Name
             </th>
+
             <th
               scope="col"
               className="h-12 px-2 w-8 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
@@ -102,20 +103,20 @@ const ProductTable = ({
                 {item.productName}
               </td>
 
-              {/* <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-black">
-                {item.productDescription}
-              </td> */}
               <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
                 {item.categoryName}
               </td>
+
               <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
                 Rs.{item.unitPrice}
               </td>
               <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
-                {item.reOrderLevel}
+                {item.reOrderLevel}&nbsp;
+                {item.unitType}
               </td>
               <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
-                {item.totalQuantity}
+                {item.totalQuantity}&nbsp;
+                {item.unitType}
               </td>
               <td className="h-12 px-1 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
                 <div className="flex flex-row justify-center items-center gap-2">
