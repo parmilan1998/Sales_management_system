@@ -21,6 +21,7 @@ const AddProduct = () => {
       formData.append("productName", data.productName);
       formData.append("image", data.image[0]);
       formData.append("categoryName", data.categoryName);
+      formData.append("unitType", data.unitType);
       formData.append("unitPrice", data.unitPrice);
       formData.append("reOrderLevel", data.reOrderLevel);
       formData.append("productDescription", data.description);
@@ -127,7 +128,7 @@ const AddProduct = () => {
               )}
             </div>
           </div>
-          <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
+          <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
             <div className="mb-4">
               <label htmlFor="categoryName" className="flex pb-2 text-gray-600">
                 Category Name
@@ -157,6 +158,37 @@ const AddProduct = () => {
                 </p>
               )}
             </div>
+            <div className="mb-4">
+              <label htmlFor="unitType" className="flex pb-2 text-gray-600">
+                Unit Type
+              </label>
+              <select
+                {...register("unitType", {
+                  required: "Category Name is required",
+                })}
+                type="text"
+                name="unitType"
+                id="unitType"
+                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+              >
+                <option value="" className="text-gray-200 opacity-5">
+                  Ex - Pair
+                </option>
+                {/* {category.map((category, index) => ( */}
+                <option value="piece">Piece</option>
+                <option value="kg">Kg</option>
+                <option value="bottle">Bottle</option>
+                {/* ))} */}
+              </select>
+              {errors.unitType && (
+                <p className="text-red-500 py-1 text-sm">
+                  {errors.unitType.message}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
+            {" "}
             <div className="mb-4">
               <label htmlFor="unitPrice" className="flex pb-2 text-gray-600">
                 Unit Price
@@ -198,7 +230,6 @@ const AddProduct = () => {
               )}
             </div>
           </div>
-
           <div className="mb-4">
             <label htmlFor="description" className="flex pb-2 text-gray-600">
               Description

@@ -46,6 +46,13 @@ const Product = db.define(
         notEmpty: true,
       },
     },
+    unitType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     unitPrice: {
       type: DataTypes.FLOAT,
       allowNull: false,
