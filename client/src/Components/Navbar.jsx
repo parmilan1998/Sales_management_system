@@ -7,8 +7,8 @@ import { Tooltip } from "antd";
 import { Link } from "react-router-dom";
 import { Dropdown, Space, Badge } from "antd";
 import alert from "../assets/alert.gif";
-import warn from "../assets/warn.webp";
-import recycle from "../assets/recycle.gif";
+import warn from "../assets/warning01.gif";
+import recycle from "../assets/recycle01.gif";
 
 import "../App.css";
 
@@ -132,7 +132,8 @@ const Navbar = () => {
           <img
             src={iconSrc}
             alt={iconAlt}
-            style={{ width: 25, marginRight: 7 }}
+            className="rounded-full"
+            style={{ width: 28, marginRight: 7 }}
           />
           {notification.message}
         </div>
