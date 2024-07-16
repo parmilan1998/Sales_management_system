@@ -28,6 +28,7 @@ const EditProductScreen = () => {
       setValue("productName", product.productName);
       setValue("categoryName", product.categoryName);
       setValue("unitPrice", product.unitPrice);
+      setValue("reOrderLevel", product.reOrderLevel);
       setValue("description", product.productDescription);
       setValue("imageUrl", `${baseUrl}/${product.imageUrl}`);
     } catch (err) {
@@ -41,6 +42,7 @@ const EditProductScreen = () => {
     formData.append("image", data.image[0]);
     formData.append("categoryName", data.categoryName);
     formData.append("unitPrice", data.unitPrice);
+    formData.append("reOrderLevel", data.reOrderLevel);
     formData.append("productDescription", data.description);
 
     const res = await axios
@@ -147,7 +149,7 @@ const EditProductScreen = () => {
                 )}
               </div>
             </div>
-            <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
+            <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
               <div className="mb-4">
                 <label
                   htmlFor="categoryName"
@@ -197,6 +199,29 @@ const EditProductScreen = () => {
                 {errors.unitPrice && (
                   <p className="text-red-500 py-1 text-sm">
                     {errors.unitPrice.message}
+                  </p>
+                )}
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="reOrderLevel"
+                  className="flex pb-2 text-gray-600"
+                >
+                  Reorder Level
+                </label>
+                <input
+                  {...register("reOrderLevel", {
+                    required: "Unit price is required",
+                  })}
+                  type="number"
+                  name="reOrderLevel"
+                  id="reOrderLevel"
+                  className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                  placeholder="Ex - 40"
+                />
+                {errors.reOrderLevel && (
+                  <p className="text-red-500 py-1 text-sm">
+                    {errors.reOrderLevel.message}
                   </p>
                 )}
               </div>

@@ -9,6 +9,7 @@ import CategorySort from "../../Components/Category/CategorySort";
 import toast from "react-hot-toast";
 import { Tooltip } from "antd";
 import GridLoader from "react-spinners/GridLoader";
+import { motion } from "framer-motion";
 
 const Category = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -25,6 +26,8 @@ const Category = () => {
   const [sort, setSort] = useState("ASC");
   const [limit, setLimit] = useState(8);
   const [loading, setLoading] = useState(true);
+
+  const text = "No category available".split(" ");
 
   const popupRef = useRef();
   const {
@@ -376,20 +379,40 @@ const Category = () => {
               </div>
             )}
           </div>
-          <div>
-            <CategoryList
-              category={category}
-              fetchCategories={() => fetchCategories()}
-              setCategory={setCategory}
-              openEditPopup={openEditPopup}
-              baseUrl={baseUrl}
-            />
-            <CategoryPagination
-              page={page}
-              totalPages={totalPages}
-              setPage={setPage}
-            />
-          </div>
+          {category.length === 0 ? (
+            <div className="flex-grow flex lg:py-10 items-center justify-center text-lg text-gray-500">
+              {text.map((el, i) => (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{
+                    duration: 0.25,
+                    delay: i / 10,
+                  }}
+                  key={i}
+                  style={{ marginRight: "0.5em" }}
+                >
+                  {el}
+                  {"  "}
+                </motion.span>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <CategoryList
+                category={category}
+                fetchCategories={() => fetchCategories()}
+                setCategory={setCategory}
+                openEditPopup={openEditPopup}
+                baseUrl={baseUrl}
+              />
+              <CategoryPagination
+                page={page}
+                totalPages={totalPages}
+                setPage={setPage}
+              />
+            </div>
+          )}
         </div>
       )}
     </>

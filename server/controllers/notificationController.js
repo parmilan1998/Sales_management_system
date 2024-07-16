@@ -12,14 +12,20 @@ exports.getLowStockProducts = async (req, res) => {
       ],
       group: ["productID"],
       having: {
-        totalQuantity: {
-          [Op.lt]: 10,
-        },
+        [Op.or]: [
+          { totalQuantity: { [Op.lte]: 5 } },
+          {
+            [Op.and]: [
+              { totalQuantity: { [Op.gt]: 5 } },
+              { totalQuantity: { [Op.lte]: col("Product.reOrderLevel") } },
+            ],
+          },
+        ],
       },
       include: [
         {
           model: Product,
-          attributes: ["productName"],
+          attributes: ["productName", "reOrderLevel"],
         },
       ],
     });
@@ -28,20 +34,31 @@ exports.getLowStockProducts = async (req, res) => {
       .map((stock) => {
         const productName = stock.Product.productName;
         const totalQuantity = stock.dataValues.totalQuantity;
+        const reOrderLevel = stock.Product.reOrderLevel;
 
         if (totalQuantity == 0) {
           return {
             productId: stock.productID,
             productName,
             totalQuantity,
+            reOrderLevel,
             message: `The  ${productName} is out of stock.`,
           };
-        } else if (totalQuantity < 10) {
+        } else if (totalQuantity <= 5) {
           return {
             productId: stock.productID,
             productName,
             totalQuantity,
+            reOrderLevel,
             message: `The  ${productName} has low stock (only ${totalQuantity} left).`,
+          };
+        } else if (totalQuantity > 5 && totalQuantity <= reOrderLevel) {
+          return {
+            productId: stock.productID,
+            productName,
+            totalQuantity,
+            reOrderLevel,
+            message: `The product ${stock.Product.productName} needs to be reordered (current stock is ${stock.dataValues.totalQuantity}, reorder level is ${stock.Product.reOrderLevel}).`,
           };
         }
       })
