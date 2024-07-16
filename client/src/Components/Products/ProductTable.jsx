@@ -67,6 +67,12 @@ const ProductTable = ({
             </th>
             <th
               scope="col"
+              className="h-16 px-2 w-8 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+            >
+              Reorder Level
+            </th>
+            <th
+              scope="col"
               className="h-16 w-40 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
             >
               Quantity
@@ -81,7 +87,7 @@ const ProductTable = ({
           {products.map((item, index) => (
             <tr
               className={`odd:bg-slate-50 ${
-                item.totalQuantity === 0 ? "opacity-50 cursor-not-allowed" : ""
+                item.totalQuantity == 0 ? "opacity-50 cursor-not-allowed" : ""
               }`}
               key={index}
             >
@@ -102,7 +108,10 @@ const ProductTable = ({
                 Rs.{item.unitPrice}
               </td>
               <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                {item.totalQuantity === 0 ? (
+                {item.reOrderLevel}
+              </td>
+              <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
+                {item.totalQuantity == 0 ? (
                   <div className="bg-red-300 rounded-full font-medium text-red-600 flex items-center justify-center mx-auto">
                     Out of stock
                   </div>
