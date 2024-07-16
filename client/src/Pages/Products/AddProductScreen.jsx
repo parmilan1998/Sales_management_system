@@ -224,7 +224,7 @@ const AddProduct = () => {
                     Ex - Pair
                   </option>
                   {unitTypes.map((type, index) => (
-                    <option key={index} value={type}>
+                    <option key={index} value={type.unitType}>
                       {type}
                     </option>
                   ))}
@@ -236,7 +236,7 @@ const AddProduct = () => {
                 </p>
               )}
             </div>
-            <div className="mb-4">
+            <div className="my-4">
               <label htmlFor="unitPrice" className="flex pb-2 text-gray-600">
                 Unit Price
               </label>
@@ -256,7 +256,7 @@ const AddProduct = () => {
                 </p>
               )}
             </div>
-            <div className="mb-4">
+            <div className="my-4">
               <label htmlFor="reOrderLevel" className="flex pb-2 text-gray-600">
                 Reorder Level
               </label>
