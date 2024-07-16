@@ -151,7 +151,7 @@ const Navbar = () => {
                   menu={{
                     items,
                   }}
-                  overlayClassName="h-40 overflow-auto"
+                  overlayClassName="h-60 overflow-auto"
                 >
                   <a onClick={(e) => e.preventDefault()}>
                     <Space className={animate ? "bell" : ""}>
