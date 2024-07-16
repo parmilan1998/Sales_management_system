@@ -44,7 +44,7 @@ exports.getLowStockProducts = async (req, res) => {
             reOrderLevel,
             message: `The  ${productName} is out of stock.`,
           };
-        } else if (totalQuantity <= 5) {
+        } else if (totalQuantity <= 10) {
           return {
             productId: stock.productID,
             productName,
@@ -52,13 +52,13 @@ exports.getLowStockProducts = async (req, res) => {
             reOrderLevel,
             message: `The  ${productName} has low stock (only ${totalQuantity} left).`,
           };
-        } else if (totalQuantity > 5 && totalQuantity <= reOrderLevel) {
+        } else if (totalQuantity > 10 && totalQuantity <= reOrderLevel) {
           return {
             productId: stock.productID,
             productName,
             totalQuantity,
             reOrderLevel,
-            message: `The product ${stock.Product.productName} needs to be reordered (current stock is ${stock.dataValues.totalQuantity}, reorder level is ${stock.Product.reOrderLevel}).`,
+            message: `The ${stock.Product.productName} needs to be reordered (current stock is ${stock.dataValues.totalQuantity}, reorder level is ${stock.Product.reOrderLevel}).`,
           };
         }
       })

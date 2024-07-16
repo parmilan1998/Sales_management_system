@@ -34,3 +34,7 @@
 .out-of-stock {
   background-color: rgba(248, 7, 7, 0.623);
 }
+
+.reorder {
+  background-color: rgba(7, 248, 59, 0.623);
+}
