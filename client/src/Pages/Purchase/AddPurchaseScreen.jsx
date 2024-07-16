@@ -278,7 +278,7 @@ const AddPurchaseScreen = () => {
               )}
             </div>
           </div>
-          <div className="mt-6 lg:flex-row md:flex-row sm:flex-col sm:gap-4 flex justify-center">
+          <div className="mt-6 grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 sm:flex gap-2 sm:gap-4 justify-center">
             <Link to="/purchase">
               <button
                 className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-500 px-5 py-3 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"

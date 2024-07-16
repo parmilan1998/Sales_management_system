@@ -34,3 +34,24 @@
 .out-of-stock {
   background-color: rgba(248, 7, 7, 0.623);
 }
+
+.reorder {
+  background-color: rgba(7, 248, 59, 0.623);
+}
+
+.blink-background {
+  width: 200px;
+  animation: blink 0.8s infinite; /* Shorter duration */
+}
+
+@keyframes blink {
+  0% {
+    background: radial-gradient(circle, rgba(253, 75, 4, 0.637), rgba(253, 75, 4, 0.637) 30%, rgba(253, 75, 4, 0.0) 95%);
+  }
+  50% {
+    background: radial-gradient(circle, rgba(253, 83, 4, 0.863), rgba(253, 83, 4, 0.863) 30%, rgba(253, 83, 4, 0.0) 95%);
+  }
+  100% {
+    background: radial-gradient(circle, rgba(253, 75, 4, 0.637), rgba(253, 75, 4, 0.637) 30%, rgba(253, 75, 4, 0.0) 95%);
+  }
+}

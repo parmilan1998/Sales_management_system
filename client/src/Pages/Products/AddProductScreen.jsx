@@ -19,9 +19,10 @@ const AddProduct = () => {
     try {
       const formData = new FormData();
       formData.append("productName", data.productName);
-      formData.append("image", data.image[0]); // Assuming data.image is an array with one file
+      formData.append("image", data.image[0]);
       formData.append("categoryName", data.categoryName);
       formData.append("unitPrice", data.unitPrice);
+      formData.append("reOrderLevel", data.reOrderLevel);
       formData.append("productDescription", data.description);
 
       const response = await axios.post(
@@ -126,7 +127,7 @@ const AddProduct = () => {
               )}
             </div>
           </div>
-          <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
+          <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
             <div className="mb-4">
               <label htmlFor="categoryName" className="flex pb-2 text-gray-600">
                 Category Name
@@ -176,6 +177,26 @@ const AddProduct = () => {
                 </p>
               )}
             </div>
+            <div className="mb-4">
+              <label htmlFor="reOrderLevel" className="flex pb-2 text-gray-600">
+                Reorder Level
+              </label>
+              <input
+                {...register("reOrderLevel", {
+                  required: "Unit price is required",
+                })}
+                type="number"
+                name="reOrderLevel"
+                id="reOrderLevel"
+                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                placeholder="Ex - 40"
+              />
+              {errors.reOrderLevel && (
+                <p className="text-red-500 py-1 text-sm">
+                  {errors.reOrderLevel.message}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="mb-4">
@@ -199,7 +220,7 @@ const AddProduct = () => {
               </p>
             )}
           </div>
-          <div className="mt-6 sm:flex sm:gap-4 flex justify-center">
+          <div className="mt-6 grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 sm:flex gap-2 sm:gap-4 justify-center">
             <Link to="/products">
               <button
                 className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"

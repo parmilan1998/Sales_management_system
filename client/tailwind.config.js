@@ -16,18 +16,18 @@ export default {
     },
   },
   plugins: [
-    function({addUtilities}){
-      const newUtilties ={
-        ".no-scrollbar::-webkit-scrollbar":{
-          display:"none"
+    function ({ addUtilities }) {
+      const newUtilties = {
+        ".no-scrollbar::-webkit-scrollbar": {
+          display: "none",
         },
-        ".no-scrollbar":{
-          "-ms-overflow-style":"none",
-          "scrollbar-width":"none",
+        ".no-scrollbar": {
+          "-ms-overflow-style": "none",
+          "scrollbar-width": "none",
         },
       };
 
-      addUtilities(newUtilties)
-    }
+      addUtilities(newUtilties);
+    },
   ],
 };

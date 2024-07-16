@@ -7,7 +7,13 @@ const path = require("path");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
-  const { productName, categoryName, productDescription, unitPrice } = req.body;
+  const {
+    productName,
+    categoryName,
+    productDescription,
+    unitPrice,
+    reOrderLevel,
+  } = req.body;
 
   try {
     // Check if the product already exists
@@ -39,6 +45,7 @@ exports.createProduct = async (req, res) => {
       categoryName,
       productDescription,
       unitPrice,
+      reOrderLevel,
       imageUrl: req.file ? req.file.filename : null,
     });
 
@@ -152,7 +159,13 @@ exports.filterbyCategory = async (req, res) => {
 // PUT -> localhost:5000/api/v1/product:id
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { productName, categoryName, productDescription, unitPrice } = req.body;
+  const {
+    productName,
+    categoryName,
+    productDescription,
+    unitPrice,
+    reOrderLevel,
+  } = req.body;
 
   console.log(req.file);
 
@@ -212,6 +225,7 @@ exports.updateProduct = async (req, res) => {
         categoryName,
         unitPrice,
         categoryID,
+        reOrderLevel,
         imageUrl: req?.file?.filename, // Update imageUrl with the new file path
       });
     } else {
@@ -221,6 +235,7 @@ exports.updateProduct = async (req, res) => {
         productDescription,
         categoryName,
         unitPrice,
+        reOrderLevel,
         categoryID,
       });
     }
@@ -246,7 +261,7 @@ exports.deleteProduct = async (req, res) => {
     }
 
     await product.destroy();
-    
+
     // Emit event for real-time updates
     const io = req.app.get("socketio");
 

@@ -73,7 +73,7 @@ const OrderScreen = () => {
             </div>
           </div>
           <div className=" font-poppins">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-0">
               {product.map((product, index) => (
                 <div key={index} className="rounded p-6 bg-white">
                   <div className="">
@@ -81,13 +81,13 @@ const OrderScreen = () => {
                       <img
                         src={`${baseUrl}/${product.imageUrl}`}
                         alt="card image"
-                        className="aspect-video w-full h-56 bg-cover object-fill"
+                        className="aspect-video w-full h-40 bg-cover object-fill"
                       />
                       <div>
                         <Barcode
                           value={`${product.productName}, Rs.${product.unitPrice}`}
                           width={1}
-                          height={64}
+                          height={50}
                           displayValue={false}
                           className="w-full bg-white"
                         />

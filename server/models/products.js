@@ -53,6 +53,13 @@ const Product = db.define(
         notEmpty: true,
       },
     },
+    reOrderLevel: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     imageUrl: {
       type: DataTypes.TEXT,
     },
