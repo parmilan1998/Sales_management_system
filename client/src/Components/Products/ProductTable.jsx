@@ -36,50 +36,50 @@ const ProductTable = ({
           <tr>
             <th
               scope="col"
-              className="h-16 px-4 items-center justify-center text-sm font-medium border-0 first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-16 w-12 px-4 items-center justify-center text-sm font-medium border-0 first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               No
             </th>
             <th
               scope="col"
-              className="h-12 px-4 w-36 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-12 px-4 w-48 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Product Name
             </th>
 
-            <th
+            {/* <th
               scope="col"
-              className="h-16 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-16 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Description
-            </th>
+            </th> */}
             <th
               scope="col"
-              className="h-16 px-4 w-40 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-16 px-4 w-44 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Category Name
             </th>
             <th
               scope="col"
-              className="h-16 px-2 w-8 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-16 px-2 w-8 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Unit Price
             </th>
             <th
               scope="col"
-              className="h-16 px-2 w-8 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-16 px-2 w-32 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Reorder Level
             </th>
             <th
               scope="col"
-              className="h-16 w-40 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-16 w-40 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Quantity
             </th>
             <th
               scope="col"
-              className="h-16 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-16 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Actions
             </th>
@@ -98,9 +98,9 @@ const ProductTable = ({
                 {item.productName}
               </td>
 
-              <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
+              {/* <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                 {item.productDescription}
-              </td>
+              </td> */}
               <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
                 {item.categoryName}
               </td>
@@ -122,8 +122,8 @@ const ProductTable = ({
                 )}
               </td>
               <td className="h-16 px-1 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                <div className="flex flex-row justify-center items-center gap-0">
-                  <Button
+                <div className="flex flex-row justify-center items-center gap-2">
+                  <button
                     onClick={() => showModal(item)}
                     style={{
                       border: "none",
@@ -137,7 +137,7 @@ const ProductTable = ({
                         className="bg-green-500 p-2 rounded-full"
                       />{" "}
                     </Tooltip>
-                  </Button>
+                  </button>
                   <Modal
                     title="Product Details"
                     open={isModalOpen}
@@ -166,8 +166,7 @@ const ProductTable = ({
                       okText="Yes"
                       cancelText="No"
                     >
-                      <Button
-                        danger
+                      <button
                         style={{
                           border: "none",
                           boxShadow: "none",
@@ -177,10 +176,10 @@ const ProductTable = ({
                           <MdDelete
                             size={36}
                             color="white"
-                            className="bg-red-500 mt-2.5 p-2 rounded-full"
+                            className="bg-red-500 mt-1.5 p-2 rounded-full"
                           />
                         </Tooltip>
-                      </Button>
+                      </button>
                     </Popconfirm>
                   </Link>
                 </div>

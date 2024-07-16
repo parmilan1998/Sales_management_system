@@ -248,7 +248,7 @@ const EditProductScreen = () => {
                 </p>
               )}
             </div>
-            <div className="mt-6 sm:flex sm:gap-4 flex justify-center">
+            <div className="mt-6 grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 sm:flex gap-2 sm:gap-4 justify-center">
               <Link to="/products">
                 <button
                   className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
