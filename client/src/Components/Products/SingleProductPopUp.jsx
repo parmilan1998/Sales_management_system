@@ -27,10 +27,12 @@ const SingleProductPopUp = ({ rowData }) => {
               <div>
                 {" "}
                 <p className="text-base text-slate-500">
-                  Stock: {rowData.totalQuantity}
+                  Stock: {rowData.totalQuantity}&nbsp;
+                  {rowData.unitType}
                 </p>
                 <p className="text-base text-slate-500">
-                  Reorder Level: {rowData.reOrderLevel}
+                  Reorder Level: {rowData.reOrderLevel}&nbsp;
+                  {rowData.unitType}
                 </p>
               </div>
             </div>

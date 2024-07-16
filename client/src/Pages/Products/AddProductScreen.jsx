@@ -125,28 +125,6 @@ const AddProduct = () => {
               )}
             </div>
             <div className="mb-4">
-              <label htmlFor="image" className="flex pb-2 text-gray-600">
-                Product Image
-              </label>
-              <input
-                {...register("image", {
-                  required: "Image is required",
-                })}
-                type="file"
-                name="image"
-                id="image"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                placeholder="Ex - Rs.59.99"
-              />
-              {errors.image && (
-                <p className="text-red-500 py-1 text-sm">
-                  {errors.image.message}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
-            <div className="mb-4">
               <label htmlFor="categoryName" className="flex pb-2 text-gray-600">
                 Category Name
               </label>
@@ -175,6 +153,31 @@ const AddProduct = () => {
                 </p>
               )}
             </div>
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="image" className="flex pb-2 text-gray-600">
+              Product Image
+            </label>
+            <input
+              {...register("image", {
+                required: "Image is required",
+              })}
+              type="file"
+              name="image"
+              id="image"
+              className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+              placeholder="Ex - Rs.59.99"
+            />
+            {errors.image && (
+              <p className="text-red-500 py-1 text-sm">
+                {errors.image.message}
+              </p>
+            )}
+          </div>
+
+          <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
+            {" "}
             <div className="mb-4">
               <div className="flex flex-row gap-3">
                 <label
@@ -221,7 +224,7 @@ const AddProduct = () => {
                     Ex - Pair
                   </option>
                   {unitTypes.map((type, index) => (
-                    <option key={index} value={type}>
+                    <option key={index} value={type.unitType}>
                       {type}
                     </option>
                   ))}
@@ -233,10 +236,7 @@ const AddProduct = () => {
                 </p>
               )}
             </div>
-          </div>
-          <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
-            {" "}
-            <div className="mb-4">
+            <div className="my-4">
               <label htmlFor="unitPrice" className="flex pb-2 text-gray-600">
                 Unit Price
               </label>
@@ -256,7 +256,7 @@ const AddProduct = () => {
                 </p>
               )}
             </div>
-            <div className="mb-4">
+            <div className="my-4">
               <label htmlFor="reOrderLevel" className="flex pb-2 text-gray-600">
                 Reorder Level
               </label>
@@ -277,6 +277,7 @@ const AddProduct = () => {
               )}
             </div>
           </div>
+
           <div className="mb-4">
             <label htmlFor="description" className="flex pb-2 text-gray-600">
               Description
@@ -298,6 +299,7 @@ const AddProduct = () => {
               </p>
             )}
           </div>
+
           <div className="mt-6 grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 sm:flex gap-2 sm:gap-4 justify-center">
             <Link to="/products">
               <button
