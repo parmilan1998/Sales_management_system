@@ -19,9 +19,10 @@ const AddProduct = () => {
     try {
       const formData = new FormData();
       formData.append("productName", data.productName);
-      formData.append("image", data.image[0]); // Assuming data.image is an array with one file
+      formData.append("image", data.image[0]);
       formData.append("categoryName", data.categoryName);
       formData.append("unitPrice", data.unitPrice);
+      formData.append("reOrderLevel", data.reOrderLevel);
       formData.append("productDescription", data.description);
 
       const response = await axios.post(
@@ -126,7 +127,7 @@ const AddProduct = () => {
               )}
             </div>
           </div>
-          <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
+          <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
             <div className="mb-4">
               <label htmlFor="categoryName" className="flex pb-2 text-gray-600">
                 Category Name
@@ -173,6 +174,26 @@ const AddProduct = () => {
               {errors.unitPrice && (
                 <p className="text-red-500 py-1 text-sm">
                   {errors.unitPrice.message}
+                </p>
+              )}
+            </div>
+            <div className="mb-4">
+              <label htmlFor="reOrderLevel" className="flex pb-2 text-gray-600">
+                Reorder Level
+              </label>
+              <input
+                {...register("reOrderLevel", {
+                  required: "Unit price is required",
+                })}
+                type="number"
+                name="reOrderLevel"
+                id="reOrderLevel"
+                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                placeholder="Ex - 40"
+              />
+              {errors.reOrderLevel && (
+                <p className="text-red-500 py-1 text-sm">
+                  {errors.reOrderLevel.message}
                 </p>
               )}
             </div>

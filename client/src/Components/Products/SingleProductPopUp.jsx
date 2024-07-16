@@ -24,9 +24,15 @@ const SingleProductPopUp = ({ rowData }) => {
               <p className="text-base text-slate-500">
                 Price: Rs.{rowData.unitPrice}
               </p>
-              <p className="text-base text-slate-500">
-                Stock: {rowData.totalQuantity}
-              </p>
+              <div>
+                {" "}
+                <p className="text-base text-slate-500">
+                  Stock: {rowData.totalQuantity}
+                </p>
+                <p className="text-base text-slate-500">
+                  Reorder Level: {rowData.reOrderLevel}
+                </p>
+              </div>
             </div>
             <p className="text-base text-slate-500">
               Category: {rowData.categoryName}
