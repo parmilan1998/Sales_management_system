@@ -6,8 +6,10 @@ import { IoIosSettings } from "react-icons/io";
 import { Tooltip } from "antd";
 import { Link } from "react-router-dom";
 import { Dropdown, Space, Badge } from "antd";
-import warn from "../assets/warn.png";
-import error from "../assets/error.png";
+import alert from "../assets/alert.gif";
+import warn from "../assets/warn.webp";
+import recycle from "../assets/recycle.gif";
+
 import "../App.css";
 
 const socket = io("http://localhost:5000");
@@ -26,7 +28,17 @@ const Navbar = () => {
 
         const lowStockNotifications = lowStockResponse.data.data.map(
           (product) => {
-            const type = product.totalQuantity == 0 ? "outOfStock" : "lowStock";
+            let type;
+            if (product.totalQuantity == 0) {
+              type = "outOfStock";
+            } else if (product.totalQuantity <= 10) {
+              type = "lowStock";
+            } else if (
+              product.totalQuantity > 10 &&
+              product.totalQuantity <= product.reOrderLevel
+            ) {
+              type = "reOrder";
+            }
             return {
               message: product.message,
               type,
@@ -43,7 +55,17 @@ const Navbar = () => {
     const handleLowStockUpdate = (lowStockProducts) => {
       console.log("Low stock update received:", lowStockProducts);
       const newNotifications = lowStockProducts.data.map((product) => {
-        const type = product.totalQuantity == 0 ? "outOfStock" : "lowStock";
+        let type;
+        if (product.totalQuantity == 0) {
+          type = "outOfStock";
+        } else if (product.totalQuantity <= 10) {
+          type = "lowStock";
+        } else if (
+          product.totalQuantity > 10 &&
+          product.totalQuantity <= product.reOrderLevel
+        ) {
+          type = "reOrder";
+        }
         return {
           message: product.message,
           type,
@@ -77,32 +99,46 @@ const Navbar = () => {
     return () => clearTimeout(timer);
   }, [notifications]);
 
-  const items = notifications.map((notification, index) => ({
-    key: index,
-    label: (
-      <div
-        className={`flex flex-row ${
-          notification.type === "lowStock" ? "low-stock" : "out-of-stock"
-        } font-serif`}
-        style={{ padding: "8px", borderRadius: "5px" }}
-      >
-        {notification.type == "lowStock" ? (
+  const items = notifications.map((notification, index) => {
+    let iconSrc;
+    let iconAlt;
+    let className;
+
+    switch (notification.type) {
+      case "lowStock":
+        iconSrc = alert;
+        iconAlt = "Low Stock";
+        className = "low-stock";
+        break;
+      case "outOfStock":
+        iconSrc = warn;
+        iconAlt = "Out of Stock";
+        className = "out-of-stock";
+        break;
+      case "reOrder":
+        iconSrc = recycle;
+        iconAlt = "Reorder";
+        className = "reorder";
+        break;
+    }
+
+    return {
+      key: index,
+      label: (
+        <div
+          className={`flex flex-row ${className} font-serif`}
+          style={{ padding: "8px", borderRadius: "5px" }}
+        >
           <img
-            src={warn}
-            alt="Low Stock"
-            style={{ width: 20, marginRight: 7 }}
+            src={iconSrc}
+            alt={iconAlt}
+            style={{ width: 25, marginRight: 7 }}
           />
-        ) : (
-          <img
-            src={error}
-            alt="Out of Stock"
-            style={{ width: 20, marginRight: 7 }}
-          />
-        )}
-        {notification.message}
-      </div>
-    ),
-  }));
+          {notification.message}
+        </div>
+      ),
+    };
+  });
 
   return (
     <header>
@@ -115,7 +151,7 @@ const Navbar = () => {
                   menu={{
                     items,
                   }}
-                  overlayClassName="h-40 overflow-auto"
+                  overlayClassName="h-60 overflow-auto"
                 >
                   <a onClick={(e) => e.preventDefault()}>
                     <Space className={animate ? "bell" : ""}>

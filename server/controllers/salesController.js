@@ -652,3 +652,57 @@ exports.getSalesCount = async (req, res) => {
       .json({ message: "Error fetching sales count", error: error.message });
   }
 };
+
+// // Function to calculate and update reorder levels
+// exports.calculateAndUpdateReorderLevels = async () => {
+//   try {
+//     const products = await Product.findAll();
+//     const currentYear = new Date().getFullYear();
+//     const startDate = new Date(`${currentYear - 1}-01-01`);
+//     const endDate = new Date(`${currentYear - 1}-12-31`);
+//     const daysInYear = ((currentYear - 1) % 4 === 0) ? 366 : 365; // Check for leap year
+
+//     for (const product of products) {
+//       const salesData = await SalesDetail.findAll({
+//         include: [{
+//           model: Sales,
+//           where: {
+//             soldDate: {
+//               [Op.between]: [startDate, endDate],
+//             },
+//           },
+//           attributes: []
+//         }],
+//         where: { productID: product.productID },
+//         attributes: [
+//           [sequelize.fn("SUM", sequelize.col("salesQuantity")), "totalSales"],
+//         ],
+//         raw: true,
+//       });
+
+//       if (salesData.length > 0 && salesData[0].totalSales > 0) {
+//         const totalSales = salesData[0].totalSales;
+//         const averageDailyDemand = totalSales / daysInYear;
+//         product.reOrderLevel = averageDailyDemand * product.deliveryTime;
+//         await product.save();
+//       }
+//     }
+//   } catch (error) {
+//     console.error("Error calculating reorder levels:", error);
+//   }
+// };
+
+// // Schedule the function to run every January 1 at midnight
+// const scheduleReorderLevelUpdate = () => {
+//   const now = new Date();
+//   const nextJanFirst = new Date(now.getFullYear() + 1, 0, 1);
+//   const delay = nextJanFirst - now;
+
+//   setTimeout(() => {
+//     exports.calculateAndUpdateReorderLevels();
+//     setInterval(exports.calculateAndUpdateReorderLevels, 365 * 24 * 60 * 60 * 1000); // Every year
+//   }, delay);
+// };
+
+// // Call the schedule function
+// scheduleReorderLevelUpdate();
