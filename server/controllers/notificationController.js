@@ -1,64 +1,53 @@
-const { Op, fn, col } = require("sequelize");
+const { Op, fn, col , literal } = require("sequelize");
 const Stocks = require("../models/stocks");
 const Product = require("../models/products");
 
 // GET -> localhost:5000/api/v1/notification/low-stock
 exports.getLowStockProducts = async (req, res) => {
   try {
-    const lowStockProducts = await Stocks.findAll({
+    const lowStockProducts = await Product.findAll({
       attributes: [
-        "productID",
-        [fn("sum", col("productQuantity")), "totalQuantity"],
-      ],
-      group: ["productID"],
-      having: {
-        [Op.or]: [
-          { totalQuantity: { [Op.lte]: 5 } },
-          {
-            [Op.and]: [
-              { totalQuantity: { [Op.gt]: 5 } },
-              { totalQuantity: { [Op.lte]: col("Product.reOrderLevel") } },
-            ],
-          },
+        'productID',
+        'productName',
+        'reOrderLevel',
+        [
+          literal(`(
+            SELECT COALESCE(SUM(s.productQuantity), 0)
+            FROM Stocks s
+            WHERE s.productID = Product.productID
+          )`),
+          'totalQuantity',
         ],
-      },
-      include: [
-        {
-          model: Product,
-          attributes: ["productName", "reOrderLevel"],
-        },
       ],
     });
 
     const notifications = lowStockProducts
-      .map((stock) => {
-        const productName = stock.Product.productName;
-        const totalQuantity = stock.dataValues.totalQuantity;
-        const reOrderLevel = stock.Product.reOrderLevel;
-
+      .map((product) => {
+        const totalQuantity = product.dataValues.totalQuantity || 0;
+        const { productID, productName, reOrderLevel } = product;
         if (totalQuantity == 0) {
           return {
-            productId: stock.productID,
+            productId: productID,
             productName,
             totalQuantity,
             reOrderLevel,
-            message: `The  ${productName} is out of stock.`,
+            message: `The ${productName} is out of stock.`,
           };
         } else if (totalQuantity <= 10) {
           return {
-            productId: stock.productID,
+            productId: productID,
             productName,
             totalQuantity,
             reOrderLevel,
-            message: `The  ${productName} has low stock (only ${totalQuantity} left).`,
+            message: `The ${productName} has low stock (only ${totalQuantity} left).`,
           };
         } else if (totalQuantity > 10 && totalQuantity <= reOrderLevel) {
           return {
-            productId: stock.productID,
+            productId: productID,
             productName,
             totalQuantity,
             reOrderLevel,
-            message: `The ${stock.Product.productName} needs to be reordered (current stock is ${stock.dataValues.totalQuantity}, reorder level is ${stock.Product.reOrderLevel}).`,
+            message: `The ${productName} needs to be reordered (current stock is ${totalQuantity}, reorder level is ${reOrderLevel}).`,
           };
         }
       })

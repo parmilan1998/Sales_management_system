@@ -85,6 +85,9 @@ SalesDetail.belongsTo(Product, {
 });
 SalesDetail.belongsTo(Stocks, { foreignKey: "stockID", targetKey: "stockID" });
 
+Product.hasMany(Stocks, { foreignKey: 'productID' });
+Stocks.belongsTo(Product, { foreignKey: 'productID' });
+
 db.sync()
   .then(() => {
     console.log("Database synced successfully");
