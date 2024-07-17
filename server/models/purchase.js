@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const db = require("../database/db");
 const Product = require("./products");
+const Unit = require("./unit");
 
 const Purchase = db.define(
   "Purchase",
@@ -25,11 +26,21 @@ const Purchase = db.define(
         notEmpty: true,
       },
     },
+    unitID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "unit",
+        key: "unitID",
+      },
+      validate: {
+        notEmpty: true,
+      },
+    },
     productName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
     purchaseVendor: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -81,6 +92,11 @@ const Purchase = db.define(
 Purchase.belongsTo(Product, {
   foreignKey: "productID",
   targetKey: "productID",
+});
+
+Purchase.belongsTo(Unit, {
+  foreignKey: "unitID",
+  targetKey: "unitID",
 });
 
 module.exports = Purchase;

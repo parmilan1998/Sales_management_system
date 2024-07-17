@@ -57,10 +57,7 @@ const Stocks = () => {
       console.log("Response data:", res.data);
       const { stocks, pagination } = res.data;
       setTotalPages(pagination.totalPages);
-      console.log({ stocks });
       setStocks(stocks);
-      console.log("H", sortDate, sortName);
-      console.log("Stocks set:", stocks);
     } catch (err) {
       console.log(err.message);
     } finally {
@@ -308,7 +305,7 @@ const Stocks = () => {
                           table: stocks.map((stock) => ({
                             id: stock.stockID,
                             productName: stock.productName,
-                            productQuantity: stock.productQuantity,
+                            productQuantity: `${stock.productQuantity} ${stock.unitType}`,
                             purchasePrice: stock.purchasePrice,
                             manufacturedDate: stock.manufacturedDate,
                             expiryDate: stock.expiryDate,
