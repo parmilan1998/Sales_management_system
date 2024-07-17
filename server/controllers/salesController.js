@@ -467,12 +467,14 @@ exports.querySales = async (req, res) => {
           {
             model: SalesDetail,
             as: "details",
-            attributes: ["productName", "salesQuantity"],
-          },
-          {
-            model: Unit,
-            attributes: ["unitType"],
-            required: true,
+            attributes: ["unitID","productName", "salesQuantity"],
+            include: [
+              {
+                model: Unit,
+                as: "unit",
+                attributes: ["unitType"],
+              },
+            ],
           },
         ],
         where: searchCondition,
@@ -490,15 +492,17 @@ exports.querySales = async (req, res) => {
           {
             model: SalesDetail,
             as: "details",
-            attributes: ["productName", "salesQuantity"],
+            attributes: ["unitID","productName", "salesQuantity"],
             where: {
               productName: { [Op.like]: `%${productName}%` },
             },
-          },
-          {
-            model: Unit,
-            attributes: ["unitType"],
-            required: true,
+            include: [
+              {
+                model: Unit,
+                as: "unit",
+                attributes: ["unitType"],
+              },
+            ],
           },
         ],
         offset,
@@ -513,9 +517,16 @@ exports.querySales = async (req, res) => {
     let sales = countCustomer > 0 ? salesCustomer : salesProduct;
 
     const salesWithUnitType = sales.map((sale) => ({
-      productName: sale.productName,
-      salesQuantity: sale.details.salesQuantity,
-      unitType: sale.unit.unitType,
+      salesID: sale.salesID,
+      custName: sale.custName,
+      customerContact: sale.customerContact,
+      soldDate: sale.soldDate,
+      totalRevenue: sale.totalRevenue,
+      details: sale.details.map((detail) => ({
+        productName: detail.productName,
+        salesQuantity: detail.salesQuantity,
+        unitType: detail.unit.unitType,
+      })),
       revenue: sale.totalRevenue,
       unitPrice: sale.unitPrice,
     }));
