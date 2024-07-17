@@ -4,6 +4,7 @@ const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 const SalesDetail = require("../models/salesDetails");
 const axios = require("axios");
+const Unit = require("../models/unit");
 
 // POST -> localhost:5000/api/v1/sales
 exports.createSales = async (req, res) => {
@@ -462,11 +463,18 @@ exports.querySales = async (req, res) => {
     // Querying Sales with included SalesDetail
     const { count: countCustomer, rows: salesCustomer } =
       await Sales.findAndCountAll({
-        include: {
-          model: SalesDetail,
-          as: "details",
-          attributes: ["productName", "salesQuantity"],
-        },
+        include: [
+          {
+            model: SalesDetail,
+            as: "details",
+            attributes: ["productName", "salesQuantity"],
+          },
+          {
+            model: Unit,
+            attributes: ["unitType"],
+            required: true,
+          },
+        ],
         where: searchCondition,
         offset,
         limit: parsedLimit,
@@ -478,15 +486,21 @@ exports.querySales = async (req, res) => {
 
     const { count: countProduct, rows: salesProduct } =
       await Sales.findAndCountAll({
-        include: {
-          model: SalesDetail,
-          as: "details",
-          attributes: ["productName", "salesQuantity"],
-          where: {
-            productName: { [Op.like]: `%${productName}%` },
+        include: [
+          {
+            model: SalesDetail,
+            as: "details",
+            attributes: ["productName", "salesQuantity"],
+            where: {
+              productName: { [Op.like]: `%${productName}%` },
+            },
           },
-        },
-
+          {
+            model: Unit,
+            attributes: ["unitType"],
+            required: true,
+          },
+        ],
         offset,
         limit: parsedLimit,
         order: [
@@ -498,11 +512,19 @@ exports.querySales = async (req, res) => {
     let count = countCustomer > 0 ? countCustomer : countProduct;
     let sales = countCustomer > 0 ? salesCustomer : salesProduct;
 
+    const salesWithUnitType = sales.map((sale) => ({
+      productName: sale.productName,
+      salesQuantity: sale.details.salesQuantity,
+      unitType: sale.unit.unitType,
+      revenue: sale.totalRevenue,
+      unitPrice: sale.unitPrice,
+    }));
+
     // Total pages
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      sales,
+      sales: salesWithUnitType,
       pagination: {
         currentPage: parsedPage,
         totalPages,

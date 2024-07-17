@@ -3,6 +3,7 @@ const { Op } = require("sequelize");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 const axios = require("axios");
+const Unit = require("../models/unit");
 
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
@@ -430,7 +431,7 @@ exports.queryPurchase = async (req, res) => {
     const sortOrder = sort === "DESC" ? "DESC" : "ASC";
     const sortDate = sortBy === "DESC" ? "DESC" : "ASC";
 
-    // search, pagination, and sorting
+    // Fetching purchases with unitType
     const { count, rows: purchases } = await Purchase.findAndCountAll({
       where: searchCondition,
       offset: offset,
@@ -439,13 +440,31 @@ exports.queryPurchase = async (req, res) => {
         ["productName", sortOrder],
         ["purchasedDate", sortDate],
       ],
+      include: [
+        {
+          model: Unit,
+          attributes: ["unitType"],
+          required: true,
+        },
+      ],
     });
+
+    const purchasesWithUnitType = purchases.map((purchase) => ({
+      productName: purchase.productName,
+      purchaseQuantity: purchase.purchaseQuantity,
+      purchasePrice: purchase.purchasePrice,
+      COGP: purchase.COGP,
+      purchaseVendor: purchase.purchaseVendor,
+      vendorContact: purchase.vendorContact,
+      purchasedDate: purchase.purchasedDate,
+      unitType: purchase.Unit.unitType,
+    }));
 
     // Total pages
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      purchases,
+      purchases: purchasesWithUnitType,
       pagination: {
         currentPage: parsedPage,
         totalPages,
