@@ -3,7 +3,6 @@ const db = require("../database/db");
 const Stocks = require("./stocks");
 const Sales = require("./sales");
 const Product = require("./products");
-const Unit = require("./unit");
 
 salesDetail = db.define(
   "salesDetail",
@@ -45,17 +44,6 @@ salesDetail = db.define(
       references: {
         model: Sales,
         key: "salesID",
-      },
-      validate: {
-        notEmpty: true,
-      },
-    },
-    unitID: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "unit",
-        key: "unitID",
       },
       validate: {
         notEmpty: true,
@@ -107,11 +95,6 @@ salesDetail.belongsTo(Stocks, {
 salesDetail.belongsTo(Sales, {
   foreignKey: "salesID",
   targetKey: "salesID",
-});
-
-salesDetail.belongsTo(Unit, {
-  foreignKey: "unitID",
-  targetKey: "unitID",
 });
 
 module.exports = salesDetail;

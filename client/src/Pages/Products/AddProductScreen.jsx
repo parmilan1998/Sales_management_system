@@ -8,17 +8,17 @@ import { IoMdAddCircleOutline } from "react-icons/io";
 const AddProduct = () => {
   const [category, setCategory] = useState([]);
   const [unit, setUnit] = useState([]);
-  const [newUnitType, setNewUnitType] = useState("");
+  const [unitType, setUnitType] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
   const handleAddUnitType = async () => {
     try {
       const res = await axios.post("http://localhost:5000/api/v1/unit", {
-        unitType: newUnitType,
+        unitType,
       });
       console.log(res.data);
       toast.success("Unit added successfully!");
-      setNewUnitType("");
+      setUnitType("");
       setIsAdding(false);
       fetchUnitApi();
     } catch (err) {
@@ -220,8 +220,8 @@ const AddProduct = () => {
                 <div className="mb-2">
                   <input
                     type="text"
-                    value={newUnitType}
-                    onChange={(e) => setNewUnitType(e.target.value)}
+                    value={unitType}
+                    onChange={(e) => setUnitType(e.target.value)}
                     placeholder="Add new unit type"
                     className="w-full py-1.5 px-3 mb-2 rounded border border-gray-300 text-sm focus:outline-cyan-400"
                   />
@@ -235,6 +235,9 @@ const AddProduct = () => {
                 </div>
               ) : (
                 <select
+                  {...register("unitType", {
+                    required: "UnitType is required",
+                  })}
                   type="text"
                   name="unitType"
                   id="unitType"
