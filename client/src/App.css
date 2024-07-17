@@ -41,31 +41,26 @@
 
 .blink-background {
   width: 200px;
-  animation: blink 0.8s infinite; /* Shorter duration */
+  animation: blink 2s infinite; /* Shorter duration */
 }
 
 @keyframes blink {
   0% {
     background: radial-gradient(
       circle,
-      rgba(241, 136, 95, 0.637),
-      rgba(245, 123, 123, 0.863) 30%,
       rgba(253, 75, 4, 0.02) 100%
     );
   }
   50% {
     background: radial-gradient(
       circle,
-      rgba(233, 137, 99, 0.637),
-      rgba(245, 98, 98, 0.788) 30%,
+      rgba(250, 168, 92, 0.788) 30%,
       rgba(253, 83, 4, 0.02) 100%
     );
   }
   100% {
     background: radial-gradient(
       circle,
-      rgba(241, 136, 95, 0.637),
-      rgba(245, 123, 123, 0.863) 30%,
       rgba(253, 75, 4, 0.02) 100%
     );
   }
