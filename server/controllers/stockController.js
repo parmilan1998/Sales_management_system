@@ -292,6 +292,9 @@ exports.queryStocks = async (req, res) => {
     });
 
     const stocksWithUnitType = stocks.map((stock) => ({
+      id: stock.stockID,
+      product:stock.productID,
+      purchaseID:stock.purchaseID,
       productName: stock.productName,
       productQuantity: stock.productQuantity,
       purchasePrice: stock.purchasePrice,
