@@ -191,6 +191,10 @@ const Stocks = () => {
       dataIndex: "productQuantity",
       valueType: "digit",
       width: 100,
+      render: (text, record) => `${record.productQuantity} ${record.unitType}`,
+      renderFormItem: (_, { recordKey, ...restProps }) => (
+        <input {...restProps} defaultValue={`${_.productQuantity} ${_.unitType}`} />
+      ),
     },
     {
       title: "Purchase Price",
@@ -305,7 +309,8 @@ const Stocks = () => {
                           table: stocks.map((stock) => ({
                             id: stock.stockID,
                             productName: stock.productName,
-                            productQuantity: `${stock.productQuantity} ${stock.unitType}`,
+                            productQuantity: stock.productQuantity ,
+                            unitType: stock.unitType,
                             purchasePrice: stock.purchasePrice,
                             manufacturedDate: stock.manufacturedDate,
                             expiryDate: stock.expiryDate,
