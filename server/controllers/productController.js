@@ -4,6 +4,7 @@ const Category = require("../models/category");
 const Stocks = require("../models/stocks");
 const fs = require("fs");
 const path = require("path");
+const Unit = require("../models/unit");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
@@ -17,6 +18,7 @@ exports.createProduct = async (req, res) => {
   } = req.body;
 
   try {
+    console.log("hi", unitType);
     // Check if the product already exists
     const existingProduct = await Product.findOne({
       where: {
@@ -40,11 +42,16 @@ exports.createProduct = async (req, res) => {
         .json({ error: `Category ${categoryName} not found` });
     }
 
+    const unit = await Unit.findOne({
+      where: { unitType: unitType },
+    });
+
     const newProduct = await Product.create({
       productName,
       categoryID: category.categoryID,
       categoryName,
       productDescription,
+      unitID: unit.unitID,
       unitType,
       unitPrice,
       reOrderLevel,
@@ -226,7 +233,7 @@ exports.updateProduct = async (req, res) => {
         productName,
         productDescription,
         categoryName,
-        unitType,
+        unitType: Unit.unitType || unitType,
         unitPrice,
         categoryID,
         reOrderLevel,
@@ -238,7 +245,7 @@ exports.updateProduct = async (req, res) => {
         productName,
         productDescription,
         categoryName,
-        unitType,
+        unitType: Unit.unitType || unitType,
         unitPrice,
         reOrderLevel,
         categoryID,

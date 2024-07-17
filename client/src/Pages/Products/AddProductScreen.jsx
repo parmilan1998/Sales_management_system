@@ -7,18 +7,25 @@ import { IoMdAddCircleOutline } from "react-icons/io";
 
 const AddProduct = () => {
   const [category, setCategory] = useState([]);
-  const [unitTypes, setUnitTypes] = useState(["piece", "kg", "bottle"]);
+  const [unit, setUnit] = useState([]);
   const [newUnitType, setNewUnitType] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
-  const handleAddUnitType = () => {
-    if (newUnitType && !unitTypes.includes(newUnitType)) {
-      setUnitTypes([...unitTypes, newUnitType]);
+  const handleAddUnitType = async () => {
+    try {
+      const res = await axios.post("http://localhost:5000/api/v1/unit", {
+        unitType: newUnitType,
+      });
+      console.log(res.data);
+      toast.success("Unit added successfully!");
       setNewUnitType("");
       setIsAdding(false);
+      fetchUnitApi();
+    } catch (err) {
+      console.log(err.message);
+      toast.error("Failed to add unit type");
     }
   };
-
   const handleIconClick = () => {
     setIsAdding(!isAdding);
   };
@@ -76,8 +83,21 @@ const AddProduct = () => {
       });
   };
 
+  const fetchUnitApi = async () => {
+    const res = await axios
+      .get("http://localhost:5000/api/v1/unit/list")
+      .then((res) => {
+        console.log(res.data);
+        setUnit(res.data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  };
+
   useEffect(() => {
     fetchCategoryApi();
+    fetchUnitApi();
   }, []);
 
   return (
@@ -223,9 +243,9 @@ const AddProduct = () => {
                   <option value="" className="text-gray-200 opacity-5">
                     Ex - Pair
                   </option>
-                  {unitTypes.map((type, index) => (
-                    <option key={index} value={type.unitType}>
-                      {type}
+                  {unit.map((unit, index) => (
+                    <option value={unit.unitType} key={index}>
+                      {unit.unitType}
                     </option>
                   ))}
                 </select>

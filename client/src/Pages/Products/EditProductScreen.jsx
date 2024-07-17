@@ -10,6 +10,7 @@ const EditProductScreen = () => {
 
   const { id } = useParams();
   const [category, setCategory] = useState([]);
+  const [unit, setUnit] = useState([]);
 
   const navigate = useNavigate();
   const {
@@ -76,10 +77,22 @@ const EditProductScreen = () => {
         console.log(err.message);
       });
   };
+  const fetchUnitApi = async () => {
+    const res = await axios
+      .get("http://localhost:5000/api/v1/unit/list")
+      .then((res) => {
+        console.log(res.data);
+        setUnit(res.data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  };
 
   useEffect(() => {
     fetchCategoryApi();
     fetchUpdateProductDetails();
+    fetchUnitApi();
   }, []);
 
   return (
@@ -186,7 +199,7 @@ const EditProductScreen = () => {
               </label>
               <select
                 {...register("unitType", {
-                  required: "Category Name is required",
+                  required: "UniType is required",
                 })}
                 type="text"
                 name="unitType"
@@ -196,12 +209,11 @@ const EditProductScreen = () => {
                 <option value="" className="text-gray-200 opacity-5">
                   Ex - Pair
                 </option>
-                {/* {category.map((category, index) => ( */}
-                <option value="piece">Piece</option>
-                <option value="kg">Kg</option>
-                <option value="bottles">Bottle</option>
-                <option value="pairs">Pair</option>
-                {/* ))} */}
+                {unit.map((unit, index) => (
+                  <option value={unit.unitType} key={index}>
+                    {unit.unitType}
+                  </option>
+                ))}
               </select>
               {errors.unitType && (
                 <p className="text-red-500 py-1 text-sm">
