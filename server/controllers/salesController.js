@@ -467,7 +467,7 @@ exports.querySales = async (req, res) => {
           {
             model: SalesDetail,
             as: "details",
-            attributes: ["unitID", "productName", "salesQuantity"],
+            attributes: ["productName", "salesQuantity"],
             include: [
               {
                 model: Unit,
@@ -492,7 +492,7 @@ exports.querySales = async (req, res) => {
           {
             model: SalesDetail,
             as: "details",
-            attributes: ["unitID", "productName", "salesQuantity"],
+            attributes: ["productName", "salesQuantity"],
             where: {
               productName: { [Op.like]: `%${productName}%` },
             },
