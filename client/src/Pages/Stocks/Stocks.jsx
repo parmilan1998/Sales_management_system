@@ -190,7 +190,14 @@ const Stocks = () => {
       title: "Product Quantity",
       dataIndex: "productQuantity",
       valueType: "digit",
-      width: 100,
+      width: 10,
+      render: (text, record) => `${record.productQuantity} ${record.unitType}`,
+      renderFormItem: (_, { recordKey, ...restProps }) => (
+        <input
+          {...restProps}
+          defaultValue={`${_.productQuantity} ${_.unitType}`}
+        />
+      ),
     },
     {
       title: "Purchase Price",
@@ -236,6 +243,9 @@ const Stocks = () => {
           <a
             key={`edit-${row.id}`}
             onClick={() => {
+              console.log("====================================");
+              console.log("startEditable");
+              console.log("====================================");
               actionRef.current?.startEditable(row.id);
             }}
           >
@@ -303,9 +313,10 @@ const Stocks = () => {
                         formRef={formRef}
                         initialValues={{
                           table: stocks.map((stock) => ({
-                            id: stock.stockID,
+                            id: stock.id,
                             productName: stock.productName,
-                            productQuantity: `${stock.productQuantity} ${stock.unitType}`,
+                            productQuantity: stock.productQuantity,
+                            unitType: stock.unitType,
                             purchasePrice: stock.purchasePrice,
                             manufacturedDate: stock.manufacturedDate,
                             expiryDate: stock.expiryDate,
