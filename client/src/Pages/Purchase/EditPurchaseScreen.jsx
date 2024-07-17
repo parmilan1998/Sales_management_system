@@ -33,11 +33,13 @@ const EditPurchaseScreen = () => {
   };
 
   const fetchUpdatePurchaseDetails = async () => {
+    console.log("yyyy", id);
     try {
       const res = await axios.get(
         `http://localhost:5000/api/v1/purchase/${id}`
       );
       const purchase = res.data;
+      console.log("Purchase: " + res.data);
       setValue("productName", purchase.productName);
       setValue("purchaseVendor", purchase.purchaseVendor);
       setValue("vendorContact", purchase.vendorContact);
@@ -68,7 +70,7 @@ const EditPurchaseScreen = () => {
   useEffect(() => {
     fetchProducts();
     fetchUpdatePurchaseDetails();
-  }, []);
+  }, [id]);
 
   return (
     <div className="max-w-screen-xl mx-auto lg:px-24 font-poppins cursor-pointer">

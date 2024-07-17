@@ -535,7 +535,7 @@ exports.querySales = async (req, res) => {
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      sales: salesWithUnitType,
+      sales,
       pagination: {
         currentPage: parsedPage,
         totalPages,
