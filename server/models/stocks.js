@@ -36,13 +36,10 @@ const Stocks = db.define(
     },
     unitID: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: "unit",
         key: "unitID",
-      },
-      validate: {
-        notEmpty: true,
       },
     },
     productName: {

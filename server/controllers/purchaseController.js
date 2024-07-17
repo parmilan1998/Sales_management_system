@@ -450,6 +450,9 @@ exports.queryPurchase = async (req, res) => {
     });
 
     const purchasesWithUnitType = purchases.map((purchase) => ({
+      purchaseID: purchase.purchaseID,
+      productID: purchase.productID,
+      unitID: purchase.unitID,
       productName: purchase.productName,
       purchaseQuantity: purchase.purchaseQuantity,
       purchasePrice: purchase.purchasePrice,
