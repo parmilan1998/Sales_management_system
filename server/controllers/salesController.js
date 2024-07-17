@@ -463,11 +463,20 @@ exports.querySales = async (req, res) => {
     // Querying Sales with included SalesDetail
     const { count: countCustomer, rows: salesCustomer } =
       await Sales.findAndCountAll({
-        include: {
-          model: SalesDetail,
-          as: "details",
-          attributes: ["productName", "salesQuantity"],
-        },
+        include: [
+          {
+            model: SalesDetail,
+            as: "details",
+            attributes: ["productName", "salesQuantity"],
+            include: [
+              {
+                model: Unit,
+                as: "unit",
+                attributes: ["unitType"],
+              },
+            ],
+          },
+        ],
         where: searchCondition,
         offset,
         limit: parsedLimit,
@@ -479,15 +488,23 @@ exports.querySales = async (req, res) => {
 
     const { count: countProduct, rows: salesProduct } =
       await Sales.findAndCountAll({
-        include: {
-          model: SalesDetail,
-          as: "details",
-          attributes: ["productName", "salesQuantity"],
-          where: {
-            productName: { [Op.like]: `%${productName}%` },
+        include: [
+          {
+            model: SalesDetail,
+            as: "details",
+            attributes: ["productName", "salesQuantity"],
+            where: {
+              productName: { [Op.like]: `%${productName}%` },
+            },
+            include: [
+              {
+                model: Unit,
+                as: "unit",
+                attributes: ["unitType"],
+              },
+            ],
           },
-        },
-
+        ],
         offset,
         limit: parsedLimit,
         order: [
@@ -498,6 +515,21 @@ exports.querySales = async (req, res) => {
 
     let count = countCustomer > 0 ? countCustomer : countProduct;
     let sales = countCustomer > 0 ? salesCustomer : salesProduct;
+
+    const salesWithUnitType = sales.map((sale) => ({
+      salesID: sale.salesID,
+      custName: sale.custName,
+      customerContact: sale.customerContact,
+      soldDate: sale.soldDate,
+      totalRevenue: sale.totalRevenue,
+      details: sale.details.map((detail) => ({
+        productName: detail.productName,
+        salesQuantity: detail.salesQuantity,
+        unitType: detail.unit.unitType,
+      })),
+      revenue: sale.totalRevenue,
+      unitPrice: sale.unitPrice,
+    }));
 
     // Total pages
     const totalPages = Math.ceil(count / parsedLimit);

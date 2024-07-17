@@ -46,6 +46,7 @@ const Sales = require("./models/sales");
 const SalesDetail = require("./models/salesDetails");
 const Product = require("./models/products");
 const Stocks = require("./models/stocks");
+const Unit = require("./models/unit.js");
 
 dotenv.config();
 
@@ -79,14 +80,18 @@ const PORT = process.env.PORT || 5000;
 // Define associations
 Sales.hasMany(SalesDetail, { foreignKey: "salesID", as: "details" });
 SalesDetail.belongsTo(Sales, { foreignKey: "salesID", targetKey: "salesID" });
+SalesDetail.belongsTo(Unit, { foreignKey: "unitID", as: "unit" });
+
 SalesDetail.belongsTo(Product, {
   foreignKey: "productID",
   targetKey: "productID",
 });
 SalesDetail.belongsTo(Stocks, { foreignKey: "stockID", targetKey: "stockID" });
 
-Product.hasMany(Stocks, { foreignKey: 'productID' });
-Stocks.belongsTo(Product, { foreignKey: 'productID' });
+Unit.hasMany(SalesDetail, { foreignKey: "unitID", as: "details" });
+
+Product.hasMany(Stocks, { foreignKey: "productID" });
+Stocks.belongsTo(Product, { foreignKey: "productID" });
 
 db.sync()
   .then(() => {
