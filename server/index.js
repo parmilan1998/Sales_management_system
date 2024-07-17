@@ -36,6 +36,7 @@ const salesRoute = require("./routes/salesRoute");
 const userRoute = require("./routes/userRoute");
 const reportRoute = require("./routes/reportRoute");
 const notificationRoute = require("./routes/notificationRoute");
+const unitRoute = require("./routes/unitRoute");
 
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
@@ -71,6 +72,7 @@ app.use("/api/v1/sales", salesRoute);
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/reports", reportRoute);
 app.use("/api/v1/notification", notificationRoute);
+app.use("/api/v1/unit", unitRoute);
 
 const PORT = process.env.PORT || 5000;
 
