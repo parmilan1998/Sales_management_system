@@ -230,7 +230,6 @@ exports.updateSales = async (req, res) => {
     const oldSalesDetails = await SalesDetail.findAll({
       where: { salesID: id },
     });
-
     for (const detail of oldSalesDetails) {
       const stock = await Stocks.findByPk(detail.stockID);
       stock.productQuantity += detail.salesQuantity;
@@ -251,7 +250,6 @@ exports.updateSales = async (req, res) => {
 
         // Find the product in the Product table
         const product = await Product.findOne({ where: { productName } });
-
         if (!product) {
           return res
             .status(404)
@@ -259,7 +257,7 @@ exports.updateSales = async (req, res) => {
         }
 
         // Fetch unit ID and unit type from the Unit table
-        const unit = await Unit.findOne({ where: { unitID: product.unitID } });
+        const unit = await Unit.findByPk(product.unitID);
         if (!unit) {
           return res
             .status(404)
@@ -293,7 +291,6 @@ exports.updateSales = async (req, res) => {
           }
 
           await stock.save();
-
           stockDetails.push({ stockID: stock.stockID, usedQuantity });
         }
 
@@ -323,6 +320,7 @@ exports.updateSales = async (req, res) => {
           productName: product.productName,
           salesQuantity,
           unitType: unit.unitType,
+          unitPrice, // Include unitPrice for revenue calculation
         };
       })
     );

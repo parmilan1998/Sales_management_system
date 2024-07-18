@@ -4,13 +4,19 @@ import io from "socket.io-client";
 import { IoNotifications } from "react-icons/io5";
 import { IoIosSettings } from "react-icons/io";
 import { Tooltip } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Dropdown, Space, Badge } from "antd";
 import alert from "../assets/alert.gif";
 import warn from "../assets/warning01.gif";
 import recycle from "../assets/recycle01.gif";
-
+import { ImProfile } from "react-icons/im";
+import { TbLogout2 } from "react-icons/tb";
 import "../App.css";
+import { jwtDecode } from "jwt-decode";
+import { logout, logOutAdmin } from "../features/authSlice";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import LoginScreen from "../Pages/Admin/LoginScreen";
 
 const socket = io("http://localhost:5000");
 
@@ -18,6 +24,49 @@ const Navbar = () => {
   const [notifications, setNotifications] = useState([]);
   const [animate, setAnimate] = useState(false);
   const notificationCount = notifications.length;
+  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const baseUrl = "http://localhost:5000/public/profile";
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/user/login");
+    }
+  }, [user, navigate]);
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logOutAdmin());
+      dispatch(logout());
+      navigate("/");
+      toast.success("Logged out successfully!");
+    } catch (error) {
+      toast.error("Logout failed. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      const expTime = decodedToken.exp;
+
+      const expiryTime = (expTime - currentTime) * 1000;
+
+      if (expiryTime > 0) {
+        const timer = setTimeout(() => {
+          dispatch(logout());
+        }, expiryTime);
+
+        return () => clearTimeout(timer);
+      } else {
+        dispatch(logout());
+      }
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -147,7 +196,11 @@ const Navbar = () => {
         <div className="flex pt-4 items-center justify-end">
           <div className="flex items-center justify-end gap-4">
             <div className="sm:flex sm:gap-4 space-x-6 flex justify-end">
-              <Badge count={notificationCount} overflowCount={99}>
+              <Badge
+                count={notificationCount}
+                overflowCount={99}
+                className="mt-3"
+              >
                 <Dropdown
                   menu={{
                     items,
@@ -161,13 +214,64 @@ const Navbar = () => {
                   </a>
                 </Dropdown>
               </Badge>
-              <div className="hidden sm:flex">
-                <Link to="/profile" className="text-gray-600">
-                  <Tooltip title="Admin Profile">
-                    <IoIosSettings size={22} />
-                  </Tooltip>
-                </Link>
-              </div>
+
+              {user ? (
+                <div className="dropdown dropdown-end">
+                  <div tabIndex={0} role="button" className="text-black">
+                    <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-white">
+                      <img
+                        src={`${baseUrl}/${user.profileImage}`}
+                        alt="user name"
+                        title="user name"
+                        width="80"
+                        height="80"
+                        className="max-w-full rounded-full"
+                      />
+                    </span>
+                  </div>
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content menu bg-gray-50 rounded-md z-[1] w-52 shadow"
+                  >
+                    <li className="px-3">
+                      <Link
+                        to="/profile"
+                        className="flex items-center gap-2 rounded"
+                      >
+                        <div className="flex items-center self-center ">
+                          <ImProfile size={20} />
+                        </div>
+                        <div className="flex w-full flex-1 text-md font-normal text-gray-600 tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate">
+                          Profile
+                        </div>
+                      </Link>
+                    </li>
+                    <li className="px-3">
+                      <div>
+                        <button
+                          onClick={handleLogout}
+                          href="#"
+                          className="text-gray-600 font-bold"
+                        >
+                          <Link
+                            to="#"
+                            className="flex items-center gap-2 rounded "
+                          >
+                            <div className="flex items-center self-center ">
+                              <TbLogout2 size={20} />
+                            </div>
+                            <div className="flex w-full flex-1 text-md font-normal text-gray-600 tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate">
+                              Logout
+                            </div>
+                          </Link>
+                        </button>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              ) : (
+                <LoginScreen />
+              )}
             </div>
             <div className="block md:hidden">
               <button className="rounded bg-gray-100 p-2 text-gray-600 transition hover:text-gray-600/75">

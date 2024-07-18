@@ -19,46 +19,46 @@ import { PiWarehouseLight } from "react-icons/pi";
 export default function Sidebar() {
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
   const user = useSelector((state) => state.auth.user);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  // const navigate = useNavigate();
+  // const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/user/login");
-    }
-  }, [user, navigate]);
+  // useEffect(() => {
+  //   if (!user) {
+  //     navigate("/user/login");
+  //   }
+  // }, [user, navigate]);
 
-  const handleLogout = async () => {
-    try {
-      await dispatch(logOutAdmin());
-      dispatch(logout());
-      navigate("/");
-      toast.success("Logged out successfully!");
-    } catch (error) {
-      toast.error("Logout failed. Please try again.");
-    }
-  };
+  // const handleLogout = async () => {
+  //   try {
+  //     await dispatch(logOutAdmin());
+  //     dispatch(logout());
+  //     navigate("/");
+  //     toast.success("Logged out successfully!");
+  //   } catch (error) {
+  //     toast.error("Logout failed. Please try again.");
+  //   }
+  // };
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-      const expTime = decodedToken.exp;
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (token) {
+  //     const decodedToken = jwtDecode(token);
+  //     const currentTime = Date.now() / 1000;
+  //     const expTime = decodedToken.exp;
 
-      const expiryTime = (expTime - currentTime) * 1000;
+  //     const expiryTime = (expTime - currentTime) * 1000;
 
-      if (expiryTime > 0) {
-        const timer = setTimeout(() => {
-          dispatch(logout());
-        }, expiryTime);
+  //     if (expiryTime > 0) {
+  //       const timer = setTimeout(() => {
+  //         dispatch(logout());
+  //       }, expiryTime);
 
-        return () => clearTimeout(timer);
-      } else {
-        dispatch(logout());
-      }
-    }
-  }, [dispatch]);
+  //       return () => clearTimeout(timer);
+  //     } else {
+  //       dispatch(logout());
+  //     }
+  //   }
+  // }, [dispatch]);
 
   return (
     <>
@@ -110,7 +110,7 @@ export default function Sidebar() {
           className="flex-1 text-white overflow-y-scroll no-scrollbar"
         >
           <div>
-            <ul className="flex flex-1 flex-col gap-1 pt-0">
+            <ul className="flex flex-1 flex-col gap-2 pt-0">
               <li className="px-3">
                 <Link
                   to="/"
@@ -235,7 +235,7 @@ export default function Sidebar() {
           </div>
         </nav>
 
-        <footer className="px-3 py-2">
+        {/* <footer className="px-3 py-2">
           {user ? (
             <div>
               <Tooltip title="Logout">
@@ -276,7 +276,7 @@ export default function Sidebar() {
           ) : (
             <LoginScreen />
           )}
-        </footer>
+        </footer> */}
       </aside>
 
       {/* <div
