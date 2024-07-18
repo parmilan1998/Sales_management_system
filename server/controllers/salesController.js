@@ -11,7 +11,6 @@ exports.createSales = async (req, res) => {
   try {
     let sales = req.body;
 
-    // Ensure sales is an array
     if (!Array.isArray(sales)) {
       sales = [sales];
     }
@@ -27,10 +26,11 @@ exports.createSales = async (req, res) => {
         custName: custName,
         customerContact: customerContact,
         soldDate: soldDate,
-        totalRevenue: 0, // Initial total revenue
+        totalRevenue: 0,
       });
 
       let totalRevenue = 0;
+      const productDetails = [];
 
       // Process each product in the sale
       for (const productSale of productList) {
@@ -47,7 +47,7 @@ exports.createSales = async (req, res) => {
             .json({ message: `Product '${productName}' not found` });
         }
 
-        const { productID, unitPrice } = product;
+        const { productID, unitPrice, unitID } = product;
         const revenue = unitPrice * salesQuantity;
 
         // Find stock entries for the product
@@ -80,25 +80,52 @@ exports.createSales = async (req, res) => {
           });
         }
 
+        // Fetch unit type from the Unit table
+        const unit = await Unit.findOne({
+          where: { unitID: unitID },
+        });
+
+        if (!unit) {
+          return res
+            .status(404)
+            .json({ message: `Unit for product '${productName}' not found` });
+        }
+
         // Create SalesDetail record
         await SalesDetail.create({
           salesID: newSale.salesID,
           productID: productID,
-          stockID: stockDetails[0].stockID, // Assuming first stock used for simplicity
+          stockID: stockDetails[0].stockID,
           salesQuantity: salesQuantity,
           unitPrice: unitPrice,
           revenue: revenue,
           productName: productName,
+          unitID: unitID,
         });
 
-        totalRevenue += revenue; // Accumulate revenue for the sale
+        totalRevenue += revenue;
+
+        // Add product details to the response
+        productDetails.push({
+          productName: productName,
+          salesQuantity: salesQuantity,
+          unitType: unit.unitType,
+        });
       }
 
       // Update total revenue for the sale
       newSale.totalRevenue = totalRevenue;
       await newSale.save();
 
-      createdSales.push(newSale);
+      // Add the sale details to the created sales array
+      createdSales.push({
+        salesID: newSale.salesID,
+        custName: newSale.custName,
+        customerContact: newSale.customerContact,
+        soldDate: newSale.soldDate,
+        totalRevenue: newSale.totalRevenue,
+        products: productDetails,
+      });
     }
 
     // Emit event for real-time updates
@@ -197,14 +224,12 @@ exports.updateSales = async (req, res) => {
     existingSale.custName = custName || existingSale.custName;
     existingSale.customerContact =
       customerContact || existingSale.customerContact;
-
     existingSale.soldDate = soldDate || existingSale.soldDate;
 
     // Remove old sales details and restore quantities
     const oldSalesDetails = await SalesDetail.findAll({
       where: { salesID: id },
     });
-
     for (const detail of oldSalesDetails) {
       const stock = await Stocks.findByPk(detail.stockID);
       stock.productQuantity += detail.salesQuantity;
@@ -216,13 +241,27 @@ exports.updateSales = async (req, res) => {
       products.map(async (productSale) => {
         const { productName, salesQuantity } = productSale;
 
+        // Validate salesQuantity
+        if (salesQuantity < 1) {
+          return res.status(400).json({
+            message: `Invalid sales quantity for product '${productName}'`,
+          });
+        }
+
         // Find the product in the Product table
         const product = await Product.findOne({ where: { productName } });
-
         if (!product) {
           return res
             .status(404)
             .json({ message: `Product '${productName}' not found` });
+        }
+
+        // Fetch unit ID and unit type from the Unit table
+        const unit = await Unit.findByPk(product.unitID);
+        if (!unit) {
+          return res
+            .status(404)
+            .json({ message: `Unit not found for product '${productName}'` });
         }
 
         const { unitPrice } = product;
@@ -252,7 +291,6 @@ exports.updateSales = async (req, res) => {
           }
 
           await stock.save();
-
           stockDetails.push({ stockID: stock.stockID, usedQuantity });
         }
 
@@ -269,6 +307,7 @@ exports.updateSales = async (req, res) => {
               salesID: existingSale.salesID,
               productID: product.productID,
               stockID: stockDetail.stockID,
+              unitID: unit.unitID,
               productName: product.productName,
               salesQuantity: stockDetail.usedQuantity,
               unitPrice: unitPrice,
@@ -278,19 +317,17 @@ exports.updateSales = async (req, res) => {
         );
 
         return {
-          salesID: existingSale.salesID,
-          productID: product.productID,
           productName: product.productName,
           salesQuantity,
-          unitPrice,
-          revenue: calculatedTotalPrice,
+          unitType: unit.unitType,
+          unitPrice, // Include unitPrice for revenue calculation
         };
       })
     );
 
     // Calculate total revenue for the sale
     const totalRevenue = saleDetails.reduce(
-      (total, detail) => total + detail.revenue,
+      (total, detail) => total + detail.unitPrice * detail.salesQuantity,
       0
     );
     existingSale.totalRevenue = totalRevenue;
@@ -338,7 +375,16 @@ exports.updateSales = async (req, res) => {
 
     res.status(200).json({
       message: `Sales record with ID '${id}' updated successfully`,
-      updatedSale: existingSale,
+      sales: [
+        {
+          salesID: existingSale.salesID,
+          custName: existingSale.custName,
+          customerContact: existingSale.customerContact,
+          soldDate: existingSale.soldDate,
+          totalRevenue: existingSale.totalRevenue,
+          products: saleDetails,
+        },
+      ],
     });
   } catch (e) {
     console.error("Error updating sales:", e);
@@ -527,15 +573,13 @@ exports.querySales = async (req, res) => {
         salesQuantity: detail.salesQuantity,
         unitType: detail.unit.unitType,
       })),
-      revenue: sale.totalRevenue,
-      unitPrice: sale.unitPrice,
     }));
 
     // Total pages
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      sales,
+      sales: salesWithUnitType,
       pagination: {
         currentPage: parsedPage,
         totalPages,

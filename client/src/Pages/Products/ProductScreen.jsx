@@ -19,7 +19,7 @@ const ProductScreen = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("ASC");
-  const [limit, setLimit] = useState(8);
+  const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(true);
 
   const text = "No products available".split(" ");
