@@ -58,7 +58,7 @@ salesDetail = db.define(
       allowNull: false,
       validate: {
         notEmpty: true,
-        min: 1,
+        // min: 1,
       },
     },
     revenue: {
@@ -73,7 +73,7 @@ salesDetail = db.define(
       allowNull: false,
       validate: {
         notEmpty: true,
-        min: 0,
+        // min: 0,
       },
     },
   },
