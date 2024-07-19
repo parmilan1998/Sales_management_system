@@ -209,7 +209,7 @@ const Navbar = () => {
                 >
                   <a onClick={(e) => e.preventDefault()}>
                     <Space className={animate ? "bell" : ""}>
-                      <IoNotifications size={22} />
+                      <IoNotifications size={22} className="text-sky-800" />
                     </Space>
                   </a>
                 </Dropdown>
