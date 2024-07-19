@@ -165,7 +165,7 @@ const Stocks = () => {
       align: "center",
       render: (text, record, index) => (
         <div className="w-5 h-5 ml-3 bg-gray-600 text-white text flex justify-center items-center rounded-full">
-          <span >{index + 1}</span>
+          <span>{index + 1}</span>
         </div>
       ),
     },
@@ -174,7 +174,7 @@ const Stocks = () => {
       dataIndex: "productName",
       valueType: "select",
       align: "center",
-      width: 173,
+      width: 171,
       fieldProps: {
         options: productOptions,
       },
@@ -196,7 +196,11 @@ const Stocks = () => {
       width: 125,
       render: (text, record) => `${record.productQuantity} ${record.unitType}`,
       renderFormItem: (_, { recordKey, ...restProps }) => (
-        <input {...restProps} defaultValue={_.productQuantity || ""} />
+        <input
+          className="w-24"
+          {...restProps}
+          defaultValue={_.productQuantity || ""}
+        />
       ),
     },
     {
@@ -230,7 +234,7 @@ const Stocks = () => {
     {
       title: "Action",
       valueType: "option",
-      align: "center",
+      width: 150,
       render: (_, row) => [
         <React.Fragment key={`actions-${row.id}`}>
           <Popconfirm
@@ -276,7 +280,7 @@ const Stocks = () => {
           <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
             <div className="flex flex-col  justify-between pb-5 relative">
               <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
-                <div className="flex gap-3 mx-5">
+                <div className="flex gap-3 mx-2">
                   <h1 className="text-4xl font-semibold font-acme text-blue-600">
                     Stocks List
                   </h1>
@@ -296,15 +300,18 @@ const Stocks = () => {
                   />
                 </div>
               </div>
-              <div className="m-5 border rounded-md border-slate-400">
-                <ProCard>
+              <div
+                className="m-1  border rounded-md  border-slate-400 " style={{
+                  maxWidth: 1250,
+                }}
+              >
+                <ProCard className="px-1">
                   {loading ? (
                     <div>Loading...</div>
                   ) : (
                     <div
                       style={{
-                        maxWidth: 960,
-                        margin: "auto",
+                        maxWidth: 990,
                       }}
                     >
                       <ProForm
@@ -312,6 +319,7 @@ const Stocks = () => {
                         // onFinish={(data) => {
                         //   console.log({ data });
                         // }}
+
                         formRef={formRef}
                         initialValues={{
                           table: stocks.map((stock) => ({
@@ -334,7 +342,7 @@ const Stocks = () => {
                           //   },
                           // }}
                           rowKey="id"
-                          scroll={{ x: 900 }}
+                          scroll={{ x: 890 }}
                           editableFormRef={editableFormRef}
                           controlled
                           actionRef={actionRef}
@@ -357,19 +365,13 @@ const Stocks = () => {
                             onDelete: async () => {
                               fetchStocks();
                             },
-                            onCancel: async () => {},
+                            // actionRender: (row, config, defaultDom) => [
+                            //   defaultDom.save,
+                            //   // defaultDom.delete,
+                            //   defaultDom.cancel
+                            // ],
                           }}
                           rowClassName={() => rowClassName}
-                          locale={{
-                            emptyText: "No Data",
-                            edit: "Edit",
-                            delete: "Delete",
-                            deletePopconfirmMessage:
-                              "Are you sure to delete this record?",
-                            add: "Add",
-                            save: "Save",
-                            cancel: "Cancel",
-                          }}
                           pagination={{
                             total: totalPages * limit,
                             current: page,
