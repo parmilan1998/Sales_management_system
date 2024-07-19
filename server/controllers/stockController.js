@@ -37,6 +37,7 @@ exports.createStocks = async (req, res) => {
     const existingStock = await Stocks.findOne({
       where: {
         productID: product.productID,
+        unitID:product.unitID,
         productName,
         purchasePrice,
         manufacturedDate,
@@ -90,6 +91,7 @@ exports.createStocks = async (req, res) => {
 
     const createdStock = await Stocks.create({
       productID: product.productID,
+      unitID:product.unitID,
       productName,
       productQuantity,
       purchasePrice: purchasePrice || null,

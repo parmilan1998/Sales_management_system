@@ -160,11 +160,12 @@ const Stocks = () => {
     {
       title: "No",
       dataIndex: "index",
-      valueType: "indexBorder",
       ellipsis: true,
+      width: 60,
+      align: "center",
       render: (text, record, index) => (
-        <div className="w-5 h-5 bg-gray-600 text-white text flex justify-center items-center rounded-full">
-          <span>{index + 1}</span>
+        <div className="w-5 h-5 ml-3 bg-gray-600 text-white text flex justify-center items-center rounded-full">
+          <span >{index + 1}</span>
         </div>
       ),
     },
@@ -172,7 +173,8 @@ const Stocks = () => {
       title: "Product Name",
       dataIndex: "productName",
       valueType: "select",
-      width: 180,
+      align: "center",
+      width: 173,
       fieldProps: {
         options: productOptions,
       },
@@ -190,42 +192,45 @@ const Stocks = () => {
       title: "Product Quantity",
       dataIndex: "productQuantity",
       valueType: "digit",
-      width: 10,
+      align: "center",
+      width: 125,
       render: (text, record) => `${record.productQuantity} ${record.unitType}`,
       renderFormItem: (_, { recordKey, ...restProps }) => (
-        <input
-          {...restProps}
-          defaultValue={`${_.productQuantity} ${_.unitType}`}
-        />
+        <input {...restProps} defaultValue={_.productQuantity || ""} />
       ),
     },
     {
       title: "Purchase Price",
       dataIndex: "purchasePrice",
       valueType: "money",
-      width: 120,
+      align: "center",
+      width: 110,
     },
     {
       title: "Manufactured Date",
       dataIndex: "manufacturedDate",
       valueType: "date",
+      align: "center",
       width: 140,
     },
     {
       title: "Expiry Date",
       dataIndex: "expiryDate",
       valueType: "date",
-      width: 120,
+      align: "center",
+      width: 90,
     },
     {
       title: "Purchased Date",
       dataIndex: "purchasedDate",
       valueType: "date",
-      width: 100,
+      align: "center",
+      width: 115,
     },
     {
       title: "Action",
       valueType: "option",
+      align: "center",
       render: (_, row) => [
         <React.Fragment key={`actions-${row.id}`}>
           <Popconfirm
@@ -243,9 +248,6 @@ const Stocks = () => {
           <a
             key={`edit-${row.id}`}
             onClick={() => {
-              console.log("====================================");
-              console.log("startEditable");
-              console.log("====================================");
               actionRef.current?.startEditable(row.id);
             }}
           >
@@ -301,7 +303,7 @@ const Stocks = () => {
                   ) : (
                     <div
                       style={{
-                        maxWidth: 1000,
+                        maxWidth: 960,
                         margin: "auto",
                       }}
                     >
@@ -332,7 +334,7 @@ const Stocks = () => {
                           //   },
                           // }}
                           rowKey="id"
-                          scroll={{ x: true }}
+                          scroll={{ x: 900 }}
                           editableFormRef={editableFormRef}
                           controlled
                           actionRef={actionRef}
