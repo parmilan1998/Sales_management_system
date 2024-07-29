@@ -136,8 +136,13 @@ const OrderScreen = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if(!customerData){
-      toast.error("Fill all the required fields")
+    if (
+      !customerData.custName ||
+      !customerData.contactNo ||
+      !customerData.soldDate
+    ) {
+      toast.error("Fill all the required fields");
+      return;
     }
 
     const payload = {
