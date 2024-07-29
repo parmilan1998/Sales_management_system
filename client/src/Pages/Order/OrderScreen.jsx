@@ -19,8 +19,6 @@ const OrderScreen = () => {
   const navigate = useNavigate();
   const [unitPrice, setUnitPrice] = useState(0);
   const [customerFormFields, setCustomerFormFields] = useState(false);
-  const [discount, setDiscount] = useState(0);
-  const [total, setTotal] = useState(0);
   const [products, setProducts] = useState([]);
 
   // Fetch products
@@ -66,13 +64,10 @@ const OrderScreen = () => {
       .toFixed(2);
   };
 
-  // Handle Custom
-  const onHandleCustomer = (values) => {
-    console.log("Success:", values);
-    setCustomerData(values.customer);
-    setCustomerFormFields(true);
-    toast.success("Customer details updated successfully");
+  const handleCustomerChange = (changedValues, allValues) => {
+    setCustomerData(allValues.customer);
   };
+
 
   // Handle Product
   const onHandleProduct = (values) => {
@@ -95,7 +90,7 @@ const OrderScreen = () => {
       setAddedProducts([...addedProducts, productWithAmount]);
       // Update tempProducts quantity
       const updatedProducts = tempProducts.map((product) => {
-        if (product.productName === values.product.productName) {
+        if (product.productName == values.product.productName) {
           return {
             ...product,
             totalQuantity: product.totalQuantity - values.product.salesQuantity,
@@ -123,7 +118,10 @@ const OrderScreen = () => {
         productName: product.productName,
         salesQuantity: product.salesQuantity,
         unitPrice: product.unitPrice,
+        discount: product.discount || 0,
+        subTotal: calculateSubtotal(product),
       })),
+      total: calculateTotal(addedProducts),
     };
 
     try {
@@ -163,9 +161,11 @@ const OrderScreen = () => {
   }, []);
 
   const handleDiscountChange = (index, discount) => {
-    const newProducts = [...addedProducts];
-    newProducts[index].discount = discount != null ? parseFloat(discount) : 0;
-    setAddedProducts(newProducts);
+    if (index >= 0 && index < addedProducts.length) {
+      const newProducts = [...addedProducts];
+      newProducts[index].discount = discount != null ? parseFloat(discount) : 0;
+      setAddedProducts(newProducts);
+    }
   };
 
   return (
@@ -176,10 +176,10 @@ const OrderScreen = () => {
           <div className="col-span-3 w-full ">
             <div className="border border-blue-400 rounded-md">
               <Form
-                onFinish={onHandleCustomer}
                 className="gap-3 p-8 rounded-md bg-white"
                 layout="vertical"
                 autoComplete="off"
+                onValuesChange={handleCustomerChange}
               >
                 <div className="text-gray-400 py-4 flex justify-center items-center gap-3 text-center text-2xl font-poppins font-bold">
                   <GiFocusedLightning size={32} />
@@ -206,16 +206,11 @@ const OrderScreen = () => {
                     name={["customer", "contactNo"]}
                     label="Contact No"
                     className="font-poppins px-3 w-full"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input contact number!",
-                      },
-                    ]}
                   >
-                    <Input
+                    <InputNumber
                       placeholder="Ex: 0770337897"
-                      className="font-poppins py-1.5"
+                      className="font-poppins py-0.5 w-44 h-8"
+                      maxLength={10}
                     />
                   </Form.Item>
                   <Form.Item
@@ -234,15 +229,6 @@ const OrderScreen = () => {
                       placeholder="Ex: 22.08.2024"
                     />
                   </Form.Item>
-                </div>
-                <div className="px-3">
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    className="font-poppins py-3 h-10 w-full"
-                  >
-                    Add Details
-                  </Button>
                 </div>
               </Form>
             </div>
@@ -346,7 +332,7 @@ const OrderScreen = () => {
                         validator(_, value) {
                           const selectedProduct = tempProducts.find(
                             (product) =>
-                              product.productName ===
+                              product.productName ==
                               getFieldValue(["product", "productName"])
                           );
                           if (
@@ -377,9 +363,9 @@ const OrderScreen = () => {
                     label="Discount"
                   >
                     <InputNumber
-                      defaultValue={0}
+                      min={0}
                       onChange={(value) =>
-                        handleDiscountChange(parseFloat(value))
+                        handleDiscountChange(parseFloat(value) || 0)
                       }
                       addonAfter="%"
                     />
