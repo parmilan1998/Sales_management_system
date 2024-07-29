@@ -5,6 +5,7 @@ const Stocks = require("../models/stocks");
 const fs = require("fs");
 const path = require("path");
 const Unit = require("../models/unit");
+const generateRandomCode = require("../utils/randomCodeGenerator");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
@@ -18,8 +19,6 @@ exports.createProduct = async (req, res) => {
   } = req.body;
 
   try {
-    console.log("hi", unitType);
-    // Check if the product already exists
     const existingProduct = await Product.findOne({
       where: {
         productName: productName,
@@ -32,6 +31,7 @@ exports.createProduct = async (req, res) => {
         product: existingProduct,
       });
     }
+
     const category = await Category.findOne({
       where: { categoryName: categoryName },
     });
@@ -46,6 +46,8 @@ exports.createProduct = async (req, res) => {
       where: { unitType: unitType },
     });
 
+    const code = generateRandomCode();
+
     const newProduct = await Product.create({
       productName,
       categoryID: category.categoryID,
@@ -56,12 +58,11 @@ exports.createProduct = async (req, res) => {
       unitPrice,
       reOrderLevel,
       imageUrl: req.file ? req.file.filename : null,
+      code: code,
     });
 
-    // Emit event for real-time updates
     const io = req.app.get("socketio");
 
-    // Fetch and emit the updated product count
     const count = await Product.count();
     io.emit("productCount", count);
 
@@ -237,7 +238,7 @@ exports.updateProduct = async (req, res) => {
         unitPrice,
         categoryID,
         reOrderLevel,
-        imageUrl: req?.file?.filename, // Update imageUrl with the new file path
+        imageUrl: req?.file?.filename,
       });
     } else {
       // Update product without changing the image

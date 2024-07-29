@@ -47,6 +47,10 @@ const Product = db.define(
         notEmpty: true,
       },
     },
+    code: {
+      type: DataTypes.STRING(6),
+      allowNull: true,
+    },
     unitID: {
       type: DataTypes.INTEGER,
       allowNull: false,

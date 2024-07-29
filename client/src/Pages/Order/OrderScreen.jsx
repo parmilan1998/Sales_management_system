@@ -340,7 +340,7 @@ const OrderScreen = () => {
             <div className="min-h-screen bg-gray-200 z-0 lg:h-[100%] w-full mx-auto font-poppins cursor-pointer">
               <div className="grid grid-cols-6 gap-2 font-poppins">
                 {addedProducts && (
-                  <div className="col-span-6 bg-cyan-500 text-white rounded w-full p-4">
+                  <div className="col-span-6 bg-gray-400 text-white rounded w-full p-4">
                     <div className="grid grid-cols-5 p-4 gap-2">
                       <div className="py-2 flex justify-center items-center gap-3 text-center text-2xl font-poppins font-bold">
                         Items
