@@ -117,11 +117,8 @@ const OrderScreen = () => {
       products: addedProducts.map((product) => ({
         productName: product.productName,
         salesQuantity: product.salesQuantity,
-        unitPrice: product.unitPrice,
-        discount: product.discount || 0,
         subTotal: calculateSubtotal(product),
       })),
-      total: calculateTotal(addedProducts),
     };
 
     try {
