@@ -16,13 +16,13 @@ exports.createSales = async (req, res) => {
     }
 
     const createdSales = [];
+    const saleDetailsToCreate = [];
+    const stockUpdates = [];
 
     for (const sale of sales) {
       const { custName, customerContact, soldDate, products } = sale;
-
       const productList = Array.isArray(products) ? products : [products];
 
-   
       // Create the main sales record
       const newSale = await Sales.create({
         custName: custName,
@@ -34,9 +34,8 @@ exports.createSales = async (req, res) => {
       let totalRevenue = 0;
       const productDetails = [];
 
-      // Process each product in the sale
       for (const productSale of productList) {
-        const { productName, salesQuantity,subTotal } = productSale;
+        const { productName, salesQuantity, subTotal } = productSale;
 
         // Find the product in the Product table
         const product = await Product.findOne({
@@ -50,9 +49,13 @@ exports.createSales = async (req, res) => {
         }
 
         const { productID, unitPrice, unitID } = product;
-    
-        const revenue = subTotal;
 
+         // Ensure subTotal is a number
+         const revenue = parseFloat(subTotal);
+         
+         if (isNaN(revenue)) {
+           return res.status(400).json({ message: `Invalid subtotal '${subTotal}' for product '${productName}'` });
+         }
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
           where: { productID },
@@ -60,9 +63,8 @@ exports.createSales = async (req, res) => {
         });
 
         let remainingQuantity = salesQuantity;
-        let stockDetails = [];
+        const stockDetails = [];
 
-        // Deduct sales quantity from available stock
         for (const stock of stocks) {
           if (remainingQuantity <= 0) break;
 
@@ -70,10 +72,8 @@ exports.createSales = async (req, res) => {
           stock.productQuantity -= usedQuantity;
           remainingQuantity -= usedQuantity;
 
-          // Save updated stock quantity
-          await stock.save();
+          stockUpdates.push(stock.save());
 
-          // Track stock details for SalesDetail creation
           stockDetails.push({ stockID: stock.stockID, usedQuantity });
         }
 
@@ -83,7 +83,6 @@ exports.createSales = async (req, res) => {
           });
         }
 
-        // Fetch unit type from the Unit table
         const unit = await Unit.findOne({
           where: { unitID: unitID },
         });
@@ -94,8 +93,7 @@ exports.createSales = async (req, res) => {
             .json({ message: `Unit for product '${productName}' not found` });
         }
 
-        // Create SalesDetail record
-        await SalesDetail.create({
+        saleDetailsToCreate.push({
           salesID: newSale.salesID,
           productID: productID,
           stockID: stockDetails[0].stockID,
@@ -108,7 +106,6 @@ exports.createSales = async (req, res) => {
 
         totalRevenue += revenue;
 
-        // Add product details to the response
         productDetails.push({
           productName: productName,
           salesQuantity: salesQuantity,
@@ -116,11 +113,9 @@ exports.createSales = async (req, res) => {
         });
       }
 
-      // Update total revenue for the sale
       newSale.totalRevenue = totalRevenue;
       await newSale.save();
 
-      // Add the sale details to the created sales array
       createdSales.push({
         salesID: newSale.salesID,
         custName: newSale.custName,
@@ -131,18 +126,17 @@ exports.createSales = async (req, res) => {
       });
     }
 
-    // Emit event for real-time updates
+    await Promise.all(stockUpdates);
+    await SalesDetail.bulkCreate(saleDetailsToCreate);
+
     const io = req.app.get("socketio");
 
-    // Fetch and emit the updated sales count
     const count = await Sales.count();
     io.emit("saleCount", count);
 
-    // Fetch and emit the updated total product quantity
     const totalQuantity = await Stocks.sum("productQuantity");
     io.emit("totalProductQuantityUpdated", totalQuantity);
 
-    // Fetch and emit all sales data
     try {
       const { data: salesData } = await axios.get(
         "http://localhost:5000/api/v1/sales/sort",
@@ -162,7 +156,6 @@ exports.createSales = async (req, res) => {
       );
     }
 
-    // Fetch and emit low stock products
     try {
       const lowStockResponse = await axios.get(
         "http://localhost:5000/api/v1/notification/low-stock"
@@ -181,9 +174,7 @@ exports.createSales = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating sales:", error);
-    res
-      .status(500)
-      .json({ message: "Error carrying out sales", error: error.message });
+    res.status(500).json({ message: "Error carrying out sales", error: error.message });
   }
 };
 
