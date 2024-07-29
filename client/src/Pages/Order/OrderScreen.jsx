@@ -136,6 +136,10 @@ const OrderScreen = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if(!customerData){
+      toast.error("Fill all the required fields")
+    }
+
     const payload = {
       custName: customerData.custName,
       customerContact: customerData.contactNo,
