@@ -3,13 +3,9 @@ import NavbarSales from "../../Components/NavbarSales";
 import FooterSales from "../../Components/FooterSales";
 import { Button, DatePicker, Form, Input, InputNumber, Select } from "antd";
 import axios from "axios";
-import Logo from "../../assets/men.jpg";
-import { TiDelete } from "react-icons/ti";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { GiFocusedLightning } from "react-icons/gi";
-import { RxCross2 } from "react-icons/rx";
-import { IoAddCircleOutline } from "react-icons/io5";
 import { IoCloseCircle } from "react-icons/io5";
 
 const OrderScreen = () => {
@@ -18,7 +14,6 @@ const OrderScreen = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [unitPrice, setUnitPrice] = useState(0);
-  const [customerFormFields, setCustomerFormFields] = useState(false);
   const [products, setProducts] = useState([]);
 
   // Fetch products
@@ -68,7 +63,6 @@ const OrderScreen = () => {
     setCustomerData(allValues.customer);
   };
 
-  // Handle Product
   const onHandleProduct = (values) => {
     console.log("Success:", values);
 
@@ -81,28 +75,61 @@ const OrderScreen = () => {
     }
 
     const amount = values.product.salesQuantity * unitPrice;
-    const productWithAmount = { ...values.product, unitPrice, amount };
+    const updatedProduct = { ...values.product, unitPrice, amount };
 
-    if (
-      !addedProducts.some((p) => p.productName === values.product.productName)
-    ) {
-      setAddedProducts([...addedProducts, productWithAmount]);
-      // Update tempProducts quantity
-      const updatedProducts = tempProducts.map((product) => {
-        if (product.productName == values.product.productName) {
-          return {
-            ...product,
-            totalQuantity: product.totalQuantity - values.product.salesQuantity,
-          };
-        }
-        return product;
-      });
-      setTempProducts(updatedProducts);
+    setAddedProducts((prevAddedProducts) => {
+      const existingProductIndex = prevAddedProducts.findIndex(
+        (p) => p.productName == values.product.productName
+      );
 
-      form.resetFields();
-    } else {
-      toast.error("Product already added");
-    }
+      if (existingProductIndex >= 0) {
+        // Update the existing product
+        const updatedProducts = [...prevAddedProducts];
+        updatedProducts[existingProductIndex] = {
+          ...updatedProducts[existingProductIndex],
+          salesQuantity:
+            updatedProducts[existingProductIndex].salesQuantity +
+            values.product.salesQuantity,
+          discount: values.product.discount || 0, // Ensure discount is updated
+          subtotal: calculateSubtotal(updatedProduct),
+        };
+
+        // Update tempProducts quantity
+        const updatedTempProducts = tempProducts.map((product) => {
+          if (product.productName == values.product.productName) {
+            return {
+              ...product,
+              totalQuantity:
+                product.totalQuantity - values.product.salesQuantity,
+            };
+          }
+          return product;
+        });
+
+        setTempProducts(updatedTempProducts);
+        return updatedProducts;
+      } else {
+        // Add the new product
+        const updatedProducts = [...prevAddedProducts, updatedProduct];
+
+        // Update tempProducts quantity
+        const updatedTempProducts = tempProducts.map((product) => {
+          if (product.productName == values.product.productName) {
+            return {
+              ...product,
+              totalQuantity:
+                product.totalQuantity - values.product.salesQuantity,
+            };
+          }
+          return product;
+        });
+
+        setTempProducts(updatedTempProducts);
+        return updatedProducts;
+      }
+    });
+
+    form.resetFields();
   };
 
   // Add a new product
@@ -276,9 +303,18 @@ const OrderScreen = () => {
                           );
                           if (selectedProduct) {
                             setUnitPrice(selectedProduct.unitPrice);
+
+                            // Find if the selected product is already in addedProducts
+                            const existingProduct = addedProducts.find(
+                              (product) => product.productName == value
+                            );
+
                             form.setFieldsValue({
                               product: {
                                 unitPrice: selectedProduct.unitPrice,
+                                discount: existingProduct
+                                  ? existingProduct.discount
+                                  : 0,
                               },
                             });
                           }
@@ -288,10 +324,10 @@ const OrderScreen = () => {
                             {menu}
                             <style>
                               {`
-          .ant-select-item-option-disabled {
-            color: red !important;
-          }
-        `}
+                              .ant-select-item-option-disabled {
+                               color: red !important;
+                                  }
+                                `}
                             </style>
                           </div>
                         )}
