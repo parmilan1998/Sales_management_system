@@ -312,7 +312,9 @@ const OrderScreen = () => {
                             form.setFieldsValue({
                               product: {
                                 unitPrice: selectedProduct.unitPrice,
-                                discount: existingProduct ? existingProduct.discount : 0,
+                                discount: existingProduct
+                                  ? existingProduct.discount
+                                  : 0,
                               },
                             });
                           }
@@ -322,10 +324,10 @@ const OrderScreen = () => {
                             {menu}
                             <style>
                               {`
-          .ant-select-item-option-disabled {
-            color: red !important;
-          }
-        `}
+                              .ant-select-item-option-disabled {
+                               color: red !important;
+                                  }
+                                `}
                             </style>
                           </div>
                         )}
