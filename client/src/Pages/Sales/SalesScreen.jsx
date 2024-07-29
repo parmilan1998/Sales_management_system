@@ -151,13 +151,13 @@ const SalesScreen = () => {
               <h1 className="text-3xl font-medium font-acme">
                 All Sales Here!
               </h1>
-              <Link
+              {/* <Link
                 to="/sales/add"
                 className="bg-cyan-500 text-white px-3 py-2 rounded flex gap-2 items-center"
               >
                 <LuPlus />
                 New Sale
-              </Link>
+              </Link> */}
             </div>
             <div className="flex lg:flex-row md:flex-row flex-col  items-center gap-2">
               <h1>SortBy:</h1>
