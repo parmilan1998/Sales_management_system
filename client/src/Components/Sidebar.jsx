@@ -220,7 +220,7 @@ export default function Sidebar() {
               </li>
               <li className="px-3">
                 <Link
-                  to="/order"
+                  to="/invoice"
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
                   <div className="flex items-center self-center ">
