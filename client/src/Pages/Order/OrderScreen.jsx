@@ -68,7 +68,6 @@ const OrderScreen = () => {
     setCustomerData(allValues.customer);
   };
 
-
   // Handle Product
   const onHandleProduct = (values) => {
     console.log("Success:", values);
@@ -260,11 +259,15 @@ const OrderScreen = () => {
                         filterOption={(input, option) =>
                           (option?.label ?? "")
                             .toLowerCase()
+                            .includes(input.toLowerCase()) ||
+                          (option?.code ?? "")
+                            .toLowerCase()
                             .includes(input.toLowerCase())
                         }
                         options={tempProducts.map((product) => ({
                           label: `${product.productName}`,
                           value: product.productName,
+                          code: product.code,
                           disabled: product.totalQuantity == 0,
                         }))}
                         onChange={(value) => {
@@ -285,10 +288,10 @@ const OrderScreen = () => {
                             {menu}
                             <style>
                               {`
-                                .ant-select-item-option-disabled {
-                                  color: red !important;
-                                }
-                              `}
+          .ant-select-item-option-disabled {
+            color: red !important;
+          }
+        `}
                             </style>
                           </div>
                         )}
