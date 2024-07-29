@@ -21,6 +21,8 @@ exports.createSales = async (req, res) => {
       const { custName, customerContact, soldDate, products } = sale;
 
       const productList = Array.isArray(products) ? products : [products];
+
+   
       // Create the main sales record
       const newSale = await Sales.create({
         custName: custName,
@@ -34,7 +36,7 @@ exports.createSales = async (req, res) => {
 
       // Process each product in the sale
       for (const productSale of productList) {
-        const { productName, salesQuantity } = productSale;
+        const { productName, salesQuantity,subTotal } = productSale;
 
         // Find the product in the Product table
         const product = await Product.findOne({
@@ -48,7 +50,8 @@ exports.createSales = async (req, res) => {
         }
 
         const { productID, unitPrice, unitID } = product;
-        const revenue = unitPrice * salesQuantity;
+    
+        const revenue = subTotal;
 
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
