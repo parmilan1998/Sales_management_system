@@ -124,8 +124,6 @@ const OrderScreen = () => {
         salesQuantity: product.salesQuantity,
         unitPrice: product.unitPrice,
       })),
-      discount,
-      total,
     };
 
     try {
@@ -202,7 +200,6 @@ const OrderScreen = () => {
                     <Input
                       placeholder="Ex: John Clerk"
                       className="font-poppins py-1.5"
-                      disabled={customerFormFields}
                     />
                   </Form.Item>
                   <Form.Item
@@ -219,7 +216,6 @@ const OrderScreen = () => {
                     <Input
                       placeholder="Ex: 0770337897"
                       className="font-poppins py-1.5"
-                      disabled={customerFormFields}
                     />
                   </Form.Item>
                   <Form.Item
@@ -236,7 +232,6 @@ const OrderScreen = () => {
                     <DatePicker
                       className="font-poppins py-1.5 w-full"
                       placeholder="Ex: 22.08.2024"
-                      disabled={customerFormFields}
                     />
                   </Form.Item>
                 </div>
@@ -244,7 +239,6 @@ const OrderScreen = () => {
                   <Button
                     type="primary"
                     htmlType="submit"
-                    disabled={customerFormFields}
                     className="font-poppins py-3 h-10 w-full"
                   >
                     Add Details
@@ -418,7 +412,7 @@ const OrderScreen = () => {
                             <tr className="block sm:table-row sm:border-none mb-4">
                               <th
                                 data-th="No"
-                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-xs font-medium text-left"
+                                className="py-3 w-8 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
                               >
                                 No
                               </th>
@@ -430,33 +424,22 @@ const OrderScreen = () => {
                               </th>
                               <th
                                 data-th="Sales Quantity"
-                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                                className="py-3 w-24 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
                               >
-                                Sales Quantity
+                                Quantity
                               </th>
-                              <th
-                                data-th="Price"
-                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
-                              >
-                                Price
-                              </th>
+
                               <th
                                 data-th="Discount"
-                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                                className="py-3 w-12 text-end before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium"
                               >
                                 Discount
                               </th>
                               <th
                                 data-th="Subtotal"
-                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                                className="py-3 w-24 before:inline-block text-end before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium"
                               >
                                 Subtotal
-                              </th>
-                              <th
-                                data-th="Actions"
-                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
-                              >
-                                Actions
                               </th>
                             </tr>
                           </thead>
@@ -464,7 +447,7 @@ const OrderScreen = () => {
                             {addedProducts.map((product, index) => (
                               <tr
                                 key={index}
-                                className="block sm:table-row sm:border-none mb-4"
+                                className="block sm:table-row sm:border-none mb-4 gap-3"
                               >
                                 <td
                                   data-th="Index"
@@ -474,7 +457,7 @@ const OrderScreen = () => {
                                 </td>
                                 <td
                                   data-th="Product Name"
-                                  className="before:w-20 w-48 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
+                                  className="before:w-20 w-72 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
                                 >
                                   <div className="relative tracking-wide">
                                     {product.productName}
@@ -482,20 +465,18 @@ const OrderScreen = () => {
                                 </td>
                                 <td
                                   data-th="Sales Quantity"
-                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
+                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
                                 >
-                                  <div className="relative tracking-wide">
+                                  <div className="relative tracking-wide flex justify-center">
                                     {product.salesQuantity}
                                   </div>
                                 </td>
-                                <td className="before:w-24 py-3 sm:table-cell h-8 text-sm">
-                                  {product.salesQuantity * product.unitPrice}
-                                </td>
+
                                 <td
                                   data-th="Discount"
                                   className="py-3 flex items-center sm:table-cell h-8 text-sm transition duration-300"
                                 >
-                                  <div className="relative tracking-wide">
+                                  <div className="relative tracking-wide text-end">
                                     {product.discount != null
                                       ? product.discount.toFixed(2)
                                       : "0"}
@@ -504,18 +485,19 @@ const OrderScreen = () => {
                                 </td>
                                 <td
                                   data-th="Subtotal"
-                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
+                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
                                 >
-                                  <div className="relative tracking-wide">
+                                  <div className="relative tracking-wide text-end">
                                     Rs.{calculateSubtotal(product)}
                                   </div>
                                 </td>
+
                                 <td
                                   data-th="Actions"
-                                  className="before:inline-block py-3 before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
+                                  className="before:inline-block justify-end py-3 before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
                                 >
                                   <button
-                                    className="flex justify-center items-center"
+                                    className="flex justify-end ml-12 items-center"
                                     onClick={() => handleDeleteProduct(index)}
                                   >
                                     <IoCloseCircle color="white" size={24} />
@@ -526,12 +508,10 @@ const OrderScreen = () => {
                             <tr>
                               <td
                                 colSpan="5"
-                                className="text-right font-medium py-3"
+                                className="text-right text-sm font-medium py-3"
                               >
-                                Total:
-                              </td>
-                              <td className="text-right font-medium py-3">
-                                Rs.{calculateTotal(addedProducts)}
+                                <span className="mr-4">Total:</span> Rs.
+                                {calculateTotal(addedProducts)}
                               </td>
                             </tr>
                           </tbody>
