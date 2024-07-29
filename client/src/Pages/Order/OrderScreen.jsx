@@ -10,17 +10,61 @@ import { useNavigate } from "react-router-dom";
 import { GiFocusedLightning } from "react-icons/gi";
 import { RxCross2 } from "react-icons/rx";
 import { IoAddCircleOutline } from "react-icons/io5";
+import { IoCloseCircle } from "react-icons/io5";
 
 const OrderScreen = () => {
-  const [products, setProducts] = useState([]);
+  const [tempProducts, setTempProducts] = useState([]);
   const [customerData, setCustomerData] = useState(null);
-  const [addedProducts, setAddedProducts] = useState([]);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [unitPrice, setUnitPrice] = useState(0);
   const [customerFormFields, setCustomerFormFields] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [total, setTotal] = useState(0);
+  const [products, setProducts] = useState([]);
+
+  // Fetch products
+  const fetchProductsApi = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/v1/product/list");
+      console.log(res.data);
+      setProducts(res.data);
+      setTempProducts(res.data);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  const [addedProducts, setAddedProducts] = useState(
+    products.map((product) => ({
+      ...product,
+      discount: 0,
+      subtotal: product.unitPrice * product.salesQuantity,
+    }))
+  );
+
+  const calculateSubtotal = (product) => {
+    const discount =
+      product.discount != null ? parseFloat(product.discount) : 0;
+    return (
+      product.unitPrice *
+      product.salesQuantity *
+      (1 - discount / 100)
+    ).toFixed(2);
+  };
+
+  const calculateTotal = () => {
+    return addedProducts
+      .reduce((total, product) => {
+        const discount =
+          product.discount != null ? parseFloat(product.discount) : 0;
+        return (
+          total +
+          ((100 - discount) / 100) * (product.salesQuantity * product.unitPrice)
+        );
+      }, 0)
+      .toFixed(2);
+  };
 
   // Handle Custom
   const onHandleCustomer = (values) => {
@@ -49,6 +93,18 @@ const OrderScreen = () => {
       !addedProducts.some((p) => p.productName === values.product.productName)
     ) {
       setAddedProducts([...addedProducts, productWithAmount]);
+      // Update tempProducts quantity
+      const updatedProducts = tempProducts.map((product) => {
+        if (product.productName === values.product.productName) {
+          return {
+            ...product,
+            totalQuantity: product.totalQuantity - values.product.salesQuantity,
+          };
+        }
+        return product;
+      });
+      setTempProducts(updatedProducts);
+
       form.resetFields();
     } else {
       toast.error("Product already added");
@@ -86,58 +142,41 @@ const OrderScreen = () => {
     }
   };
 
-  // Delete sales product
-  const handleDeleteProduct = (index) => {
-    const newProducts = addedProducts.filter((_, i) => i !== index);
-    setAddedProducts(newProducts);
+  const restoreProductQuantity = (productName, quantity) => {
+    const product = tempProducts.find((p) => p.productName == productName);
+    if (product) {
+      product.totalQuantity += quantity;
+    }
   };
 
-  // Fetch products
-  const fetchProductsApi = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/v1/product/list");
-      console.log(res.data);
-      setProducts(res.data);
-    } catch (err) {
-      console.log(err.message);
-    }
+  const handleDeleteProduct = (index) => {
+    const productToDelete = addedProducts[index];
+    restoreProductQuantity(
+      productToDelete.productName,
+      productToDelete.salesQuantity
+    );
+
+    const updatedProducts = addedProducts.filter((_, i) => i !== index);
+    setAddedProducts(updatedProducts);
   };
 
   useEffect(() => {
     fetchProductsApi();
   }, []);
 
-  // Handle discount
-  const handleDiscountChange = (e) => {
-    const discountValue = parseFloat(e.target.value);
-    setDiscount(discountValue);
+  const handleDiscountChange = (index, discount) => {
+    const newProducts = [...addedProducts];
+    newProducts[index].discount = discount != null ? parseFloat(discount) : 0;
+    setAddedProducts(newProducts);
   };
-
-  // Calculate total
-  const calculateTotal = () => {
-    const subtotal = addedProducts.reduce(
-      (total, product) => total + product.amount,
-      0
-    );
-    const discountAmount = (subtotal * discount) / 100;
-    const finalTotal = subtotal - discountAmount;
-    setTotal(finalTotal);
-  };
-
-  // Subtotal calculation
-  const totalAmount = addedProducts.reduce(
-    (total, product) => total + product.amount,
-    0
-  );
 
   return (
     <>
       <NavbarSales />
       <div className="min-h-screen bg-gray-200 z-0 px-8 lg:h-[100%] py-12 lg:px-16 mx-auto font-poppins cursor-pointer">
         <div className="grid grid-cols-6 gap-3">
-          <div className="col-span-3 w-full">
-            <div>
-              {/* <div className="flex bg-white gap-3 font-poppins border border-gray-400 rounded py-5 px-3 m-3"> */}
+          <div className="col-span-3 w-full ">
+            <div className="border border-blue-400 rounded-md">
               <Form
                 onFinish={onHandleCustomer}
                 className="gap-3 p-8 rounded-md bg-white"
@@ -212,75 +251,94 @@ const OrderScreen = () => {
                   </Button>
                 </div>
               </Form>
-              {/* </div> */}
             </div>
             <div>
               <Form
                 onFinish={onHandleProduct}
                 form={form}
                 layout="vertical"
-                className="gap-3 p-8 my-3 rounded-md bg-white"
+                className="gap-3 p-8 my-3 rounded-md bg-white border border-blue-400 "
               >
                 <div className="text-gray-400 py-2 flex justify-center items-center gap-3 text-center text-2xl font-poppins font-bold">
                   <GiFocusedLightning size={32} />
                   Product Details
                 </div>
-                <Form.Item
-                  name={["product", "productName"]}
-                  label="Product Name"
-                  className="font-poppins px-3"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select a product!",
-                    },
-                  ]}
-                >
-                  <Select
-                    className="font-poppins"
-                    showSearch
-                    placeholder="Select the product"
-                    filterOption={(input, option) =>
-                      (option?.label ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    options={products.map((product) => ({
-                      label: `${product.productName} (Qt-${product.totalQuantity})`,
-                      value: product.productName,
-                      disabled:
-                        addedProducts.some(
-                          (p) => p.productName == product.productName
-                        ) || product.totalQuantity == 0,
-                    }))}
-                    onChange={(value) => {
-                      const selectedProduct = products.find(
-                        (product) => product.productName === value
-                      );
-                      if (selectedProduct) {
-                        setUnitPrice(selectedProduct.unitPrice);
-                        form.setFieldsValue({
-                          product: {
-                            unitPrice: selectedProduct.unitPrice,
-                          },
-                        });
-                      }
-                    }}
-                    dropdownRender={(menu) => (
-                      <div>
-                        {menu}
-                        <style>
-                          {`
+                <div className="flex px-3 gap-3 w-full">
+                  <div className=" w-72">
+                    <Form.Item
+                      name={["product", "productName"]}
+                      label="Product Name"
+                      className="font-poppins px-3"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select a product!",
+                        },
+                      ]}
+                    >
+                      <Select
+                        className="font-poppins"
+                        showSearch
+                        placeholder="Select the product"
+                        filterOption={(input, option) =>
+                          (option?.label ?? "")
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={tempProducts.map((product) => ({
+                          label: `${product.productName}`,
+                          value: product.productName,
+                          disabled: product.totalQuantity == 0,
+                        }))}
+                        onChange={(value) => {
+                          const selectedProduct = products.find(
+                            (product) => product.productName == value
+                          );
+                          if (selectedProduct) {
+                            setUnitPrice(selectedProduct.unitPrice);
+                            form.setFieldsValue({
+                              product: {
+                                unitPrice: selectedProduct.unitPrice,
+                              },
+                            });
+                          }
+                        }}
+                        dropdownRender={(menu) => (
+                          <div>
+                            {menu}
+                            <style>
+                              {`
                                 .ant-select-item-option-disabled {
                                   color: red !important;
                                 }
                               `}
-                        </style>
-                      </div>
-                    )}
-                  />
-                </Form.Item>
-                <div className="flex px-3 gap-3">
+                            </style>
+                          </div>
+                        )}
+                      />
+                    </Form.Item>
+                  </div>
+                  <div className=" w-56">
+                    <Form.Item
+                      name={["product", "unitPrice"]}
+                      className="font-poppins w-full"
+                      label="Unit Price"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input unit price!",
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        placeholder="Ex:10.00"
+                        readOnly={true}
+                        className="font-poppins w-full py-0.5 h-8"
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="ml-3 flex px-2  gap-6">
                   <Form.Item
                     name={["product", "salesQuantity"]}
                     className="font-poppins w-full"
@@ -290,37 +348,46 @@ const OrderScreen = () => {
                         required: true,
                         message: "Please input sales quantity!",
                       },
+                      ({ getFieldValue }) => ({
+                        validator(_, value) {
+                          const selectedProduct = tempProducts.find(
+                            (product) =>
+                              product.productName ===
+                              getFieldValue(["product", "productName"])
+                          );
+                          if (
+                            selectedProduct &&
+                            value > selectedProduct.totalQuantity
+                          ) {
+                            return Promise.reject(
+                              new Error(
+                                "Sales quantity exceeds available quantity!"
+                              )
+                            );
+                          }
+                          return Promise.resolve();
+                        },
+                      }),
                     ]}
                   >
                     <InputNumber
-                      max={100}
                       min={1}
-                      defaultValue={1}
-                      className="font-poppins w-full py-1"
+                      placeholder="Ex:10"
+                      className="font-poppins w-64 py-0.5 h-8 ml-1.5"
                     />
                   </Form.Item>
 
                   <Form.Item
-                    name={["product", "unitPrice"]}
+                    name={["product", "discount"]}
                     className="font-poppins w-full"
-                    label="Unit Price"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input unit price!",
-                      },
-                      {
-                        type: "number",
-                        min: 100,
-                        message: "Price must be at least 100!",
-                      },
-                    ]}
+                    label="Discount"
                   >
                     <InputNumber
-                      min={100}
-                      defaultValue={100}
-                      readOnly={true}
-                      className="font-poppins w-full py-1"
+                      defaultValue={0}
+                      onChange={(value) =>
+                        handleDiscountChange(parseFloat(value))
+                      }
+                      addonAfter="%"
                     />
                   </Form.Item>
                 </div>
@@ -340,13 +407,59 @@ const OrderScreen = () => {
             <div className="min-h-screen bg-gray-200 z-0 lg:h-[100%] w-full mx-auto font-poppins cursor-pointer">
               <div className="grid grid-cols-6 gap-2 font-poppins">
                 {addedProducts && (
-                  <div className="col-span-6 bg-cyan-500 text-white rounded w-full p-4">
+                  <div className="col-span-6 bg-blue-600 border border-blue-400 text-white rounded w-full p-4">
                     <div className="grid grid-cols-5 p-4 gap-2">
                       <div className="py-2 flex justify-center items-center gap-3 text-center text-2xl font-poppins font-bold">
                         Items
                       </div>
                       <div className="col-span-5 overflow-x-auto">
                         <table className="w-full text-left" cellSpacing="0">
+                          <thead>
+                            <tr className="block sm:table-row sm:border-none mb-4">
+                              <th
+                                data-th="No"
+                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-xs font-medium text-left"
+                              >
+                                No
+                              </th>
+                              <th
+                                data-th="Product Name"
+                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                              >
+                                Product Name
+                              </th>
+                              <th
+                                data-th="Sales Quantity"
+                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                              >
+                                Sales Quantity
+                              </th>
+                              <th
+                                data-th="Price"
+                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                              >
+                                Price
+                              </th>
+                              <th
+                                data-th="Discount"
+                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                              >
+                                Discount
+                              </th>
+                              <th
+                                data-th="Subtotal"
+                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                              >
+                                Subtotal
+                              </th>
+                              <th
+                                data-th="Actions"
+                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                              >
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
                           <tbody>
                             {addedProducts.map((product, index) => (
                               <tr
@@ -354,99 +467,83 @@ const OrderScreen = () => {
                                 className="block sm:table-row sm:border-none mb-4"
                               >
                                 <td
-                                  data-th="Company"
-                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500 "
+                                  data-th="Index"
+                                  className="before:w-24  py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
                                 >
                                   <div className="relative">{index + 1}.</div>
                                 </td>
                                 <td
-                                  data-th="Title"
-                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500  "
+                                  data-th="Product Name"
+                                  className="before:w-20 w-48 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
                                 >
                                   <div className="relative tracking-wide">
                                     {product.productName}
                                   </div>
                                 </td>
                                 <td
-                                  data-th="Title"
-                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500  "
+                                  data-th="Sales Quantity"
+                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
                                 >
                                   <div className="relative tracking-wide">
                                     {product.salesQuantity}
                                   </div>
                                 </td>
+                                <td className="before:w-24 py-3 sm:table-cell h-8 text-sm">
+                                  {product.salesQuantity * product.unitPrice}
+                                </td>
                                 <td
-                                  data-th="amount"
-                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500 "
+                                  data-th="Discount"
+                                  className="py-3 flex items-center sm:table-cell h-8 text-sm transition duration-300"
                                 >
-                                  <div className="flex justify-end items-end  tracking-wider text-end px-2">
-                                    <span>Rs.{product.amount.toFixed(2)}</span>
+                                  <div className="relative tracking-wide">
+                                    {product.discount != null
+                                      ? product.discount.toFixed(2)
+                                      : "0"}
+                                    %
                                   </div>
                                 </td>
                                 <td
-                                  data-th="Username"
-                                  className="before:inline-block py-3 before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500 "
+                                  data-th="Subtotal"
+                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
+                                >
+                                  <div className="relative tracking-wide">
+                                    Rs.{calculateSubtotal(product)}
+                                  </div>
+                                </td>
+                                <td
+                                  data-th="Actions"
+                                  className="before:inline-block py-3 before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
                                 >
                                   <button
                                     className="flex justify-center items-center"
                                     onClick={() => handleDeleteProduct(index)}
                                   >
-                                    <RxCross2 color="red" size={24} />
+                                    <IoCloseCircle color="white" size={24} />
                                   </button>
                                 </td>
                               </tr>
                             ))}
+                            <tr>
+                              <td
+                                colSpan="5"
+                                className="text-right font-medium py-3"
+                              >
+                                Total:
+                              </td>
+                              <td className="text-right font-medium py-3">
+                                Rs.{calculateTotal(addedProducts)}
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
-                    </div>
-                    {/* <div className="cols-span-2"></div> */}
-                    <div className="flex gap-4 justify-center lg:ml-[263px]">
-                      <span className="text-sm mt-0.5 tracking-wide">
-                        Sub Total:
-                      </span>
-                      <h1 className="text-sm mt-0.5 tracking-wider flex">
-                        Rs.{totalAmount.toFixed(2)}
-                      </h1>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm m-4"></div>
-                      <div className="lg:mx-12 py-4">
-                        <input
-                          type="number"
-                          name="discount"
-                          id="discount"
-                          value={discount}
-                          min={0}
-                          placeholder="Discount %"
-                          onChange={handleDiscountChange}
-                          className="relative w-32 text-end px-6 h-8 text-xs transition-all border-b outline-none focus-visible:outline-none peer border-slate-200 text-slate-500 autofill:bg-white invalid:border-pink-500 invalid:text-pink-500 focus:border-emerald-500 focus:outline-none invalid:focus:border-pink-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-4 justify-center lg:ml-[296px]">
-                      <span className="text-sm mt-0.5 tracking-wide">
-                        Total:
-                      </span>
-                      <h1 className="text-sm mt-0.5 tracking-wider flex">
-                        Rs.{total.toFixed(2)}
-                      </h1>
                     </div>
                     <div className="relative flex justify-end "></div>
                     <div className="grid grid-cols-4 p-4">
                       <div className="col-span-2 flex justify-end gap-2"></div>
                       <div className="col-span-2 flex justify-end gap-2 mx-2">
-                        <button
-                          // onClick={handleSubmit}
-                          className="text-sm px-3 py-2 bg-emerald-500 hover:bg-emerald-700 ease-in duration-200 rounded-sm text-white"
-                        >
+                        <button className="text-sm px-3 py-2 bg-emerald-500 hover:bg-emerald-700 ease-in duration-200 rounded-sm text-white">
                           Preview
-                        </button>
-                        <button
-                          onClick={calculateTotal}
-                          className="text-sm px-5 py-2 bg-emerald-500 hover:bg-emerald-700 ease-in duration-200 rounded-sm text-white"
-                        >
-                          Total
                         </button>
                         <button
                           onClick={handleSubmit}
