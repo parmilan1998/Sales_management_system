@@ -5,7 +5,7 @@ import { MdDelete } from "react-icons/md";
 import { GrFormView } from "react-icons/gr";
 import { Link } from "react-router-dom";
 import SingleProductPopUp from "./SingleProductPopUp";
-import { Button, Popconfirm, Tooltip } from "antd";
+import { Popconfirm, Tooltip } from "antd";
 import { Modal } from "antd";
 
 const ProductTable = ({
