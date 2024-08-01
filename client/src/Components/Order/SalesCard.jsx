@@ -23,6 +23,7 @@ const SalesCard = () => {
   const [showContent, setShowContent] = useState(false);
   const [customerData, setCustomerData] = useState(null);
 
+  console.log(cart);
   const navigate = useNavigate();
 
   const fetchCategoryData = async () => {
@@ -143,11 +144,6 @@ const SalesCard = () => {
   const clearAll = () => {
     setCart([]);
     localStorage.removeItem("cart");
-  };
-
-  const calculateDiscountedSubtotal = (unitPrice, quantity) => {
-    const subtotal = unitPrice * quantity;
-    return subtotal - subtotal * (discount / 100);
   };
 
   // Handle finished
@@ -286,7 +282,7 @@ const SalesCard = () => {
                 <button
                   key={i}
                   onClick={() => setSelectedCategory(item.categoryID)}
-                  className={`px-8 py-2 text-sm rounded shadow ${
+                  className={`px-8 py-2 text-xs rounded shadow ${
                     selectedCategory === item.categoryID
                       ? "bg-indigo-800"
                       : "bg-indigo-500"
@@ -367,6 +363,7 @@ const SalesCard = () => {
                                   onClick={() =>
                                     incrementQuantity(item.productID)
                                   }
+                                  disabled={item.quantity >= item.totalQuantity}
                                 >
                                   <IoIosAddCircleOutline />
                                 </button>

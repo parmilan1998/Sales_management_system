@@ -155,12 +155,38 @@ exports.filterbyCategory = async (req, res) => {
       where: { categoryID },
     });
 
+    const productIDs = products.map((product) => product.productID);
+
+    const stockQuantities = await Stocks.findAll({
+      attributes: [
+        "productID",
+        [fn("sum", col("productQuantity")), "totalQuantity"],
+      ],
+      where: {
+        productID: {
+          [Op.in]: productIDs,
+        },
+      },
+      group: ["productID"],
+    });
+
+    const stockQuantityMap = stockQuantities.reduce((acc, stock) => {
+      acc[stock.productID] = stock.dataValues.totalQuantity;
+      return acc;
+    }, {});
+
+    const productWithQuantities = products.map((product) => ({
+      ...product.dataValues,
+      totalQuantity: stockQuantityMap[product.productID] || 0,
+    }));
+
     if (products.length === 0) {
       return res
         .status(404)
         .json({ message: "No products found in this category" });
     }
-    res.status(200).json(products);
+
+    res.status(200).json(productWithQuantities);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
