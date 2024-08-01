@@ -2,7 +2,6 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RootLayout from "./Layout/RootLayout";
 import Category from "./Pages/Category/Category";
-
 import Dashboard from "./Pages/Dashboard";
 import Home from "./Components/Home";
 import PageNotFound from "./Pages/PageNotFound";

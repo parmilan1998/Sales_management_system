@@ -50,12 +50,13 @@ exports.createSales = async (req, res) => {
 
         const { productID, unitPrice, unitID } = product;
 
-         // Ensure subTotal is a number
-         const revenue = parseFloat(subTotal);
-         
-         if (isNaN(revenue)) {
-           return res.status(400).json({ message: `Invalid subtotal '${subTotal}' for product '${productName}'` });
-         }
+        // Ensure subTotal is a number
+        const revenue = parseFloat(subTotal);
+        if (isNaN(revenue)) {
+          return res.status(400).json({
+            message: `Invalid subtotal '${subTotal}' for product '${productName}'`,
+          });
+        }
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
           where: { productID },
@@ -174,7 +175,9 @@ exports.createSales = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating sales:", error);
-    res.status(500).json({ message: "Error carrying out sales", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error carrying out sales", error: error.message });
   }
 };
 
