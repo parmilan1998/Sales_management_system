@@ -153,7 +153,7 @@ export default function NavbarSales() {
             </ul>
             {/*      <!-- Actions --> */}
             <div className="ml-auto flex gap-5 items-center justify-end px-6 lg:ml-0 lg:flex-1 lg:p-0">
-              <a
+              {/* <a
                 href="#"
                 className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-lg text-emerald-500"
               >
@@ -163,7 +163,7 @@ export default function NavbarSales() {
                   {salesCount.count}
                   <span className="sr-only"> new emails </span>
                 </span>
-              </a>
+              </a> */}
               {user ? (
                 <div className="dropdown dropdown-end">
                   <div tabIndex={0} role="button" className="text-black">
