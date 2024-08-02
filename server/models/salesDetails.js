@@ -58,7 +58,6 @@ salesDetail = db.define(
       allowNull: false,
       validate: {
         notEmpty: true,
-        min: 1,
       },
     },
     revenue: {
@@ -73,7 +72,6 @@ salesDetail = db.define(
       allowNull: false,
       validate: {
         notEmpty: true,
-        min: 0,
       },
     },
   },
@@ -82,6 +80,7 @@ salesDetail = db.define(
     tableName: "salesDetail",
   }
 );
+
 salesDetail.belongsTo(Product, {
   foreignKey: "productID",
   targetKey: "productID",

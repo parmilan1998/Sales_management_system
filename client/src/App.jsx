@@ -2,7 +2,6 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RootLayout from "./Layout/RootLayout";
 import Category from "./Pages/Category/Category";
-
 import Dashboard from "./Pages/Dashboard";
 import Home from "./Components/Home";
 import PageNotFound from "./Pages/PageNotFound";
@@ -20,6 +19,7 @@ import AddEditSalesScreen from "./Pages/Sales/AddEditSalesScreen";
 import LoginScreen from "./Pages/Admin/LoginScreen";
 import ProfileSettingsScreen from "./Pages/ProfileSettingsScreen";
 import OrderScreen from "./Pages/Order/OrderScreen";
+import AddInvoice from "./Pages/Order/AddInvoice";
 // import GoogleSignInButton from "./Components/admin/GoogleSignIn";
 
 const App = () => {
@@ -43,12 +43,13 @@ const App = () => {
             <Route path="/sales/add/:id" element={<AddEditSalesScreen />} />
             <Route path="/reports" element={<Report />} />
             <Route path="/profile" element={<ProfileSettingsScreen />} />
-            <Route path="/order" element={<OrderScreen />} />
             <Route path="/stocks" element={<Stocks />} />
             <Route path="*" element={<PageNotFound />} />
             {/* <Route path="/" element={<GoogleSignInButton />} /> */}
           </Route>
           <Route path="/user/login" element={<LoginScreen />} />
+          <Route path="/invoice" element={<OrderScreen />} />
+          <Route path="/invoice/add" element={<AddInvoice />} />
         </Routes>
       </BrowserRouter>
     </>

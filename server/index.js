@@ -36,6 +36,7 @@ const salesRoute = require("./routes/salesRoute");
 const userRoute = require("./routes/userRoute");
 const reportRoute = require("./routes/reportRoute");
 const notificationRoute = require("./routes/notificationRoute");
+const unitRoute = require("./routes/unitRoute");
 
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
@@ -45,6 +46,7 @@ const Sales = require("./models/sales");
 const SalesDetail = require("./models/salesDetails");
 const Product = require("./models/products");
 const Stocks = require("./models/stocks");
+const Unit = require("./models/unit.js");
 
 dotenv.config();
 
@@ -71,17 +73,25 @@ app.use("/api/v1/sales", salesRoute);
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/reports", reportRoute);
 app.use("/api/v1/notification", notificationRoute);
+app.use("/api/v1/unit", unitRoute);
 
 const PORT = process.env.PORT || 5000;
 
 // Define associations
 Sales.hasMany(SalesDetail, { foreignKey: "salesID", as: "details" });
 SalesDetail.belongsTo(Sales, { foreignKey: "salesID", targetKey: "salesID" });
+SalesDetail.belongsTo(Unit, { foreignKey: "unitID", as: "unit" });
+
 SalesDetail.belongsTo(Product, {
   foreignKey: "productID",
   targetKey: "productID",
 });
 SalesDetail.belongsTo(Stocks, { foreignKey: "stockID", targetKey: "stockID" });
+
+Unit.hasMany(SalesDetail, { foreignKey: "unitID", as: "details" });
+
+Product.hasMany(Stocks, { foreignKey: "productID" });
+Stocks.belongsTo(Product, { foreignKey: "productID" });
 
 db.sync()
   .then(() => {

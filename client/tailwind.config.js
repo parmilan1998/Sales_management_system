@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import daisyui from "daisyui";
+
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
@@ -16,18 +18,19 @@ export default {
     },
   },
   plugins: [
-    function({addUtilities}){
-      const newUtilties ={
-        ".no-scrollbar::-webkit-scrollbar":{
-          display:"none"
+    daisyui,
+    function ({ addUtilities }) {
+      const newUtilties = {
+        ".no-scrollbar::-webkit-scrollbar": {
+          display: "none",
         },
-        ".no-scrollbar":{
-          "-ms-overflow-style":"none",
-          "scrollbar-width":"none",
+        ".no-scrollbar": {
+          "-ms-overflow-style": "none",
+          "scrollbar-width": "none",
         },
       };
 
-      addUtilities(newUtilties)
-    }
+      addUtilities(newUtilties);
+    },
   ],
 };

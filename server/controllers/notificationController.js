@@ -1,78 +1,65 @@
-const { Op, fn, col } = require("sequelize");
+const { Op, fn, col , literal } = require("sequelize");
 const Stocks = require("../models/stocks");
 const Product = require("../models/products");
 
 // GET -> localhost:5000/api/v1/notification/low-stock
 exports.getLowStockProducts = async (req, res) => {
   try {
-    const lowStockProducts = await Stocks.findAll({
+    const lowStockProducts = await Product.findAll({
       attributes: [
-        "productID",
-        [fn("sum", col("productQuantity")), "totalQuantity"],
-      ],
-      group: ["productID"],
-      having: {
-        totalQuantity: {
-          [Op.gt]: 0,
-          [Op.lte]: 10,
-        },
-      },
-      include: [
-        {
-          model: Product,
-          attributes: ["productName"],
-        },
+        'productID',
+        'productName',
+        'reOrderLevel',
+        [
+          literal(`(
+            SELECT COALESCE(SUM(s.productQuantity), 0)
+            FROM Stocks s
+            WHERE s.productID = Product.productID
+          )`),
+          'totalQuantity',
+        ],
       ],
     });
 
+    const notifications = lowStockProducts
+      .map((product) => {
+        const totalQuantity = product.dataValues.totalQuantity || 0;
+        const { productID, productName, reOrderLevel } = product;
+        if (totalQuantity == 0) {
+          return {
+            productId: productID,
+            productName,
+            totalQuantity,
+            reOrderLevel,
+            message: `The ${productName} is out of stock.`,
+          };
+        } else if (totalQuantity <= 10) {
+          return {
+            productId: productID,
+            productName,
+            totalQuantity,
+            reOrderLevel,
+            message: `The ${productName} has low stock (only ${totalQuantity} left).`,
+          };
+        } else if (totalQuantity > 10 && totalQuantity <= reOrderLevel) {
+          return {
+            productId: productID,
+            productName,
+            totalQuantity,
+            reOrderLevel,
+            message: `The ${productName} needs to be reordered (current stock is ${totalQuantity}, reorder level is ${reOrderLevel}).`,
+          };
+        }
+      })
+      .filter((notification) => notification !== undefined);
+
     res.status(200).json({
-      count: lowStockProducts.count,
-      data: lowStockProducts.map((stock) => ({
-        productId: stock.productID,
-        productName: stock.Product.productName,
-        totalQuantity: stock.dataValues.totalQuantity,
-        message: `The product ${stock.Product.productName} has low stock (only ${stock.dataValues.totalQuantity} left).`,
-      })),
+      count: notifications.length,
+      data: notifications,
     });
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch low stock products.",
-      error: error.message,
-    });
-  }
-};
-
-// GET -> localhost:5000/api/v1/notification/out-of-stock
-exports.getOutOfStockProducts = async (req, res) => {
-  try {
-    const outOfStockProducts = await Stocks.findAll({
-      attributes: [
-        "productID",
-        [fn("SUM", col("productQuantity")), "totalQuantity"],
-      ],
-      group: ["productID"],
-      having: {
-        totalQuantity: 0, 
-      },
-      include: [
-        {
-          model: Product,
-          attributes: ["productName"],
-        },
-      ],
-    });
-
-    res.status(200).json({
-      data: outOfStockProducts.map((stock) => ({
-        productId: stock.productID,
-        productName: stock.Product.productName,
-        totalQuantity: stock.dataValues.totalQuantity,
-        message: `The product ${stock.Product.productName} is out of stock.`,
-      })),
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch out of stock products.",
       error: error.message,
     });
   }

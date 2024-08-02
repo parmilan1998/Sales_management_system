@@ -30,6 +30,7 @@ const Purchase = () => {
     try {
       const res = await axios.get(url);
       const { purchases, pagination } = res.data;
+
       setPurchase(purchases);
       setTotalPages(pagination.totalPages);
       setLoading(false);

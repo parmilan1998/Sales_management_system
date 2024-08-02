@@ -5,7 +5,7 @@ import { MdDelete } from "react-icons/md";
 import { GrFormView } from "react-icons/gr";
 import { Link } from "react-router-dom";
 import SingleProductPopUp from "./SingleProductPopUp";
-import { Button, Popconfirm, Tooltip } from "antd";
+import { Popconfirm, Tooltip } from "antd";
 import { Modal } from "antd";
 
 const ProductTable = ({
@@ -26,6 +26,7 @@ const ProductTable = ({
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+
   return (
     <div className="relative w-full overflow-x-auto cursor-pointer">
       <table
@@ -36,85 +37,90 @@ const ProductTable = ({
           <tr>
             <th
               scope="col"
-              className="h-16 px-4 items-center justify-center text-sm font-medium border-0 first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-12 w-12 px-4 items-center justify-center text-sm font-medium border-0 first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               No
             </th>
             <th
               scope="col"
-              className="h-12 px-4 w-36 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-12 px-4 w-48 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Product Name
             </th>
 
-            <th
+            {/* <th
               scope="col"
-              className="h-16 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-12 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Description
-            </th>
+            </th> */}
             <th
               scope="col"
-              className="h-16 px-4 w-40 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-12 px-4 w-44 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Category Name
             </th>
+
             <th
               scope="col"
-              className="h-16 px-2 w-8 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-12 px-2 w-8 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Unit Price
             </th>
             <th
               scope="col"
-              className="h-16 w-40 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-12 px-2 w-32 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
-              Quantity
+              Reorder Level
+            </th>
+
+            <th
+              scope="col"
+              className="h-12 w-40 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
+            >
+              Stocks
             </th>
             <th
               scope="col"
-              className="h-16 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-cyan-500"
+              className="h-12 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Actions
             </th>
           </tr>
           {products.map((item, index) => (
             <tr
-              className={`odd:bg-slate-50 ${
-                item.totalQuantity === 0 ? "opacity-50 cursor-not-allowed" : ""
+              className={`${
+                item.totalQuantity < item.reOrderLevel
+                  ? "blink-background "
+                  : ""
               }`}
               key={index}
             >
-              <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
+              <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
                 {(page - 1) * limit + (index + 1)}
               </td>
-              <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
+              <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
                 {item.productName}
               </td>
 
-              <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                {item.productDescription}
-              </td>
-              <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
+              <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
                 {item.categoryName}
               </td>
-              <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
+
+              <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
                 Rs.{item.unitPrice}
               </td>
-              <td className="h-16 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                {item.totalQuantity === 0 ? (
-                  <div className="bg-red-300 rounded-full font-medium text-red-600 flex items-center justify-center mx-auto">
-                    Out of stock
-                  </div>
-                ) : (
-                  <div className="bg-green-300 rounded-full font-medium text-green-600 flex items-center justify-center mx-auto">
-                    Available
-                  </div>
-                )}
+              <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
+                {item.reOrderLevel}&nbsp;
+                {item.unitType}
               </td>
-              <td className="h-16 px-1 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500 ">
-                <div className="flex flex-row justify-center items-center gap-0">
-                  <Button
+              <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
+                {item.totalQuantity}&nbsp;
+                {item.unitType}
+              </td>
+              <td className="h-12 px-1 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
+                <div className="flex flex-row justify-center items-center gap-2">
+                  <button
                     onClick={() => showModal(item)}
                     style={{
                       border: "none",
@@ -123,12 +129,12 @@ const ProductTable = ({
                   >
                     <Tooltip title="View Products">
                       <GrFormView
-                        size={36}
+                        size={32}
                         color="white"
-                        className="bg-green-500 p-2 rounded-full"
+                        className="bg-green-500 p-1 rounded-full"
                       />{" "}
                     </Tooltip>
-                  </Button>
+                  </button>
                   <Modal
                     title="Product Details"
                     open={isModalOpen}
@@ -141,7 +147,7 @@ const ProductTable = ({
                     <button className="py-1 ">
                       <Tooltip title="Edit Products">
                         <FaRegEdit
-                          size={36}
+                          size={32}
                           color="white"
                           className="bg-sky-500 p-2 rounded-full"
                         />
@@ -157,8 +163,7 @@ const ProductTable = ({
                       okText="Yes"
                       cancelText="No"
                     >
-                      <Button
-                        danger
+                      <button
                         style={{
                           border: "none",
                           boxShadow: "none",
@@ -166,12 +171,12 @@ const ProductTable = ({
                       >
                         <Tooltip title="Delete Products">
                           <MdDelete
-                            size={36}
+                            size={32}
                             color="white"
-                            className="bg-red-500 mt-2.5 p-2 rounded-full"
+                            className="bg-red-500 mt-1.5 p-2 rounded-full"
                           />
                         </Tooltip>
-                      </Button>
+                      </button>
                     </Popconfirm>
                   </Link>
                 </div>

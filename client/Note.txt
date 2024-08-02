@@ -1,0 +1,614 @@
+import React, { useEffect, useState } from "react";
+import NavbarSales from "../../Components/NavbarSales";
+import FooterSales from "../../Components/FooterSales";
+import { Button, DatePicker, Form, Input, InputNumber, Select } from "antd";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { GiFocusedLightning } from "react-icons/gi";
+import { IoCloseCircle } from "react-icons/io5";
+
+const OrderScreen = () => {
+const [tempProducts, setTempProducts] = useState([]);
+const [customerData, setCustomerData] = useState(null);
+const [form] = Form.useForm();
+const navigate = useNavigate();
+const [unitPrice, setUnitPrice] = useState(0);
+const [products, setProducts] = useState([]);
+const [displayComponent, setDisplayComponent] = useState(null);
+
+const fetchProductsApi = async () => {
+try {
+const res = await axios.get("http://localhost:5000/api/v1/product/list");
+console.log(res.data);
+setProducts(res.data);
+setTempProducts(res.data);
+} catch (err) {
+console.log(err.message);
+}
+};
+
+const [addedProducts, setAddedProducts] = useState(
+products.map((product) => ({
+...product,
+discount: 0,
+subtotal: product.unitPrice \* product.salesQuantity,
+}))
+);
+
+const calculateSubtotal = (product) => {
+const discount =
+product.discount != null ? parseFloat(product.discount) : 0;
+return (
+product.unitPrice _
+product.salesQuantity _
+(1 - discount / 100)
+).toFixed(2);
+};
+
+const calculateTotal = () => {
+return addedProducts
+.reduce((total, product) => {
+const discount =
+product.discount != null ? parseFloat(product.discount) : 0;
+return (
+total +
+((100 - discount) / 100) _ (product.salesQuantity _ product.unitPrice)
+);
+}, 0)
+.toFixed(2);
+};
+
+const handleCustomerChange = (changedValues, allValues) => {
+setCustomerData(allValues.customer);
+};
+
+const onHandleProduct = (values) => {
+console.log("Success:", values);
+
+    const selectedProduct = products.find(
+      (product) => product.productName === values.product.productName
+    );
+
+    if (selectedProduct) {
+      setUnitPrice(selectedProduct.unitPrice);
+    }
+
+    const amount = values.product.salesQuantity * unitPrice;
+    const updatedProduct = { ...values.product, unitPrice, amount };
+
+    setAddedProducts((prevAddedProducts) => {
+      const existingProductIndex = prevAddedProducts.findIndex(
+        (p) => p.productName == values.product.productName
+      );
+
+      if (existingProductIndex >= 0) {
+        // Update the existing product
+        const updatedProducts = [...prevAddedProducts];
+        updatedProducts[existingProductIndex] = {
+          ...updatedProducts[existingProductIndex],
+          salesQuantity:
+            updatedProducts[existingProductIndex].salesQuantity +
+            values.product.salesQuantity,
+          discount: values.product.discount || 0, // Ensure discount is updated
+          subtotal: calculateSubtotal(updatedProduct),
+        };
+
+        // Update tempProducts quantity
+        const updatedTempProducts = tempProducts.map((product) => {
+          if (product.productName == values.product.productName) {
+            return {
+              ...product,
+              totalQuantity:
+                product.totalQuantity - values.product.salesQuantity,
+            };
+          }
+          return product;
+        });
+
+        setTempProducts(updatedTempProducts);
+        return updatedProducts;
+      } else {
+        // Add the new product
+        const updatedProducts = [...prevAddedProducts, updatedProduct];
+
+        // Update tempProducts quantity
+        const updatedTempProducts = tempProducts.map((product) => {
+          if (product.productName == values.product.productName) {
+            return {
+              ...product,
+              totalQuantity:
+                product.totalQuantity - values.product.salesQuantity,
+            };
+          }
+          return product;
+        });
+
+        setTempProducts(updatedTempProducts);
+        return updatedProducts;
+      }
+    });
+
+    form.resetFields();
+
+};
+
+const handleSubmit = async (e) => {
+e.preventDefault();
+
+    if (
+      !customerData.custName ||
+      !customerData.contactNo ||
+      !customerData.soldDate
+    ) {
+      toast.error("Fill all the required fields");
+      return;
+    }
+
+    const payload = {
+      custName: customerData.custName,
+      customerContact: customerData.contactNo,
+      soldDate: customerData.soldDate.format("YYYY-MM-DD"),
+      products: addedProducts.map((product) => ({
+        productName: product.productName,
+        salesQuantity: product.salesQuantity,
+        subTotal: calculateSubtotal(product),
+      })),
+    };
+
+    try {
+      const res = await axios.post(
+        `http://localhost:5000/api/v1/sales`,
+        payload
+      );
+      console.log(res.data);
+      toast.success(`Sales created successfully!`);
+      navigate("/sales");
+    } catch (err) {
+      console.error(err);
+      toast.error("Error creating sales");
+    }
+
+};
+
+const restoreProductQuantity = (productName, quantity) => {
+const product = tempProducts.find((p) => p.productName == productName);
+if (product) {
+product.totalQuantity += quantity;
+}
+};
+
+const handleDeleteProduct = (index) => {
+const productToDelete = addedProducts[index];
+restoreProductQuantity(
+productToDelete.productName,
+productToDelete.salesQuantity
+);
+
+    const updatedProducts = addedProducts.filter((_, i) => i !== index);
+    setAddedProducts(updatedProducts);
+
+};
+
+useEffect(() => {
+fetchProductsApi();
+}, []);
+
+const handleDiscountChange = (index, discount) => {
+if (index >= 0 && index < addedProducts.length) {
+const newProducts = [...addedProducts];
+newProducts[index].discount = discount != null ? parseFloat(discount) : 0;
+setAddedProducts(newProducts);
+}
+};
+
+const handleCardClick = () => {
+setDisplayComponent("Card");
+};
+
+const handleListClick = () => {
+setDisplayComponent("List");
+};
+
+return (
+<>
+<NavbarSales />
+
+<div className="min-h-screen bg-gray-200 z-0 px-8 lg:h-[100%] py-12 lg:px-6 mx-auto font-poppins cursor-pointer">
+<div>
+<div className="shadow rounded-md">
+<Form
+              className="gap-3 py-3  px-12 rounded-md bg-white"
+              layout="vertical"
+              autoComplete="off"
+              onValuesChange={handleCustomerChange}
+            >
+{/_ <div className="text-gray-400 py-4 flex justify-center items-center gap-3 text-center text-2xl font-poppins font-bold">
+<GiFocusedLightning size={32} />
+Customer Details
+</div> _/}
+<div className="flex w-full">
+<Form.Item
+name={["customer", "custName"]}
+label="Customer Name"
+className="px-3 font-poppins w-full"
+rules={[
+{
+required: true,
+message: "Please input customer name!",
+},
+]} >
+<Input
+                    placeholder="Ex: John Clerk"
+                    className="font-poppins py-1.5"
+                  />
+</Form.Item>
+<Form.Item
+name={["customer", "contactNo"]}
+label="Contact No"
+className="font-poppins px-3 w-full" >
+<InputNumber
+                    placeholder="Ex: 0770337897"
+                    className="font-poppins py-0.5 w-full"
+                    maxLength={10}
+                  />
+</Form.Item>
+<Form.Item
+name={["customer", "soldDate"]}
+label="Sold Date"
+className="font-poppins px-3 w-full"
+rules={[
+{
+required: true,
+message: "Please select the sold date!",
+},
+]} >
+<DatePicker
+                    className="font-poppins py-1.5 w-full"
+                    placeholder="Ex: 22.08.2024"
+                  />
+</Form.Item>
+</div>
+</Form>
+</div>
+</div>
+<div className="flex gap-3 py-6">
+<button
+            onClick={handleCardClick}
+            className="bg-indigo-500 text-white px-6 py-1.5 rounded"
+          >
+Card
+</button>
+<button
+            onClick={handleListClick}
+            className="bg-gray-500 text-white px-6 py-1.5 rounded"
+          >
+List
+</button>
+</div>
+<div className="grid grid-cols-6 gap-3">
+{displayComponent === "Card" && (
+<>
+{" "}
+<div className="col-span-3 w-full "></div>{" "}
+</>
+)}
+{displayComponent === "List" && (
+<>
+<div className="col-span-3 w-full ">
+<div>
+<Form
+                    onFinish={onHandleProduct}
+                    form={form}
+                    layout="vertical"
+                    className="gap-3 p-8 rounded-md bg-white shadow"
+                  >
+<div className="text-gray-400 py-2 flex justify-center items-center gap-3 text-center text-2xl font-poppins font-bold">
+<GiFocusedLightning size={32} />
+Product Details
+</div>
+<div className="flex px-3 gap-3 w-full">
+<div className="w-72">
+<Form.Item
+name={["product", "productName"]}
+label="Product Name"
+className="font-poppins px-3"
+rules={[
+{
+required: true,
+message: "Please select a product!",
+},
+]} >
+<Select
+className="font-poppins"
+showSearch
+placeholder="Select the product"
+filterOption={(input, option) =>
+(option?.label ?? "")
+.toLowerCase()
+.includes(input.toLowerCase()) ||
+(option?.code ?? "")
+.toLowerCase()
+.includes(input.toLowerCase())
+}
+options={tempProducts.map((product) => ({
+label: `${product.productName}`,
+value: product.productName,
+code: product.code,
+disabled: product.totalQuantity == 0,
+}))}
+onChange={(value) => {
+const selectedProduct = products.find(
+(product) => product.productName == value
+);
+if (selectedProduct) {
+setUnitPrice(selectedProduct.unitPrice);
+
+                                // Find if the selected product is already in addedProducts
+                                const existingProduct = addedProducts.find(
+                                  (product) => product.productName == value
+                                );
+
+                                form.setFieldsValue({
+                                  product: {
+                                    unitPrice: selectedProduct.unitPrice,
+                                    discount: existingProduct
+                                      ? existingProduct.discount
+                                      : 0,
+                                  },
+                                });
+                              }
+                            }}
+                            dropdownRender={(menu) => (
+                              <div>
+                                {menu}
+                                <style>
+                                  {`
+                              .ant-select-item-option-disabled {
+                               color: red !important;
+                                  }
+                                `}
+                                </style>
+                              </div>
+                            )}
+                          />
+                        </Form.Item>
+                      </div>
+                      <div className=" w-56">
+                        <Form.Item
+                          name={["product", "unitPrice"]}
+                          className="font-poppins w-full"
+                          label="Unit Price"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please input unit price!",
+                            },
+                          ]}
+                        >
+                          <InputNumber
+                            placeholder="Ex:10.00"
+                            readOnly={true}
+                            className="font-poppins w-full py-0.5 h-8"
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                    <div className="ml-3 flex px-2  gap-6">
+                      <Form.Item
+                        name={["product", "salesQuantity"]}
+                        className="font-poppins w-full"
+                        label="Sales Quantity"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please input sales quantity!",
+                          },
+                          ({ getFieldValue }) => ({
+                            validator(_, value) {
+                              const selectedProduct = tempProducts.find(
+                                (product) =>
+                                  product.productName ==
+                                  getFieldValue(["product", "productName"])
+                              );
+                              if (
+                                selectedProduct &&
+                                value > selectedProduct.totalQuantity
+                              ) {
+                                return Promise.reject(
+                                  new Error(
+                                    "Sales quantity exceeds available quantity!"
+                                  )
+                                );
+                              }
+                              return Promise.resolve();
+                            },
+                          }),
+                        ]}
+                      >
+                        <InputNumber
+                          min={1}
+                          placeholder="Ex:10"
+                          className="font-poppins w-64 py-0.5 h-8 ml-1.5"
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name={["product", "discount"]}
+                        className="font-poppins w-full"
+                        label="Discount"
+                      >
+                        <InputNumber
+                          min={0}
+                          onChange={(value) =>
+                            handleDiscountChange(parseFloat(value) || 0)
+                          }
+                          addonAfter="%"
+                        />
+                      </Form.Item>
+                    </div>
+                    <div className="px-3">
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        className="font-poppins py-3 h-10 w-full"
+                      >
+                        Add Details
+                      </Button>
+                    </div>
+                  </Form>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="col-span-3">
+            <div className="min-h-screen bg-gray-200 z-0 lg:h-[100%] w-full mx-auto font-poppins cursor-pointer">
+              <div className="grid grid-cols-6 gap-2 font-poppins">
+                {addedProducts && (
+                  <div className="col-span-6 bg-blue-600 border border-blue-400 text-white rounded w-full p-4">
+                    <div className="grid grid-cols-5 p-4 gap-2">
+                      <div className="py-2 flex justify-center items-center gap-3 text-center text-2xl font-poppins font-bold">
+                        Items
+                      </div>
+                      <div className="col-span-5 overflow-x-auto">
+                        <table className="w-full text-left" cellSpacing="0">
+                          <thead>
+                            <tr className="block sm:table-row sm:border-none mb-4">
+                              <th
+                                data-th="No"
+                                className="py-3 w-8 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                              >
+                                No
+                              </th>
+                              <th
+                                data-th="Product Name"
+                                className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                              >
+                                Product Name
+                              </th>
+                              <th
+                                data-th="Sales Quantity"
+                                className="py-3 w-24 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
+                              >
+                                Quantity
+                              </th>
+
+                              <th
+                                data-th="Discount"
+                                className="py-3 w-12 text-end before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium"
+                              >
+                                Discount
+                              </th>
+                              <th
+                                data-th="Subtotal"
+                                className="py-3 w-24 before:inline-block text-end before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium"
+                              >
+                                Subtotal
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {addedProducts.map((product, index) => (
+                              <tr
+                                key={index}
+                                className="block sm:table-row sm:border-none mb-4 gap-3"
+                              >
+                                <td
+                                  data-th="Index"
+                                  className="before:w-24  py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
+                                >
+                                  <div className="relative">{index + 1}.</div>
+                                </td>
+                                <td
+                                  data-th="Product Name"
+                                  className="before:w-20 w-72 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
+                                >
+                                  <div className="relative tracking-wide">
+                                    {product.productName}
+                                  </div>
+                                </td>
+                                <td
+                                  data-th="Sales Quantity"
+                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
+                                >
+                                  <div className="relative tracking-wide flex justify-center">
+                                    {product.salesQuantity}
+                                  </div>
+                                </td>
+
+                                <td
+                                  data-th="Discount"
+                                  className="py-3 flex items-center sm:table-cell h-8 text-sm transition duration-300"
+                                >
+                                  <div className="relative tracking-wide text-end">
+                                    {product.discount != null
+                                      ? product.discount.toFixed(2)
+                                      : "0"}
+                                    %
+                                  </div>
+                                </td>
+                                <td
+                                  data-th="Subtotal"
+                                  className="before:w-24 py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
+                                >
+                                  <div className="relative tracking-wide text-end">
+                                    Rs.{calculateSubtotal(product)}
+                                  </div>
+                                </td>
+
+                                <td
+                                  data-th="Actions"
+                                  className="before:inline-block justify-end py-3 before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
+                                >
+                                  <button
+                                    className="flex justify-end ml-12 items-center"
+                                    onClick={() => handleDeleteProduct(index)}
+                                  >
+                                    <IoCloseCircle color="white" size={24} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                            <tr>
+                              <td
+                                colSpan="5"
+                                className="text-right text-sm font-medium py-3"
+                              >
+                                <span className="mr-4">Total:</span> Rs.
+                                {calculateTotal(addedProducts)}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div className="relative flex justify-end "></div>
+                    <div className="grid grid-cols-4 p-4">
+                      <div className="col-span-2 flex justify-end gap-2"></div>
+                      <div className="col-span-2 flex justify-end gap-2 mx-2">
+                        <button className="text-sm px-3 py-2 bg-emerald-500 hover:bg-emerald-700 ease-in duration-200 rounded-sm text-white">
+                          Preview
+                        </button>
+                        <button
+                          onClick={handleSubmit}
+                          className="text-sm px-3 py-2  bg-sky-500 hover:bg-sky-700 ease-in duration-200 rounded-sm text-white"
+                        >
+                          Finished
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <FooterSales />
+    </>
+
+);
+};
+
+export default OrderScreen;

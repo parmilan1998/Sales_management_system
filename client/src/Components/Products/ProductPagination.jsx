@@ -46,10 +46,10 @@ const ProductPagination = ({ page, setPage, totalPages }) => {
               <li key={pageNumber}>
                 <button
                   onClick={() => setPage(pageNumber)}
-                  disabled={page === pageNumber}
+                  disabled={page == pageNumber}
                   aria-label={`Goto Page ${pageNumber}`}
                   className={`inline-flex h-10 items-center justify-center stroke-slate-700 px-4 text-sm font-medium text-slate-700 transition duration-300 ${
-                    page === pageNumber
+                    page == pageNumber
                       ? "bg-cyan-500 text-white"
                       : "hover:bg-emerald-50 hover:text-cyan-500 focus:bg-cyan-50 focus:text-cyan-600 focus-visible:outline-none"
                   }`}

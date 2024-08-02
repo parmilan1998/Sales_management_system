@@ -3,6 +3,7 @@ const { Op } = require("sequelize");
 const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 const axios = require("axios");
+const Unit = require("../models/unit");
 
 // POST -> localhost:5000/api/v1/purchase
 exports.createPurchase = async (req, res) => {
@@ -46,6 +47,7 @@ exports.createPurchase = async (req, res) => {
 
     const createdPurchase = await Purchase.create({
       productID: product.productID,
+      unitID:product.unitID,
       productName,
       purchaseVendor,
       vendorContact,
@@ -81,6 +83,7 @@ exports.createPurchase = async (req, res) => {
       updatedStock = await Stocks.create({
         productName,
         productID: product.productID,
+        unitID:product.unitID,
         purchaseID: createdPurchase.purchaseID,
         productQuantity: purchaseQuantity,
         manufacturedDate: manufacturedDate,
@@ -107,19 +110,6 @@ exports.createPurchase = async (req, res) => {
     } catch (err) {
       console.error(
         "Error fetching low stock data:",
-        err.response ? err.response.data : err.message
-      );
-    }
-
-    // Fetch and emit out of stock products
-    try {
-      const outOfStockResponse = await axios.get(
-        "http://localhost:5000/api/v1/notification/out-of-stock"
-      );
-      io.emit("outOfStockUpdated", outOfStockResponse.data);
-    } catch (err) {
-      console.error(
-        "Error fetching out of stock data:",
         err.response ? err.response.data : err.message
       );
     }
@@ -352,19 +342,6 @@ exports.updatePurchase = async (req, res) => {
       );
     }
 
-    // Fetch and emit out of stock products
-    try {
-      const outOfStockResponse = await axios.get(
-        "http://localhost:5000/api/v1/notification/out-of-stock"
-      );
-      io.emit("outOfStockUpdated", outOfStockResponse.data);
-    } catch (err) {
-      console.error(
-        "Error fetching out of stock data:",
-        err.response ? err.response.data : err.message
-      );
-    }
-
     res.status(200).json({
       message: `Purchase record with ID '${id}' updated successfully`,
       updatedPurchase: existingPurchase,
@@ -456,7 +433,7 @@ exports.queryPurchase = async (req, res) => {
     const sortOrder = sort === "DESC" ? "DESC" : "ASC";
     const sortDate = sortBy === "DESC" ? "DESC" : "ASC";
 
-    // search, pagination, and sorting
+    // Fetching purchases with unitType
     const { count, rows: purchases } = await Purchase.findAndCountAll({
       where: searchCondition,
       offset: offset,
@@ -465,13 +442,34 @@ exports.queryPurchase = async (req, res) => {
         ["productName", sortOrder],
         ["purchasedDate", sortDate],
       ],
+      include: [
+        {
+          model: Unit,
+          attributes: ["unitType"],
+          required: true,
+        },
+      ],
     });
+
+    const purchasesWithUnitType = purchases.map((purchase) => ({
+      purchaseID: purchase.purchaseID,
+      productID: purchase.productID,
+      unitID: purchase.unitID,
+      productName: purchase.productName,
+      purchaseQuantity: purchase.purchaseQuantity,
+      purchasePrice: purchase.purchasePrice,
+      COGP: purchase.COGP,
+      purchaseVendor: purchase.purchaseVendor,
+      vendorContact: purchase.vendorContact,
+      purchasedDate: purchase.purchasedDate,
+      unitType: purchase.Unit.unitType,
+    }));
 
     // Total pages
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      purchases,
+      purchases: purchasesWithUnitType,
       pagination: {
         currentPage: parsedPage,
         totalPages,

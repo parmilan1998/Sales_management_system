@@ -18,7 +18,6 @@ import {
 import { Bar } from "react-chartjs-2";
 import salesApi from "../api/sales";
 
-
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const socket = io("http://localhost:5000");
@@ -232,27 +231,27 @@ const Dashboard = () => {
       <h1 className="text-2xl font-acme text-gray-700 py-4">Dashboard</h1>
       <div className="grid grid-cols-1 gap-6 w-full">
         <div className="flex lg:flex-row md:flex-row flex-col gap-3">
-          <div className="bg-slate-50 rounded w-full h-30 p-5 flex flex-col justify-between">
-            <h1 className="text-xl text-neutral-400">Categories</h1>
-            <span className="text-4xl text-neutral-800 font-medium font-acme">
+          <div className="bg-cyan-500 rounded w-full h-30 p-5 flex flex-col justify-between">
+            <h1 className="text-xl text-white">Categories</h1>
+            <span className="text-4xl text-white font-medium font-acme">
               {category}
             </span>
           </div>
-          <div className="bg-slate-50 rounded w-full h-30 p-5 flex flex-col justify-between">
-            <h1 className="text-xl text-neutral-400">Products</h1>
-            <span className="text-4xl text-neutral-800 font-medium font-acme">
+          <div className="bg-indigo-500 rounded w-full h-30 p-5 flex flex-col justify-between">
+            <h1 className="text-xl text-white">Products</h1>
+            <span className="text-4xl text-white font-medium font-acme">
               {product}
             </span>
           </div>
-          <div className="bg-slate-50 rounded w-full h-30 p-5 flex flex-col justify-between">
-            <h1 className="text-xl text-neutral-400">Sales</h1>
-            <span className="text-4xl text-neutral-800 font-medium font-acme">
+          <div className=" bg-rose-500 rounded w-full h-30 p-5 flex flex-col justify-between">
+            <h1 className="text-xl text-white">Sales</h1>
+            <span className="text-4xl text-white font-medium font-acme">
               {saleCount}
             </span>
           </div>
-          <div className="bg-slate-50 rounded w-full h-30 p-5 flex flex-col justify-between">
-            <h1 className="text-xl text-neutral-400">Stocks</h1>
-            <span className="text-4xl text-neutral-800 font-medium font-acme">
+          <div className="bg-orange-400 rounded w-full h-30 p-5 flex flex-col justify-between">
+            <h1 className="text-xl text-white">Stocks</h1>
+            <span className="text-4xl text-white font-medium font-acme">
               {stock}
             </span>
           </div>
@@ -290,10 +289,8 @@ const Dashboard = () => {
         <div className="bg-slate-50 rounded w-full h-64 col-span-2"></div>
         <div className="bg-slate-50 rounded w-full h-64 col-span-1"></div>
       </div> */}
-    
     </div>
   );
 };
 
 export default Dashboard;
- 

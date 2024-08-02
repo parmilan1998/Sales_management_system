@@ -1,0 +1,67 @@
+@keyframes vibrate {
+  0% {
+    transform: rotate(0deg);
+  }
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-20deg);
+  }
+  40% {
+    transform: rotate(20deg);
+  }
+  60% {
+    transform: rotate(-20deg);
+  }
+  80% {
+    transform: rotate(20deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.bell {
+  display: inline-block;
+  animation: vibrate 0.6s infinite;
+}
+
+.low-stock {
+  background-color: rgba(255, 94, 0, 0.521);
+}
+
+.out-of-stock {
+  background-color: rgba(248, 7, 7, 0.623);
+}
+
+.reorder {
+  background-color: rgba(7, 248, 59, 0.623);
+}
+
+.blink-background {
+  width: 200px;
+  animation: blink 2s infinite; /* Shorter duration */
+}
+
+@keyframes blink {
+  0% {
+    background: radial-gradient(
+      circle,
+      rgba(253, 75, 4, 0.02) 100%
+    );
+  }
+  50% {
+    background: radial-gradient(
+      circle,
+      rgba(250, 168, 92, 0.788) 30%,
+      rgba(253, 83, 4, 0.02) 100%
+    );
+  }
+  100% {
+    background: radial-gradient(
+      circle,
+      rgba(253, 75, 4, 0.02) 100%
+    );
+  }
+}

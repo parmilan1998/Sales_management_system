@@ -2,6 +2,7 @@ const { DataTypes } = require("sequelize");
 const db = require("../database/db");
 const Purchase = require("./purchase");
 const Product = require("./products");
+const Unit = require("./unit");
 
 const Stocks = db.define(
   "Stocks",
@@ -31,6 +32,14 @@ const Stocks = db.define(
       },
       validate: {
         notEmpty: true,
+      },
+    },
+    unitID: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "unit",
+        key: "unitID",
       },
     },
     productName: {
@@ -78,9 +87,15 @@ Stocks.belongsTo(Product, {
   foreignKey: "productID",
   targetKey: "productID",
 });
+
 Stocks.belongsTo(Purchase, {
   foreignKey: "purchaseID",
   targetKey: "purchaseID",
+});
+
+Stocks.belongsTo(Unit, {
+  foreignKey: "unitID",
+  targetKey: "unitID",
 });
 
 module.exports = Stocks;
