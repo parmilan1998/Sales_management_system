@@ -550,61 +550,12 @@ const SalesList = () => {
                   </div>
                   <div className="col-span-5 overflow-x-auto">
                     <table className="w-full text-left" cellSpacing="0">
-                      {/* <thead>
-                        <tr className="block sm:table-row sm:border-none mb-4">
-                          <th
-                            data-th="No"
-                            className="py-3 w-8 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
-                          >
-                            No
-                          </th>
-                          <th
-                            data-th="Product Name"
-                            className="py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
-                          >
-                            Product Name
-                          </th>
-                          <th
-                            data-th="Sales Quantity"
-                            className="py-3 w-24 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium text-left"
-                          >
-                            Quantity
-                          </th>
-
-                          <th
-                            data-th="Discount"
-                            className="py-3 w-12 text-end before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium"
-                          >
-                            Discount
-                          </th>
-                          <th
-                            data-th="Subtotal"
-                            className="py-3 w-24 before:inline-block text-end before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell text-sm font-medium"
-                          >
-                            Subtotal
-                          </th>
-                        </tr>
-                      </thead> */}
                       <tbody>
                         {addedProducts.map((product, index) => (
                           <tr
                             key={index}
                             className="block sm:table-row mb-4 gap-3 border-b-[1px]"
                           >
-                            {/* <td
-                              data-th="Index"
-                              className="before:w-24  py-3 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-xs transition duration-300 stroke-slate-500"
-                            >
-                              <div className="relative">{index + 1}.</div>
-                            </td> */}
-                            {/* <td className="flex justify-start items-start">
-                              {" "}
-                              <img
-                                src={`http://localhost:5000/public/products/${product.imageUrl}`}
-                                alt={product.productName}
-                                className="w-12 h-12 object-cover mb-4 rounded"
-                              />
-                            </td> */}
                             <td
                               data-th="Product Name"
                               className="before:w-20 w-72 py-6 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"

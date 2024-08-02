@@ -50,23 +50,33 @@ const Navbar = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      const decodedToken = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-      const expTime = decodedToken.exp;
-
-      const expiryTime = (expTime - currentTime) * 1000;
-
-      if (expiryTime > 0) {
-        const timer = setTimeout(() => {
+      try {
+        const decodedToken = jwtDecode(token);
+        const currentTime = Date.now() / 1000; 
+        const expTime = decodedToken.exp;
+  
+        if (expTime && expTime > currentTime) {
+          const expiryTime = (expTime - currentTime) * 1000;
+  
+          if (expiryTime > 0) {
+            const timer = setTimeout(() => {
+              dispatch(logout());
+            }, expiryTime);
+  
+            return () => clearTimeout(timer);
+          }
+        } else {
           dispatch(logout());
-        }, expiryTime);
-
-        return () => clearTimeout(timer);
-      } else {
+        }
+      } catch (error) {
+        console.error("Invalid token:", error);
         dispatch(logout());
       }
+    } else {
+      dispatch(logout());
     }
   }, [dispatch]);
+  
 
   useEffect(() => {
     const fetchNotifications = async () => {
