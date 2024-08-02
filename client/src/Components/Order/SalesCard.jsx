@@ -2,28 +2,22 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
-  IoIosAddCircleOutline,
   IoIosArrowDropdownCircle,
   IoIosArrowDroprightCircle,
-  IoIosRemoveCircleOutline,
 } from "react-icons/io";
 import { IoAddCircleOutline } from "react-icons/io5";
-import { CiCircleRemove } from "react-icons/ci";
 import { Button, DatePicker, Form, Input, InputNumber, Popover } from "antd";
-import { FaArrowRightArrowLeft } from "react-icons/fa6";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import Invoice from "./Invoice";
 
 const SalesCard = () => {
   const [category, setCategory] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
-  const [discount, setDiscount] = useState(0);
   const [showContent, setShowContent] = useState(false);
   const [customerData, setCustomerData] = useState(null);
-
-  console.log(cart);
   const navigate = useNavigate();
 
   const fetchCategoryData = async () => {
@@ -45,6 +39,7 @@ const SalesCard = () => {
 
   const fetchProductsData = async (categoryID) => {
     try {
+      setProducts([]); 
       const res = await axios.get(
         `http://localhost:5000/api/v1/product/fbc/${categoryID}`
       );
@@ -97,25 +92,12 @@ const SalesCard = () => {
     );
   };
 
-  // Calculate subtotal
-  // const calculateSubtotal = () => {
-  //   return cart.reduce(
-  //     (total, item) => total + item.unitPrice * item.quantity,
-  //     0
-  //   );
-  // };
   const calculateSubtotal = () => {
     return cart.reduce((total, item) => {
       const itemDiscount = item.discount || 0;
       const discountedPrice = item.unitPrice * (1 - itemDiscount / 100);
       return total + discountedPrice * item.quantity;
     }, 0);
-  };
-
-  // Calculate total after discount
-  const calculateTotal = () => {
-    const subtotal = calculateSubtotal();
-    return subtotal - subtotal * (discount / 100);
   };
 
   useEffect(() => {
@@ -295,181 +277,46 @@ const SalesCard = () => {
           </div>
           {selectedCategory !== null && (
             <div className="grid grid-cols-3 gap-4 py-6">
-              {products.map((product) => (
-                <div
-                  key={product.productID}
-                  className="border bg-white p-4 rounded shadow"
-                >
-                  <img
-                    src={`http://localhost:5000/public/products/${product.imageUrl}`}
-                    alt={product.productName}
-                    className="w-full h-32 object-cover mb-4 rounded"
-                  />
-                  <h2 className="text-xs font-semibold">
-                    {product.productName}
-                  </h2>
-                  <div className="flex justify-between">
-                    <p className="text-gray-800 text-xs font-bold">
-                      Price: Rs.{product.unitPrice}
+            {products.length > 0 ? (
+                products.map((product) => (
+                  <div
+                    key={product.productID}
+                    className="border bg-white p-4 rounded shadow"
+                  >
+                    <img
+                      src={`http://localhost:5000/public/products/${product.imageUrl}`}
+                      alt={product.productName}
+                      className="w-full h-32 object-cover mb-4"
+                    />
+                    <h3 className="font-bold">{product.productName}</h3>
+                    <p className="text-sm text-gray-500">
+                      ${product.unitPrice.toFixed(2)}
                     </p>
-                    <button onClick={() => addToCart(product)}>
-                      <IoAddCircleOutline size={20} />
+                    <button
+                      onClick={() => addToCart(product)}
+                      className="bg-blue-500 text-white py-1 px-3 mt-2 rounded"
+                    >
+                      Add to Cart
                     </button>
                   </div>
+                ))
+              ) : (
+                <div className="col-span-3 text-center text-gray-500">
+                  No products available in this category.
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
-        <div className="col-span-3 col-start-6">
-          <div className="bg-white lg:mt-6 rounded shadow-md px-4 mb-8">
-            <h2 className="text-2xl font-semibold pt-6 font-acme text-gray-600">
-              Items
-            </h2>
-            {cart.length === 0 ? (
-              <p className="text-center pt-10 pb-16">Your cart is empty</p>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 gap-4 py-4">
-                  {cart.map((item, index) => (
-                    <div key={index} className=" border-b-[1px]">
-                      <div className="flex gap-2">
-                        <table>
-                          <tr className="flex gap-3 justify-center items-center">
-                            <th className="flex justify-start items-start">
-                              {" "}
-                              <img
-                                src={`http://localhost:5000/public/products/${item.imageUrl}`}
-                                alt={item.productName}
-                                className="w-12 h-12 object-cover mb-4 rounded"
-                              />
-                            </th>
-                            <th className="w-24">
-                              {" "}
-                              <h2 className="text-xs text-start font-medium">
-                                {item.productName}
-                              </h2>
-                            </th>
-                            <th className="w-24">
-                              {" "}
-                              <p className="text-black text-start font-medium flex justify-center items-center gap-2">
-                                <IoIosRemoveCircleOutline
-                                  onClick={() =>
-                                    decrementQuantity(item.productID)
-                                  }
-                                />
-                                <span>{item.quantity}</span>
-                                <button
-                                  onClick={() =>
-                                    incrementQuantity(item.productID)
-                                  }
-                                  disabled={item.quantity >= item.totalQuantity}
-                                >
-                                  <IoIosAddCircleOutline />
-                                </button>
-                              </p>
-                            </th>
-                            <th className="w-24">
-                              <input
-                                type="number"
-                                value={item.discount || 0}
-                                onChange={(e) => {
-                                  const updatedCart = cart.map((cartItem) =>
-                                    cartItem.productID === item.productID
-                                      ? {
-                                          ...cartItem,
-                                          discount: Number(e.target.value),
-                                        }
-                                      : cartItem
-                                  );
-                                  setCart(updatedCart);
-                                }}
-                                className="w-16 px-2 py-1 text-sm border rounded"
-                                min="0"
-                                max="100"
-                              />
-                              <span className="text-gray-600 px-1 text-xs">
-                                %
-                              </span>
-                            </th>
-                            <th className="w-20">
-                              {" "}
-                              <p className=" text-gray-800 text-start text-xs font-medium">
-                                Rs.
-                                {(
-                                  item.unitPrice *
-                                  item.quantity *
-                                  (1 - (item.discount || 0) / 100)
-                                ).toFixed(2)}
-                              </p>
-                            </th>
-                            <th>
-                              <button
-                                className="mt-1"
-                                onClick={() =>
-                                  setCart(
-                                    cart.filter(
-                                      (p) => p.productID !== item.productID
-                                    )
-                                  )
-                                }
-                              >
-                                <CiCircleRemove color="red" />
-                              </button>
-                            </th>
-                          </tr>
-                        </table>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="flex justify-between items-center px-4 text-gray-600 py-1 border-t-0">
-                    <h3 className="text-md font-bold">Total</h3>
-                    <p className="text-sm font-bold">
-                      Rs.{calculateSubtotal().toFixed(2)}
-                    </p>
-                  </div>
-                  {/* <div className="flex justify-between items-center px-4 py-1 border-t-0">
-                    <label
-                      htmlFor="discount"
-                      className="text-sm text-gray-600  font-semibold"
-                    >
-                      Discount (%)
-                    </label>
-                    <input
-                      type="number"
-                      id="discount"
-                      value={discount}
-                      onChange={(e) => setDiscount(e.target.value)}
-                      className="w-20 px-2 py-1 text-sm border rounded"
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div className="flex justify-between text-gray-600 items-center px-4 border-t-0">
-                    <h3 className="text-sm font-semibold">Total</h3>
-                    <p className="text-sm font-bold">
-                      Rs.{calculateTotal().toFixed(2)}
-                    </p>
-                  </div> */}
-                  <div className="flex justify-between items-center py-4 gap-3 border-t">
-                    <button
-                      onClick={clearAll}
-                      className="bg-red-500 text-sm text-white w-full px-4 py-2 rounded"
-                    >
-                      Clear All
-                    </button>
-                    <button
-                      onClick={handleFinished}
-                      className="bg-green-500 text-sm text-white w-full px-4 py-2 rounded"
-                    >
-                      Finished
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+          <Invoice
+          cart={cart}
+          decrementQuantity={decrementQuantity}
+          incrementQuantity={incrementQuantity}
+          setCart={setCart}
+          calculateSubtotal={calculateSubtotal}
+          clearAll={clearAll}
+          handleFinished={handleFinished}
+          />
       </div>
     </div>
   );
