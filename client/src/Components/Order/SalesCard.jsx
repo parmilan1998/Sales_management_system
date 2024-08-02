@@ -296,27 +296,29 @@ const SalesCard = () => {
           {selectedCategory !== null && (
             <div className="grid grid-cols-3 gap-4 py-6">
               {products.map((product) => (
-                <div
+                <button
                   key={product.productID}
-                  className="border bg-white p-4 rounded shadow"
+                  onClick={() => addToCart(product)}
                 >
-                  <img
-                    src={`http://localhost:5000/public/products/${product.imageUrl}`}
-                    alt={product.productName}
-                    className="w-full h-32 object-cover mb-4 rounded"
-                  />
-                  <h2 className="text-xs font-semibold">
-                    {product.productName}
-                  </h2>
-                  <div className="flex justify-between">
-                    <p className="text-gray-800 text-xs font-bold">
-                      Price: Rs.{product.unitPrice}
-                    </p>
-                    <button onClick={() => addToCart(product)}>
-                      <IoAddCircleOutline size={20} />
-                    </button>
+                  <div className="border bg-white p-4 rounded shadow">
+                    <img
+                      src={`http://localhost:5000/public/products/${product.imageUrl}`}
+                      alt={product.productName}
+                      className="w-full h-32 object-cover mb-4 rounded"
+                    />
+                    <h2 className="text-xs font-semibold">
+                      {product.productName}
+                    </h2>
+                    <div className="flex justify-between">
+                      <p className="text-gray-800 text-xs font-bold">
+                        Price: Rs.{product.unitPrice}
+                      </p>
+                      <button onClick={() => addToCart(product)}>
+                        <IoAddCircleOutline size={20} />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
