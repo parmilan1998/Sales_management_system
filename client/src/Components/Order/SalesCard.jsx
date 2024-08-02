@@ -39,7 +39,7 @@ const SalesCard = () => {
 
   const fetchProductsData = async (categoryID) => {
     try {
-      setProducts([]); 
+      setProducts([]);
       const res = await axios.get(
         `http://localhost:5000/api/v1/product/fbc/${categoryID}`
       );
@@ -277,7 +277,7 @@ const SalesCard = () => {
           </div>
           {selectedCategory !== null && (
             <div className="grid grid-cols-3 gap-4 py-6">
-            {products.length > 0 ? (
+              {products.length > 0 ? (
                 products.map((product) => (
                   <div
                     key={product.productID}
@@ -289,15 +289,14 @@ const SalesCard = () => {
                       className="w-full h-32 object-cover mb-4"
                     />
                     <h3 className="font-bold">{product.productName}</h3>
-                    <p className="text-sm text-gray-500">
-                      ${product.unitPrice.toFixed(2)}
-                    </p>
-                    <button
-                      onClick={() => addToCart(product)}
-                      className="bg-blue-500 text-white py-1 px-3 mt-2 rounded"
-                    >
-                      Add to Cart
-                    </button>
+                    <div className="flex justify-between">
+                      <p className="text-gray-800 text-xs font-bold">
+                        Price: Rs.{product.unitPrice}
+                      </p>
+                      <button onClick={() => addToCart(product)}>
+                        <IoAddCircleOutline size={20} />
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -308,7 +307,7 @@ const SalesCard = () => {
             </div>
           )}
         </div>
-          <Invoice
+        <Invoice
           cart={cart}
           decrementQuantity={decrementQuantity}
           incrementQuantity={incrementQuantity}
@@ -316,7 +315,7 @@ const SalesCard = () => {
           calculateSubtotal={calculateSubtotal}
           clearAll={clearAll}
           handleFinished={handleFinished}
-          />
+        />
       </div>
     </div>
   );
