@@ -257,14 +257,14 @@ const SalesCard = () => {
       </div>
 
       <div className="grid grid-cols-8 gap-2">
-        <div className="col-span-4">
+        <div className="col-span-5">
           <div className="flex justify-center items-center pt-6">
             <div className="grid grid-cols-4 gap-2">
               {category.map((item, i) => (
                 <button
                   key={i}
                   onClick={() => setSelectedCategory(item.categoryID)}
-                  className={`px-8 py-2 text-xs rounded shadow ${
+                  className={`px-8 py-2 text-sm h-12 flex items-center justify-center rounded shadow ${
                     selectedCategory === item.categoryID
                       ? "bg-indigo-800"
                       : "bg-indigo-500"
