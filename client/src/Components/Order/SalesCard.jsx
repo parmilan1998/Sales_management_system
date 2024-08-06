@@ -275,14 +275,14 @@ const SalesCard = () => {
       </div>
 
       <div className="grid grid-cols-8 gap-2">
-        <div className="col-span-4">
+        <div className="col-span-5">
           <div className="flex justify-center items-center pt-6">
             <div className="grid grid-cols-4 gap-2">
               {category.map((item, i) => (
                 <button
                   key={i}
                   onClick={() => setSelectedCategory(item.categoryID)}
-                  className={`px-8 py-2 text-xs rounded shadow ${
+                  className={`px-8 py-2 text-sm h-12 flex items-center justify-center rounded shadow ${
                     selectedCategory === item.categoryID
                       ? "bg-indigo-800"
                       : "bg-indigo-500"
@@ -294,7 +294,7 @@ const SalesCard = () => {
             </div>
           </div>
           {selectedCategory !== null && (
-            <div className="grid grid-cols-3 gap-4 py-6">
+            <div className="grid grid-cols-4 gap-4 py-6">
               {products.map((product) => (
                 <button
                   key={product.productID}
@@ -306,7 +306,7 @@ const SalesCard = () => {
                       alt={product.productName}
                       className="w-full h-32 object-cover mb-4 rounded"
                     />
-                    <h2 className="text-xs font-semibold">
+                    <h2 className="text-xs font-semibold text-start">
                       {product.productName}
                     </h2>
                     <div className="flex justify-between">
