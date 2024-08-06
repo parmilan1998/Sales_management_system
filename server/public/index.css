@@ -1,0 +1,37 @@
+html {
+  -webkit-print-color-adjust: exact;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #ffffff;
+}
+.report-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #14d3ec;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.report-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.report-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+.report-section {
+  margin-bottom: 10px;
+}
+.report-label {
+  font-weight: bold;
+  color: #555;
+}
+.report-value {
+  color: #333;
+}
