@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
@@ -6,7 +5,7 @@ import {
   IoIosArrowDroprightCircle,
 } from "react-icons/io";
 import { IoAddCircleOutline } from "react-icons/io5";
-import { Button, DatePicker, Form, Input, InputNumber, Popover } from "antd";
+import { Button, DatePicker, Form, Input, InputNumber } from "antd";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Invoice from "./Invoice";
@@ -102,6 +101,7 @@ const SalesCard = () => {
 
   useEffect(() => {
     fetchCategoryData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -134,6 +134,7 @@ const SalesCard = () => {
 
     if (!customerData) {
       toast.error("Fill customer information!...");
+      return;
     }
 
     const payload = {
@@ -178,9 +179,9 @@ const SalesCard = () => {
 
   return (
     <div className="px-6">
-      <div className=" pt-6">
+      <div className="pt-6">
         <button onClick={toggleContent} className="">
-          {showContent == true ? (
+          {showContent ? (
             <>
               <IoIosArrowDropdownCircle size={28} />
             </>
@@ -221,7 +222,7 @@ const SalesCard = () => {
                 <Form.Item
                   name={["customer", "contactNo"]}
                   label="Contact No"
-                  className="font-poppins font-medium  px-3 w-full"
+                  className="font-poppins font-medium px-3 w-full"
                 >
                   <InputNumber
                     placeholder="Ex: 0770337897"
@@ -232,7 +233,7 @@ const SalesCard = () => {
                 <Form.Item
                   name={["customer", "soldDate"]}
                   label="Sold Date"
-                  className="font-poppins font-medium  px-3 w-full"
+                  className="font-poppins font-medium px-3 w-full"
                   rules={[
                     {
                       required: true,
@@ -257,14 +258,14 @@ const SalesCard = () => {
       </div>
 
       <div className="grid grid-cols-8 gap-2">
-        <div className="col-span-5">
+        <div className="col-span-4">
           <div className="flex justify-center items-center pt-6">
             <div className="grid grid-cols-4 gap-2">
               {category.map((item, i) => (
                 <button
                   key={i}
                   onClick={() => setSelectedCategory(item.categoryID)}
-                  className={`px-8 py-2 text-sm h-12 flex items-center justify-center rounded shadow ${
+                  className={`px-8 py-2 text-xs rounded shadow ${
                     selectedCategory === item.categoryID
                       ? "bg-indigo-800"
                       : "bg-indigo-500"
