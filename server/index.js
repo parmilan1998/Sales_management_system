@@ -75,6 +75,25 @@ app.use("/api/v1/reports", reportRoute);
 app.use("/api/v1/notification", notificationRoute);
 app.use("/api/v1/unit", unitRoute);
 
+
+const exphbs = require('express-handlebars')
+
+app.set('views', path.join(__dirname, 'public/views'));
+
+// Create an instance of express-handlebars with custom configurations
+const hbs = exphbs.create({
+  layoutsDir: path.join(__dirname, 'public/views/layouts'),
+  defaultLayout: 'index', 
+});
+
+// Set the view engine to handlebars
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
+
+app.get("/",(req,res)=>{
+  res.render('main',{layout:'index'})
+})
+
 const PORT = process.env.PORT || 5000;
 
 // Define associations
