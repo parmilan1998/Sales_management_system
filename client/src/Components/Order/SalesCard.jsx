@@ -306,7 +306,7 @@ const SalesCard = () => {
                       alt={product.productName}
                       className="w-full h-32 object-cover mb-4 rounded"
                     />
-                    <h2 className="text-xs font-semibold">
+                    <h2 className="text-xs font-semibold text-start">
                       {product.productName}
                     </h2>
                     <div className="flex justify-between">
