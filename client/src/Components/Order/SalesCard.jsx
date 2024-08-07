@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
@@ -18,6 +19,7 @@ const SalesCard = () => {
   const [showContent, setShowContent] = useState(false);
   const [customerData, setCustomerData] = useState(null);
   const navigate = useNavigate();
+  const [discount, setDiscount] = useState(0);
 
   const fetchCategoryData = async () => {
     try {
@@ -101,7 +103,6 @@ const SalesCard = () => {
 
   useEffect(() => {
     fetchCategoryData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -132,11 +133,6 @@ const SalesCard = () => {
   const handleFinished = async (e) => {
     e.preventDefault();
 
-    // if (!customerData) {
-    //   toast.error("Fill customer information!...");
-    //   return;
-    // }
-
     const payload = {
       custName: customerData.custName,
       customerContact: customerData.contactNo,
@@ -145,6 +141,7 @@ const SalesCard = () => {
         productName: product.productName,
         salesQuantity: product.quantity,
       })),
+      finalDiscount: discount,
     };
 
     try {
@@ -160,6 +157,11 @@ const SalesCard = () => {
       console.error(err);
       toast.error("Error creating sales");
     }
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    return subtotal - (subtotal * discount) / 100;
   };
 
   const toggleContent = () => {
@@ -317,6 +319,9 @@ const SalesCard = () => {
             calculateSubtotal={calculateSubtotal}
             clearAll={clearAll}
             handleFinished={handleFinished}
+            discount={discount}
+            setDiscount={setDiscount}
+            calculateTotal={calculateTotal}
           />
         </div>
       </div>
