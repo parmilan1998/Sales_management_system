@@ -591,7 +591,6 @@ const SalesList = () => {
                                 Rs.{calculateSubtotal(product)}
                               </div>
                             </td>
-
                             <td
                               data-th="Actions"
                               className="before:inline-block w-24 justify-end py-6 before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
@@ -633,6 +632,31 @@ const SalesList = () => {
                     </button>
                   </div>
                 </div> */}
+                <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
+                  <h3 className="text-md font-medium">Sub Total</h3>
+                  <p className="text-sm font-medium">
+                    Rs.{calculateSubtotal().toFixed(2)}
+                  </p>
+                </div>
+                <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
+                  <h3 className="text-md font-medium">Discount</h3>
+                  <p className="text-sm font-medium">
+                    <input
+                      type="number"
+                      className="w-16 px-2 py-1 text-sm border rounded"
+                      // value={discount}
+                      min="0"
+                      // onChange={(e) => setDiscount(Number(e.target.value))}
+                    />
+                    <span className="text-gray-600 px-1 text-xs">%</span>
+                  </p>
+                </div>
+                <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
+                  <h3 className="text-md font-medium">Total</h3>
+                  <p className="text-sm font-medium">
+                    Rs.{calculateTotal().toFixed(2)}
+                  </p>
+                </div>
                 <div className="flex justify-between items-center py-4 px-4 gap-3 border-t-0">
                   <button
                     onClick={clearAll}

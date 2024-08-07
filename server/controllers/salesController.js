@@ -29,7 +29,7 @@ exports.createSales = async (req, res) => {
         custName: custName,
         customerContact: customerContact,
         soldDate: soldDate,
-        finalDiscount,
+        finalDiscount: finalDiscount ? finalDiscount : 0,
         totalRevenue: 0,
       });
 
@@ -51,6 +51,10 @@ exports.createSales = async (req, res) => {
         }
 
         const { productID, unitPrice, unitID, discountedPrice } = product;
+
+        console.log("====================================");
+        console.log("dp", discountedPrice);
+        console.log("====================================");
 
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
@@ -110,16 +114,31 @@ exports.createSales = async (req, res) => {
           unitType: unit.unitType,
         });
       }
-      const totalRevenue = finalDiscount * subTotal;
+
+      let totalRevenue;
+      let discountedAmount;
+
+      if (finalDiscount) {
+        totalRevenue = (1 - finalDiscount / 100) * subTotal;
+        discountedAmount = (finalDiscount / 100) * subTotal
+      } else {
+        totalRevenue = subTotal;
+        discountedAmount = 0;
+      }
 
       newSale.totalRevenue = totalRevenue;
       await newSale.save();
+
+     
 
       createdSales.push({
         salesID: newSale.salesID,
         custName: newSale.custName,
         customerContact: newSale.customerContact,
         soldDate: newSale.soldDate,
+        subTotal,
+        discount:finalDiscount,
+        discountedAmount,
         totalRevenue: newSale.totalRevenue,
         products: productDetails,
       });
@@ -217,10 +236,11 @@ exports.updateSales = async (req, res) => {
     }
 
     // Update basic sale details
-    existingSale.custName = custName;
-    existingSale.customerContact = customerContact;
-    existingSale.soldDate = soldDate;
-    existingSale.finalDiscount = finalDiscount;
+    existingSale.custName = custName || existingSale.custName;
+    existingSale.customerContact =
+      customerContact || existingSale.customerContact;
+    existingSale.soldDate = soldDate || existingSale.soldDate;
+    existingSale.finalDiscount = finalDiscount || existingSale.finalDiscount;
 
     // Remove old sales details and restore quantities
     const oldSalesDetails = await SalesDetail.findAll({

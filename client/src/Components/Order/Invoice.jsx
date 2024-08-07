@@ -17,6 +17,9 @@ const Invoice = ({
   calculateSubtotal,
   clearAll,
   handleFinished,
+  discount,
+  setDiscount,
+  calculateTotal,
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -115,11 +118,7 @@ const Invoice = ({
                           {" "}
                           <p className=" text-gray-800 text-start text-xs font-medium">
                             Rs.
-                            {(
-                              item.unitPrice *
-                              item.quantity *
-                              (1 - (item.discount || 0) / 100)
-                            ).toFixed(2)}
+                            {(item.discountedPrice * item.quantity).toFixed(2)}
                           </p>
                         </th>
                         <th>
@@ -141,10 +140,29 @@ const Invoice = ({
                   </div>
                 </div>
               ))}
-              <div className="flex justify-between items-center px-4 text-gray-600 py-1 border-t-0">
-                <h3 className="text-md font-bold">Total</h3>
-                <p className="text-sm font-bold">
+              <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
+                <h3 className="text-md font-medium">Sub Total</h3>
+                <p className="text-sm font-medium">
                   Rs.{calculateSubtotal().toFixed(2)}
+                </p>
+              </div>
+              <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
+                <h3 className="text-md font-medium">Discount</h3>
+                <p className="text-sm font-medium">
+                  <input
+                    type="number"
+                    className="w-16 px-2 py-1 text-sm border rounded"
+                    value={discount}
+                    min="0"
+                    onChange={(e) => setDiscount(Number(e.target.value))}
+                  />
+                  <span className="text-gray-600 px-1 text-xs">%</span>
+                </p>
+              </div>
+              <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
+                <h3 className="text-md font-medium">Total</h3>
+                <p className="text-sm font-medium">
+                  Rs.{calculateTotal().toFixed(2)}
                 </p>
               </div>
               <div className="flex justify-between items-center py-4 gap-3 border-t">
@@ -177,6 +195,9 @@ Invoice.propTypes = {
   calculateSubtotal: PropTypes.func.isRequired,
   clearAll: PropTypes.func.isRequired,
   handleFinished: PropTypes.func.isRequired,
+  discount: PropTypes.number.isRequired,
+  setDiscount: PropTypes.func.isRequired,
+  calculateTotal: PropTypes.func.isRequired,
 };
 
 export default Invoice;

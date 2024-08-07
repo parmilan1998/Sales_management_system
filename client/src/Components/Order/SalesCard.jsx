@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
@@ -18,6 +19,7 @@ const SalesCard = () => {
   const [showContent, setShowContent] = useState(false);
   const [customerData, setCustomerData] = useState(null);
   const navigate = useNavigate();
+  const [discount, setDiscount] = useState(0);
 
   const fetchCategoryData = async () => {
     try {
@@ -101,7 +103,6 @@ const SalesCard = () => {
 
   useEffect(() => {
     fetchCategoryData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -132,10 +133,9 @@ const SalesCard = () => {
   const handleFinished = async (e) => {
     e.preventDefault();
 
-    // if (!customerData) {
-    //   toast.error("Fill customer information!...");
-    //   return;
-    // }
+    if (!customerData) {
+      toast.error("Fill customer information!...");
+    }
 
     const payload = {
       custName: customerData.custName,
@@ -145,6 +145,7 @@ const SalesCard = () => {
         productName: product.productName,
         salesQuantity: product.quantity,
       })),
+      finalDiscount: discount,
     };
 
     try {
@@ -160,6 +161,11 @@ const SalesCard = () => {
       console.error(err);
       toast.error("Error creating sales");
     }
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    return subtotal - (subtotal * discount) / 100;
   };
 
   const toggleContent = () => {
@@ -280,22 +286,30 @@ const SalesCard = () => {
                     products.map((product) => (
                       <div
                         key={product.productID}
-                        className="border bg-white p-4 rounded shadow"
+                        className="border bg-white p-5 rounded shadow"
                       >
-                        <img
-                          src={`http://localhost:5000/public/products/${product.imageUrl}`}
-                          alt={product.productName}
-                          className="w-full h-32 object-cover mb-4"
-                        />
-                        <h3 className="font-bold">{product.productName}</h3>
-                        <div className="flex justify-between">
-                          <p className="text-gray-800 text-xs font-bold">
-                            Price: Rs.{product.unitPrice}
-                          </p>
-                          <button onClick={() => addToCart(product)}>
-                            <IoAddCircleOutline size={20} />
-                          </button>
-                        </div>
+                        <button onClick={() => addToCart(product)}>
+                          <img
+                            src={`http://localhost:5000/public/products/${product.imageUrl}`}
+                            alt={product.productName}
+                            className="w-full h-32 object-cover mb-4"
+                          />
+                          <h3 className="font-bold text-xs">
+                            {product.productName}
+                          </h3>
+                          <div className="flex justify-between">
+                            <span className="text-xs"> Price: </span>
+                            &nbsp;
+                            <p className="text-xs font-bold line-through text-red-600">
+                              Rs.{product.unitPrice}
+                            </p>
+                            &nbsp;
+                            <p className="text-gray-800 text-xs font-bold">
+                              Rs.{product.discountedPrice}
+                            </p>
+                            {/* <IoAddCircleOutline size={20} /> */}
+                          </div>
+                        </button>
                       </div>
                     ))
                   ) : (
@@ -317,6 +331,9 @@ const SalesCard = () => {
             calculateSubtotal={calculateSubtotal}
             clearAll={clearAll}
             handleFinished={handleFinished}
+            discount={discount}
+            setDiscount={setDiscount}
+            calculateTotal={calculateTotal}
           />
         </div>
       </div>

@@ -23,17 +23,12 @@ const sales = db.define(
 
     custName: {
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      allowNull: true,
+      
     },
     customerContact: {
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      allowNull: true,
     },
     finalDiscount: {
       type: DataTypes.FLOAT,
