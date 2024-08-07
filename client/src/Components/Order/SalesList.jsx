@@ -8,7 +8,6 @@ import { IoCloseCircle } from "react-icons/io5";
 import {
   IoIosArrowDropdownCircle,
   IoIosArrowDroprightCircle,
-  IoIosRemoveCircleOutline,
 } from "react-icons/io";
 
 const SalesList = () => {
@@ -16,9 +15,10 @@ const SalesList = () => {
   const [customerData, setCustomerData] = useState(null);
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const [unitPrice, setUnitPrice] = useState(0);
+  const [currentPrice, setCurrentPrice] = useState(0);
   const [products, setProducts] = useState([]);
   const [showContent, setShowContent] = useState(false);
+  const [discount, setDiscount] = useState(0);
 
   // Fetch products
   const fetchProductsApi = async () => {
@@ -35,33 +35,27 @@ const SalesList = () => {
   const [addedProducts, setAddedProducts] = useState(
     products.map((product) => ({
       ...product,
-      discount: 0,
-      subtotal: product.unitPrice * product.salesQuantity,
+      subtotal: product.discountedPrice * product.salesQuantity,
     }))
   );
 
-  const calculateSubtotal = (product) => {
-    const discount =
-      product.discount != null ? parseFloat(product.discount) : 0;
-    return (
-      product.unitPrice *
-      product.salesQuantity *
-      (1 - discount / 100)
-    ).toFixed(2);
-  };
+  // const calculateSubtotal = (product) => {
+  //   const subTotal = product.discountedPrice * product.salesQuantity;
+  //   return subTotal;
+  // };
 
-  const calculateTotal = () => {
-    return addedProducts
-      .reduce((total, product) => {
-        const discount =
-          product.discount != null ? parseFloat(product.discount) : 0;
-        return (
-          total +
-          ((100 - discount) / 100) * (product.salesQuantity * product.unitPrice)
-        );
-      }, 0)
-      .toFixed(2);
-  };
+  // const calculateTotal = () => {
+  //   return addedProducts
+  //     .reduce((total, product) => {
+  //       const discount =
+  //         product.discount != null ? parseFloat(product.discount) : 0;
+  //       return (
+  //         total +
+  //         ((100 - discount) / 100) * (product.salesQuantity * product.unitPrice)
+  //       );
+  //     }, 0)
+  //     .toFixed(2);
+  // };
 
   const handleCustomerChange = (allValues) => {
     setCustomerData(allValues.customer);
@@ -78,11 +72,11 @@ const SalesList = () => {
     );
 
     if (selectedProduct) {
-      setUnitPrice(selectedProduct.unitPrice);
+      setCurrentPrice(selectedProduct.discountedPrice);
     }
 
-    const amount = values.product.salesQuantity * unitPrice;
-    const updatedProduct = { ...values.product, unitPrice, amount };
+    const amount = values.product.salesQuantity * currentPrice;
+    const updatedProduct = { ...values.product, currentPrice, amount };
 
     setAddedProducts((prevAddedProducts) => {
       const existingProductIndex = prevAddedProducts.findIndex(
@@ -98,7 +92,7 @@ const SalesList = () => {
             updatedProducts[existingProductIndex].salesQuantity +
             values.product.salesQuantity,
           discount: values.product.discount || 0, // Ensure discount is updated
-          subtotal: calculateSubtotal(updatedProduct),
+          // subtotal: calculateSubtotal(updatedProduct),
         };
 
         // Update tempProducts quantity
@@ -153,7 +147,6 @@ const SalesList = () => {
       products: addedProducts.map((product) => ({
         productName: product.productName,
         salesQuantity: product.salesQuantity,
-        subTotal: calculateSubtotal(product),
       })),
     };
 
@@ -192,14 +185,6 @@ const SalesList = () => {
   useEffect(() => {
     fetchProductsApi();
   }, []);
-
-  const handleDiscountChange = (index, discount) => {
-    if (index >= 0 && index < addedProducts.length) {
-      const newProducts = [...addedProducts];
-      newProducts[index].discount = discount != null ? parseFloat(discount) : 0;
-      setAddedProducts(newProducts);
-    }
-  };
 
   const toggleContent = () => {
     setShowContent(!showContent);
@@ -305,71 +290,6 @@ const SalesList = () => {
               </div>
             )}
           </div>
-          {/* <div className="text-gray-400 py-4 flex justify-center items-center gap-3 text-center text-2xl font-poppins font-bold">
-            <GiFocusedLightning size={32} />
-            Customer Details
-          </div>
-          <div className="flex w-full">
-            <Form
-              className="gap-3 pt-8 px-12  bg-white flex"
-              layout="vertical"
-              autoComplete="off"
-              onFinish={handleCustomerChange}
-            >
-              <Form.Item
-                name={["customer", "custName"]}
-                label="Customer Name"
-                className="px-3 font-poppins w-full"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input customer name!",
-                  },
-                ]}
-              >
-                <Input
-                  placeholder="Ex: John Clerk"
-                  className="font-poppins py-1.5"
-                />
-              </Form.Item>
-              <Form.Item
-                name={["customer", "contactNo"]}
-                label="Contact No"
-                className="font-poppins px-3 w-full"
-              >
-                <InputNumber
-                  placeholder="Ex: 0770337897"
-                  className="font-poppins py-0.5 w-full"
-                  maxLength={10}
-                />
-              </Form.Item>
-              <Form.Item
-                name={["customer", "soldDate"]}
-                label="Sold Date"
-                className="font-poppins px-3 w-full"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select the sold date!",
-                  },
-                ]}
-              >
-                <DatePicker
-                  className="font-poppins py-1.5 w-full"
-                  placeholder="Ex: 22.08.2024"
-                />
-              </Form.Item>
-              <div className="px-3">
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  className="font-poppins py-3 h-10 w-full"
-                >
-                  Add Details
-                </Button>
-              </div>
-            </Form>
-          </div> */}
           <div>
             <Form
               onFinish={onHandleProduct}
@@ -417,7 +337,7 @@ const SalesList = () => {
                           (product) => product.productName == value
                         );
                         if (selectedProduct) {
-                          setUnitPrice(selectedProduct.unitPrice);
+                          setCurrentPrice(selectedProduct.unitPrice);
 
                           // Find if the selected product is already in addedProducts
                           const existingProduct = addedProducts.find(
@@ -449,15 +369,16 @@ const SalesList = () => {
                     />
                   </Form.Item>
                 </div>
+              </div>
+              <div className="flex">
                 <div className="w-full mx-2">
                   <Form.Item
                     name={["product", "unitPrice"]}
                     className="font-poppins w-full"
-                    label="Unit Price"
+                    label="Current Price"
                     rules={[
                       {
-                        required: true,
-                        message: "Please input unit price!",
+                        message: "Please input current price!",
                       },
                     ]}
                   >
@@ -468,8 +389,6 @@ const SalesList = () => {
                     />
                   </Form.Item>
                 </div>
-              </div>
-              <div className="flex">
                 <div className="w-full mx-2">
                   <Form.Item
                     name={["product", "salesQuantity"]}
@@ -506,23 +425,6 @@ const SalesList = () => {
                       min={1}
                       placeholder="Ex:10"
                       className="font-poppins w-full py-0.5 h-8"
-                    />
-                  </Form.Item>
-                </div>
-                <div className="w-full mx-2">
-                  <Form.Item
-                    name={["product", "discount"]}
-                    className="font-poppins w-full"
-                    label="Discount"
-                  >
-                    <InputNumber
-                      className="w-full"
-                      min={0}
-                      placeholder="Ex:20"
-                      onChange={(value) =>
-                        handleDiscountChange(parseFloat(value) || 0)
-                      }
-                      addonAfter="%"
                     />
                   </Form.Item>
                 </div>
@@ -571,24 +473,14 @@ const SalesList = () => {
                                 {product.salesQuantity}
                               </div>
                             </td>
-
-                            <td
-                              data-th="Discount"
-                              className="py-6 flex w-24 items-center sm:table-cell h-8 text-sm transition duration-300"
-                            >
-                              <div className="relative tracking-wide text-end">
-                                {product.discount != null
-                                  ? product.discount.toFixed(2)
-                                  : "0"}
-                                %
-                              </div>
-                            </td>
                             <td
                               data-th="Subtotal"
                               className="before:w-24 py-6 w-48 before:inline-block before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
                             >
                               <div className="relative tracking-wide text-end">
-                                Rs.{calculateSubtotal(product)}
+                                Rs.
+                                {product.discountedPrice *
+                                  product.salesQuantity}
                               </div>
                             </td>
                             <td
@@ -605,41 +497,28 @@ const SalesList = () => {
                           </tr>
                         ))}
                         <tr>
-                          <td
+                          {/* <td
                             colSpan="5"
                             className="text-right text-sm font-medium py-3 px-20"
-                          >
-                            <span className="mr-4">Total:</span> Rs.
-                            {calculateTotal(addedProducts)}
-                          </td>
+                          > */}
+                          {/* <span className="mr-4">Total:</span> Rs. */}
+                          {/* {calculateTotal(addedProducts)} */}
+                          {/* </td> */}
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
                 <div className="relative flex justify-end "></div>
-                {/* <div className="grid grid-cols-4 p-4">
-                  <div className="col-span-2 flex justify-end gap-2"></div>
-                  <div className="col-span-2 flex justify-end gap-2 mx-2">
-                    <button className="text-sm px-3 py-2 bg-emerald-500 hover:bg-emerald-700 ease-in duration-200 rounded-sm text-white">
-                      Preview
-                    </button>
-                    <button
-                      onClick={handleSubmit}
-                      className="text-sm px-3 py-2  bg-sky-500 hover:bg-sky-700 ease-in duration-200 rounded-sm text-white"
-                    >
-                      Finished
-                    </button>
-                  </div>
-                </div> */}
-                <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
-                  <h3 className="text-md font-medium">Sub Total</h3>
+
+                <div className="flex justify-between items-center px-4 py-2 text-gray-600 border-t-0">
+                  <h3 className="text-sm font-medium">Sub Total</h3>
                   <p className="text-sm font-medium">
-                    Rs.{calculateSubtotal().toFixed(2)}
+                    {/* Rs.{calculateSubtotal().toFixed(2)} */}
                   </p>
                 </div>
-                <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
-                  <h3 className="text-md font-medium">Discount</h3>
+                <div className="flex justify-between items-center px-4 py-2 text-gray-600 border-t-0">
+                  <h3 className="text-sm font-medium">Discount</h3>
                   <p className="text-sm font-medium">
                     <input
                       type="number"
@@ -651,10 +530,10 @@ const SalesList = () => {
                     <span className="text-gray-600 px-1 text-xs">%</span>
                   </p>
                 </div>
-                <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
-                  <h3 className="text-md font-medium">Total</h3>
+                <div className="flex justify-between items-center px-4 text-gray-600 py-2 border-t-0">
+                  <h3 className="text-sm font-medium">Total</h3>
                   <p className="text-sm font-medium">
-                    Rs.{calculateTotal().toFixed(2)}
+                    {/* Rs.{calculateTotal().toFixed(2)} */}
                   </p>
                 </div>
                 <div className="flex justify-between items-center py-4 px-4 gap-3 border-t-0">
@@ -668,7 +547,7 @@ const SalesList = () => {
                     onClick={handleSubmit}
                     className="bg-green-500 text-sm text-white w-full px-4 py-2 rounded"
                   >
-                    Finished
+                    Pay Now
                   </button>
                 </div>
               </div>

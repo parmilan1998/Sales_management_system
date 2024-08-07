@@ -176,7 +176,7 @@ const Invoice = ({
                   onClick={handleFinished}
                   className="bg-green-500 text-sm text-white w-full px-4 py-2 rounded"
                 >
-                  Finished
+                  Pay Now
                 </button>
               </div>
             </div>
