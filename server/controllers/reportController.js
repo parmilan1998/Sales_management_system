@@ -27,7 +27,7 @@ const generatePDFReport = async (htmlContent, reportID) => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  const cssPath = path.resolve(__dirname, '../public/index.css');
+  const cssPath = path.resolve(__dirname, "../public/index.css");
   await page.setContent(htmlContent);
   await page.addStyleTag({ path: cssPath });
 

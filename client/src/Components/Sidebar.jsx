@@ -12,7 +12,7 @@ import { Tooltip } from "antd";
 import LoginScreen from "../Pages/Admin/LoginScreen";
 import { jwtDecode } from "jwt-decode";
 import { LuGanttChartSquare } from "react-icons/lu";
-import { MdOutlineProductionQuantityLimits } from "react-icons/md";
+import { MdOutlineProductionQuantityLimits, MdPayment } from "react-icons/md";
 import { MdOutlineCurrencyExchange } from "react-icons/md";
 import { PiWarehouseLight } from "react-icons/pi";
 
@@ -99,7 +99,7 @@ export default function Sidebar() {
           isSideNavOpen ? "translate-x-0" : " -translate-x-full"
         }`}
       >
-        <div className="flex flex-col items-center gap-4 p-6">
+        <div className="flex flex-col items-center gap-3 p-3">
           <span className="flex flex-row items-center justify-start pt-5 w-full place-content-center rounded-lg text-3xl font-acme font-medium tracking-widest">
             <SiPowerapps className="mr-2 text-primaryRed" />
             <span className=" text-primaryRed">Vital</span> <span>Mart</span>
@@ -194,6 +194,19 @@ export default function Sidebar() {
               </li>
               <li className="px-3">
                 <Link
+                  to="/payment"
+                  className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
+                >
+                  <div className="flex items-center self-center ">
+                    <MdPayment size={22} />
+                  </div>
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
+                    Payment
+                  </div>
+                </Link>
+              </li>
+              <li className="px-3">
+                <Link
                   to="/reports"
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
@@ -207,19 +220,6 @@ export default function Sidebar() {
               </li>
               <li className="px-3">
                 <Link
-                  to="/profile"
-                  className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
-                >
-                  <div className="flex items-center self-center ">
-                    <IoIosSettings size={20} />
-                  </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
-                    Settings
-                  </div>
-                </Link>
-              </li>
-              <li className="px-3">
-                <Link
                   to="/invoice"
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
@@ -228,6 +228,19 @@ export default function Sidebar() {
                   </div>
                   <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Orders
+                  </div>
+                </Link>
+              </li>
+              <li className="px-3">
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
+                >
+                  <div className="flex items-center self-center ">
+                    <IoIosSettings size={20} />
+                  </div>
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
+                    Settings
                   </div>
                 </Link>
               </li>

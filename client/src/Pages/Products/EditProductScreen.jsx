@@ -96,7 +96,7 @@ const EditProductScreen = () => {
   }, []);
 
   return (
-    <div className=" max-w-screen-xl mx-auto lg:px-24 font-poppins cursor-pointer">
+    <div className=" max-w-screen-xl mx-auto lg:px-8 font-poppins cursor-pointer">
       <div className="bg-white rounded p-10">
         <div className="flex items-center justify-center gap-4 py-6 font-poppins">
           <span className="shrink-0 rounded-full bg-blue-400 p-2 text-white">
@@ -130,7 +130,7 @@ const EditProductScreen = () => {
                 type="text"
                 name="productName"
                 id="productName"
-                className="w-full py-3 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
                 placeholder="Ex - Memory Foam Pillow"
               />
               {errors.productName && (
@@ -150,7 +150,7 @@ const EditProductScreen = () => {
                 type="text"
                 name="categoryName"
                 id="categoryName"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
                 placeholder="Ex - Home Essentials"
               >
                 <option value="" className="text-gray-200 opacity-5">
@@ -170,25 +170,67 @@ const EditProductScreen = () => {
             </div>
           </div>
 
-          <div className="mb-4">
-            <label htmlFor="image" className="flex pb-2 text-gray-600">
-              Product Image
-            </label>
-            <input
-              {...register("image", {
-                required: "Image is required",
-              })}
-              type="file"
-              name="image"
-              id="image"
-              className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-              placeholder="Ex - Rs.59.99"
-            />
-            {errors.image && (
-              <p className="text-red-500 py-1 text-sm">
-                {errors.image.message}
-              </p>
-            )}
+          <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
+            {/* <div className="mb-4 col-span-2">
+              <label htmlFor="image" className="flex pb-2 text-gray-600">
+                Product Image
+              </label>
+              <input
+                {...register("image", {
+                  required: "Image is required",
+                })}
+                type="file"
+                name="image"
+                id="image"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                placeholder="Ex - Rs.59.99"
+              />
+              {errors.image && (
+                <p className="text-red-500 py-1 text-sm">
+                  {errors.image.message}
+                </p>
+              )}
+            </div> */}
+            <div className="my-4 col-span-2">
+              <label htmlFor="image" className="flex pb-2 text-gray-600">
+                Product Image
+              </label>
+              <input
+                {...register("image", {
+                  required: "Image is required",
+                })}
+                type="file"
+                name="image"
+                id="image"
+                className="w-full py-1.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                placeholder="Ex - Rs.59.99"
+              />
+              {errors.image && (
+                <p className="text-red-500 py-1 text-sm">
+                  {errors.image.message}
+                </p>
+              )}
+            </div>
+            <div className="my-4 col-span-1">
+              <label htmlFor="reOrderLevel" className="flex pb-2 text-gray-600">
+                Reorder Level
+              </label>
+              <input
+                {...register("reOrderLevel", {
+                  required: "reorder level is required",
+                })}
+                type="number"
+                name="reOrderLevel"
+                id="reOrderLevel"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                placeholder="Ex - 40"
+              />
+              {errors.reOrderLevel && (
+                <p className="text-red-500 py-1 text-sm">
+                  {errors.reOrderLevel.message}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
@@ -204,7 +246,7 @@ const EditProductScreen = () => {
                 type="text"
                 name="unitType"
                 id="unitType"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
               >
                 <option value="" className="text-gray-200 opacity-5">
                   Ex - Pair
@@ -232,7 +274,7 @@ const EditProductScreen = () => {
                 type="text"
                 name="unitPrice"
                 id="unitPrice"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
                 placeholder="Ex - Rs.59.99"
               />
               {errors.unitPrice && (
@@ -242,22 +284,22 @@ const EditProductScreen = () => {
               )}
             </div>
             <div className="mb-4">
-              <label htmlFor="reOrderLevel" className="flex pb-2 text-gray-600">
-                Reorder Level
+              <label htmlFor="discount" className="flex pb-2 text-gray-600">
+                Discount
               </label>
               <input
-                {...register("reOrderLevel", {
-                  required: "Unit price is required",
+                {...register("discount", {
+                  required: "discount is required",
                 })}
                 type="number"
-                name="reOrderLevel"
-                id="reOrderLevel"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                placeholder="Ex - 40"
+                name="discount"
+                id="discount"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                placeholder="Ex - 10%"
               />
-              {errors.reOrderLevel && (
+              {errors.discount && (
                 <p className="text-red-500 py-1 text-sm">
-                  {errors.reOrderLevel.message}
+                  {errors.discount.message}
                 </p>
               )}
             </div>
@@ -275,7 +317,7 @@ const EditProductScreen = () => {
               name="description"
               id="description"
               rows={5}
-              className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+              className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
               placeholder="Ex - Ergonomically designed pillow for superior neck support and comfort."
             />
             {errors.description && (
@@ -288,7 +330,7 @@ const EditProductScreen = () => {
           <div className="mt-6 grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 sm:flex gap-2 sm:gap-4 justify-center">
             <Link to="/products">
               <button
-                className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
+                className="mt-2 cursor-pointer inline-block w-full rounded bg-gray-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
                 href="#"
               >
                 Cancel
@@ -296,14 +338,14 @@ const EditProductScreen = () => {
             </Link>
             <button
               onClick={handleClear}
-              className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-blue-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
+              className="mt-2 cursor-pointer inline-block w-full rounded bg-blue-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
               href="#"
             >
               Clear
             </button>
             <button
               type="submit"
-              className="inline-block w-full cursor-pointer rounded-lg bg-green-500 px-12 py-2 text-center text-sm font-semibold text-white sm:w-auto"
+              className="inline-block w-full cursor-pointer rounded bg-green-500 px-12 py-2 text-center text-sm font-semibold text-white sm:w-auto"
               href="#"
             >
               Update Product
