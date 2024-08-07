@@ -225,87 +225,86 @@ const SalesList = () => {
 
   return (
     <div>
-      <div className="px-6 pt-6">
-        <button onClick={toggleContent} className="">
-          {showContent == true ? (
-            <>
-              <IoIosArrowDropdownCircle size={28} />
-            </>
-          ) : (
-            <div className="flex items-center gap-1">
-              <IoIosArrowDroprightCircle size={28} />{" "}
-              <span className="text-md font-medium text-gray-500">
-                Customer Info
-              </span>
-            </div>
-          )}
-        </button>
-        {showContent && (
-          <div className="bg-white px-2 w-1/2 rounded shadow-md">
-            <div className="flex w-full">
-              <Form
-                className="gap-3 pt-8 px-3 bg-white flex"
-                layout="vertical"
-                autoComplete="off"
-                initialValues={customerData}
-                onFinish={handleCustomerChange}
-              >
-                <Form.Item
-                  name={["customer", "custName"]}
-                  label="Customer Name"
-                  className="px-3 font-poppins font-medium w-full"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input customer name!",
-                    },
-                  ]}
-                >
-                  <Input
-                    placeholder="Ex: John Clerk"
-                    className="font-poppins py-1.5"
-                  />
-                </Form.Item>
-                <Form.Item
-                  name={["customer", "contactNo"]}
-                  label="Contact No"
-                  className="font-poppins font-medium  px-3 w-full"
-                >
-                  <InputNumber
-                    placeholder="Ex: 0770337897"
-                    className="font-poppins py-0.5 w-full"
-                    maxLength={10}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name={["customer", "soldDate"]}
-                  label="Sold Date"
-                  className="font-poppins font-medium  px-3 w-full"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select the sold date!",
-                    },
-                  ]}
-                >
-                  <DatePicker
-                    className="font-poppins py-1.5 w-full"
-                    placeholder="Ex: 22.08.2024"
-                  />
-                </Form.Item>
-                <Form.Item className="flex justify-center mt-7 items-center">
-                  <Button type="primary" htmlType="submit">
-                    Submit
-                  </Button>
-                </Form.Item>
-              </Form>
-            </div>
+      <div className="grid grid-cols-12 gap-2">
+        <div className=" col-span-7 px-3">
+          <div className="py-2">
+            <button onClick={toggleContent} className="">
+              {showContent == true ? (
+                <>
+                  <IoIosArrowDropdownCircle size={28} />
+                </>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <IoIosArrowDroprightCircle size={28} />{" "}
+                  <span className="text-md font-medium text-gray-500">
+                    Customer Info
+                  </span>
+                </div>
+              )}
+            </button>
+            {showContent && (
+              <div className="bg-white px-2 w-full my-2 rounded shadow-md">
+                <div className="flex w-full">
+                  <Form
+                    className="gap-3 pt-8 px-3 bg-white flex"
+                    layout="vertical"
+                    autoComplete="off"
+                    initialValues={customerData}
+                    onFinish={handleCustomerChange}
+                  >
+                    <Form.Item
+                      name={["customer", "custName"]}
+                      label="Customer Name"
+                      className="px-3 font-poppins font-medium w-full"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input customer name!",
+                        },
+                      ]}
+                    >
+                      <Input
+                        placeholder="Ex: John Clerk"
+                        className="font-poppins py-1.5"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name={["customer", "contactNo"]}
+                      label="Contact No"
+                      className="font-poppins font-medium  px-3 w-full"
+                    >
+                      <InputNumber
+                        placeholder="Ex: 0770337897"
+                        className="font-poppins py-0.5 w-full"
+                        maxLength={10}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name={["customer", "soldDate"]}
+                      label="Sold Date"
+                      className="font-poppins font-medium  px-3 w-full"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select the sold date!",
+                        },
+                      ]}
+                    >
+                      <DatePicker
+                        className="font-poppins py-1.5 w-full"
+                        placeholder="Ex: 22.08.2024"
+                      />
+                    </Form.Item>
+                    <Form.Item className="flex justify-center mt-7 items-center">
+                      <Button type="primary" htmlType="submit">
+                        Submit
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-8 px-6 py-8">
-        <div className="col-span-4">
           {/* <div className="text-gray-400 py-4 flex justify-center items-center gap-3 text-center text-2xl font-poppins font-bold">
             <GiFocusedLightning size={32} />
             Customer Details
@@ -540,7 +539,7 @@ const SalesList = () => {
             </Form>
           </div>
         </div>
-        <div className="col-start-6 col-span-3">
+        <div className=" col-span-5">
           <div>
             {addedProducts && (
               <div className="bg-white text-gray-500 rounded w-full p-4">
@@ -592,7 +591,6 @@ const SalesList = () => {
                                 Rs.{calculateSubtotal(product)}
                               </div>
                             </td>
-
                             <td
                               data-th="Actions"
                               className="before:inline-block w-24 justify-end py-6 before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
@@ -634,6 +632,31 @@ const SalesList = () => {
                     </button>
                   </div>
                 </div> */}
+                <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
+                  <h3 className="text-md font-medium">Sub Total</h3>
+                  <p className="text-sm font-medium">
+                    Rs.{calculateSubtotal().toFixed(2)}
+                  </p>
+                </div>
+                <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
+                  <h3 className="text-md font-medium">Discount</h3>
+                  <p className="text-sm font-medium">
+                    <input
+                      type="number"
+                      className="w-16 px-2 py-1 text-sm border rounded"
+                      // value={discount}
+                      min="0"
+                      // onChange={(e) => setDiscount(Number(e.target.value))}
+                    />
+                    <span className="text-gray-600 px-1 text-xs">%</span>
+                  </p>
+                </div>
+                <div className="flex justify-between items-center px-4 text-gray-600 py-0 border-t-0">
+                  <h3 className="text-md font-medium">Total</h3>
+                  <p className="text-sm font-medium">
+                    Rs.{calculateTotal().toFixed(2)}
+                  </p>
+                </div>
                 <div className="flex justify-between items-center py-4 px-4 gap-3 border-t-0">
                   <button
                     onClick={clearAll}
@@ -653,6 +676,8 @@ const SalesList = () => {
           </div>
         </div>
       </div>
+
+      <div className="grid grid-cols-8 px-6 py-8"></div>
     </div>
   );
 };

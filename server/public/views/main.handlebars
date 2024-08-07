@@ -2,9 +2,39 @@
   <div class="report-header">
     <h1>Gross Profit Report</h1>
   </div>
-  <div class="report-section">
-    <span class="report-label">Report Name:</span>
-    <span class="report-value">{{reportName}}</span>
+  <div class="space-y-4">
+    <div class="flex items-center">
+      <span class="font-medium text-gray-600 w-1/3">Report Name:</span>
+      <span class="text-gray-800">{{reportName}}</span>
+    </div>
+    <div class="flex items-center">
+      <span class="font-medium text-gray-600 w-1/3">Start Date:</span>
+      <span class="text-gray-800">{{startDate}}</span>
+    </div>
+    <div class="flex items-center">
+      <span class="font-medium text-gray-600 w-1/3">End Date:</span>
+      <span class="text-gray-800">{{endDate}}</span>
+    </div>
+    <div class="flex items-center">
+      <span class="font-medium text-gray-600 w-1/3">Total No of Purchases:</span>
+      <span class="text-gray-800">{{totalPurchases}}</span>
+    </div>
+    <div class="flex items-center">
+      <span class="font-medium text-gray-600 w-1/3">Total COGS:</span>
+      <span class="text-gray-800">Rs.{{totalCOGS}}</span>
+    </div>
+    <div class="flex items-center">
+      <span class="font-medium text-gray-600 w-1/3">Total No of Sales:</span>
+      <span class="text-gray-800">{{totalSales}}</span>
+    </div>
+    <div class="flex items-center">
+      <span class="font-medium text-gray-600 w-1/3">Total Revenue:</span>
+      <span class="text-gray-800">Rs.{{totalRevenue}}</span>
+    </div>
+    <div class="flex items-center">
+      <span class="font-medium text-gray-600 w-1/3">Gross Profit:</span>
+      <span class="text-gray-800">Rs.{{grossProfit}}</span>
+    </div>
   </div>
   <div class="report-section">
     <span class="report-label">Start Date:</span>

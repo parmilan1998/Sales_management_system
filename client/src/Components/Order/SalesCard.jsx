@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
@@ -18,6 +19,7 @@ const SalesCard = () => {
   const [showContent, setShowContent] = useState(false);
   const [customerData, setCustomerData] = useState(null);
   const navigate = useNavigate();
+  const [discount, setDiscount] = useState(0);
 
   const fetchCategoryData = async () => {
     try {
@@ -101,7 +103,6 @@ const SalesCard = () => {
 
   useEffect(() => {
     fetchCategoryData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -134,7 +135,6 @@ const SalesCard = () => {
 
     if (!customerData) {
       toast.error("Fill customer information!...");
-      return;
     }
 
     const payload = {
@@ -145,6 +145,7 @@ const SalesCard = () => {
         productName: product.productName,
         salesQuantity: product.quantity,
       })),
+      finalDiscount: discount,
     };
 
     try {
@@ -162,6 +163,11 @@ const SalesCard = () => {
     }
   };
 
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    return subtotal - (subtotal * discount) / 100;
+  };
+
   const toggleContent = () => {
     setShowContent(!showContent);
   };
@@ -174,145 +180,162 @@ const SalesCard = () => {
   };
 
   return (
-    <div className="px-6">
-      <div className="pt-6">
-        <button onClick={toggleContent} className="">
-          {showContent ? (
-            <>
-              <IoIosArrowDropdownCircle size={28} />
-            </>
-          ) : (
-            <div className="flex items-center gap-1">
-              <IoIosArrowDroprightCircle size={28} />{" "}
-              <span className="text-md font-medium text-gray-500">
-                Customer Info
-              </span>
-            </div>
-          )}
-        </button>
-        {showContent && (
-          <div className="bg-white px-2 w-1/2 rounded shadow-md">
-            <div className="flex w-full">
-              <Form
-                className="gap-3 pt-8 px-3 bg-white flex"
-                layout="vertical"
-                autoComplete="off"
-                onFinish={handleFormSubmit}
-              >
-                <Form.Item
-                  name={["customer", "custName"]}
-                  label="Customer Name"
-                  className="px-3 font-poppins font-medium w-full"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input customer name!",
-                    },
-                  ]}
-                >
-                  <Input
-                    placeholder="Ex: John Clerk"
-                    className="font-poppins py-1.5"
-                  />
-                </Form.Item>
-                <Form.Item
-                  name={["customer", "contactNo"]}
-                  label="Contact No"
-                  className="font-poppins font-medium px-3 w-full"
-                >
-                  <InputNumber
-                    placeholder="Ex: 0770337897"
-                    className="font-poppins py-0.5 w-full"
-                    maxLength={10}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name={["customer", "soldDate"]}
-                  label="Sold Date"
-                  className="font-poppins font-medium px-3 w-full"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select the sold date!",
-                    },
-                  ]}
-                >
-                  <DatePicker
-                    className="font-poppins py-1.5 w-full"
-                    placeholder="Ex: 22.08.2024"
-                  />
-                </Form.Item>
-                <Form.Item className="flex justify-center mt-7 items-center">
-                  <Button type="primary" htmlType="submit">
-                    Submit
-                  </Button>
-                </Form.Item>
-              </Form>
-            </div>
-          </div>
-        )}
-      </div>
-
+    <div>
       <div className="grid grid-cols-8 gap-2">
-        <div className="col-span-4">
-          <div className="flex justify-center items-center pt-6">
-            <div className="grid grid-cols-4 gap-2">
-              {category.map((item, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedCategory(item.categoryID)}
-                  className={`px-8 py-2 text-xs rounded shadow ${
-                    selectedCategory === item.categoryID
-                      ? "bg-indigo-800"
-                      : "bg-indigo-500"
-                  } text-white`}
-                >
-                  {item.categoryName}
-                </button>
-              ))}
-            </div>
-          </div>
-          {selectedCategory !== null && (
-            <div className="grid grid-cols-3 gap-4 py-6">
-              {products.length > 0 ? (
-                products.map((product) => (
-                  <div
-                    key={product.productID}
-                    className="border bg-white p-4 rounded shadow"
-                  >
-                    <img
-                      src={`http://localhost:5000/public/products/${product.imageUrl}`}
-                      alt={product.productName}
-                      className="w-full h-32 object-cover mb-4"
-                    />
-                    <h3 className="font-bold">{product.productName}</h3>
-                    <div className="flex justify-between">
-                      <p className="text-gray-800 text-xs font-bold">
-                        Price: Rs.{product.unitPrice}
-                      </p>
-                      <button onClick={() => addToCart(product)}>
-                        <IoAddCircleOutline size={20} />
-                      </button>
-                    </div>
-                  </div>
-                ))
+        <div className="px-3 col-span-5">
+          {/* <SalesNavigate /> */}
+          <div className="pt-2">
+            <button onClick={toggleContent} className="">
+              {showContent ? (
+                <>
+                  <IoIosArrowDropdownCircle size={28} />
+                </>
               ) : (
-                <div className="col-span-3 text-center text-gray-500">
-                  No products available in this category.
+                <div className="flex items-center gap-1">
+                  <IoIosArrowDroprightCircle size={28} />{" "}
+                  <span className="text-md font-medium text-gray-500">
+                    Customer Info
+                  </span>
+                </div>
+              )}
+            </button>
+            {showContent && (
+              <div className="bg-white px-2 w-full mb-4 rounded shadow-md">
+                <div className="flex w-full">
+                  <Form
+                    className="gap-3 pt-8 px-3 bg-white flex"
+                    layout="vertical"
+                    autoComplete="off"
+                    onFinish={handleFormSubmit}
+                  >
+                    <Form.Item
+                      name={["customer", "custName"]}
+                      label="Customer Name"
+                      className="px-3 font-poppins font-medium w-full"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input customer name!",
+                        },
+                      ]}
+                    >
+                      <Input
+                        placeholder="Ex: John Clerk"
+                        className="font-poppins py-1.5"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name={["customer", "contactNo"]}
+                      label="Contact No"
+                      className="font-poppins font-medium px-3 w-full"
+                    >
+                      <InputNumber
+                        placeholder="Ex: 0770337897"
+                        className="font-poppins py-0.5 w-full"
+                        maxLength={10}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name={["customer", "soldDate"]}
+                      label="Sold Date"
+                      className="font-poppins font-medium px-3 w-full"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select the sold date!",
+                        },
+                      ]}
+                    >
+                      <DatePicker
+                        className="font-poppins py-1.5 w-full"
+                        placeholder="Ex: 22.08.2024"
+                      />
+                    </Form.Item>
+                    <Form.Item className="flex justify-center mt-7 items-center">
+                      <Button type="primary" htmlType="submit">
+                        Submit
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="grid grid-cols-12 gap-2">
+            <div className="col-span-12">
+              <div className="flex justify-center items-center">
+                <div className="grid grid-cols-6 gap-2">
+                  {category.map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedCategory(item.categoryID)}
+                      className={`px-8 py-2 text-xs rounded shadow ${
+                        selectedCategory === item.categoryID
+                          ? "bg-indigo-800"
+                          : "bg-indigo-500"
+                      } text-white`}
+                    >
+                      {item.categoryName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {selectedCategory !== null && (
+                <div className="grid grid-cols-4 gap-4 py-6">
+                  {products.length > 0 ? (
+                    products.map((product) => (
+                      <div
+                        key={product.productID}
+                        className="border bg-white p-5 rounded shadow"
+                      >
+                        <button onClick={() => addToCart(product)}>
+                          <img
+                            src={`http://localhost:5000/public/products/${product.imageUrl}`}
+                            alt={product.productName}
+                            className="w-full h-32 object-cover mb-4"
+                          />
+                          <h3 className="font-bold text-xs">
+                            {product.productName}
+                          </h3>
+                          <div className="flex justify-between">
+                            <span className="text-xs"> Price: </span>
+                            &nbsp;
+                            <p className="text-xs font-bold line-through text-red-600">
+                              Rs.{product.unitPrice}
+                            </p>
+                            &nbsp;
+                            <p className="text-gray-800 text-xs font-bold">
+                              Rs.{product.discountedPrice}
+                            </p>
+                            {/* <IoAddCircleOutline size={20} /> */}
+                          </div>
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-3 text-center text-gray-500">
+                      No products available in this category.
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
-        <Invoice
-          cart={cart}
-          decrementQuantity={decrementQuantity}
-          incrementQuantity={incrementQuantity}
-          setCart={setCart}
-          calculateSubtotal={calculateSubtotal}
-          clearAll={clearAll}
-          handleFinished={handleFinished}
-        />
+        <div className="col-span-3">
+          <Invoice
+            cart={cart}
+            decrementQuantity={decrementQuantity}
+            incrementQuantity={incrementQuantity}
+            setCart={setCart}
+            calculateSubtotal={calculateSubtotal}
+            clearAll={clearAll}
+            handleFinished={handleFinished}
+            discount={discount}
+            setDiscount={setDiscount}
+            calculateTotal={calculateTotal}
+          />
+        </div>
       </div>
     </div>
   );
