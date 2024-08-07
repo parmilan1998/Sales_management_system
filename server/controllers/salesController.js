@@ -29,7 +29,7 @@ exports.createSales = async (req, res) => {
         custName: custName,
         customerContact: customerContact,
         soldDate: soldDate,
-        finalDiscount,
+        finalDiscount: finalDiscount ? finalDiscount : 0,
         totalRevenue: 0,
       });
 
@@ -110,7 +110,12 @@ exports.createSales = async (req, res) => {
           unitType: unit.unitType,
         });
       }
-      const totalRevenue = finalDiscount * subTotal;
+
+      let totalRevenue;
+      if (finalDiscount) {
+        totalRevenue = finalDiscount * subTotal;
+      }
+      totalRevenue = subTotal;
 
       newSale.totalRevenue = totalRevenue;
       await newSale.save();
@@ -217,10 +222,11 @@ exports.updateSales = async (req, res) => {
     }
 
     // Update basic sale details
-    existingSale.custName = custName;
-    existingSale.customerContact = customerContact;
-    existingSale.soldDate = soldDate;
-    existingSale.finalDiscount = finalDiscount;
+    existingSale.custName = custName || existingSale.custName;
+    existingSale.customerContact =
+      customerContact || existingSale.customerContact;
+    existingSale.soldDate = soldDate || existingSale.soldDate;
+    existingSale.finalDiscount = finalDiscount || existingSale.finalDiscount;
 
     // Remove old sales details and restore quantities
     const oldSalesDetails = await SalesDetail.findAll({
