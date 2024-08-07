@@ -1,110 +1,72 @@
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import GridLoader from "react-spinners/GridLoader";
-import Barcode from "react-barcode";
-import { useParams } from "react-router-dom";
-import ProductPagination from "../../Components/Products/ProductPagination";
-import fetchProducts from "../../api/fetchProducts";
-import ProductSort from "../../Components/Products/ProductSort";
-import ProductSearch from "../../Components/Products/ProductSearch";
+import React, { useState } from "react";
+import NavbarSales from "../../Components/NavbarSales";
+import FooterSales from "../../Components/FooterSales";
+import SalesCard from "../../Components/Order/SalesCard";
+import SalesList from "../../Components/Order/SalesList";
+import Marquee from "react-fast-marquee";
 
 const OrderScreen = () => {
-  const { id } = useParams();
-  const [loading, setLoading] = useState(true);
-  const [product, setProduct] = useState([]);
-  const baseUrl = "http://localhost:5000/public/products";
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("ASC");
-  const [limit, setLimit] = useState(6);
+  const [display, setDisplay] = useState("Card");
+  const [active, setActive] = useState("Card");
 
-  const fetchProduct = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/api/v1/product/list`);
-      setProduct(res.data);
-      setLoading(false);
-    } catch (error) {
-      console.log(error.message);
-    }
+  const handleSalesCard = () => {
+    setDisplay("Card");
+    setActive("Card");
   };
 
-  useEffect(() => {
-    fetchProduct();
-  }, []);
-
-  useEffect(() => {
-    fetchProducts(id, page, limit, sort, search, setProduct, setTotalPages);
-  }, [id, page, limit, sort, search]);
+  const handleSalesList = () => {
+    setDisplay("List");
+    setActive("List");
+  };
 
   return (
     <>
-      {loading ? (
-        <div className="flex justify-center items-center w-full h-[75vh]">
-          <GridLoader
-            loading={loading}
-            size={15}
-            aria-label="Loading Spinner"
-            data-testid="loader"
-            color="#4682B4"
-          />
-        </div>
-      ) : (
-        <div className="max-w-screen-xl h-[100%] z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
-          <div className="flex lg:flex-row md:flex-row flex-col justify-between items-center mx-4 mb-4 mt-2">
-            <div className="flex gap-2 mt-2 mr-0 items-center">
-              <h2 className="text-3xl text-gray-600 font-semibold mt-0">
-                Products Here!{" "}
-              </h2>
-              <div className="mt-1 ">
-                <ProductSort
-                  sort={sort}
-                  setSort={setSort}
-                  fetchProducts={fetchProducts}
-                />
-              </div>
-            </div>
-            <div className="flex gap-4 items-center">
-              <ProductSearch
-                search={search}
-                setSearch={setSearch}
-                setPage={setPage}
-              />
-            </div>
+      <NavbarSales />
+      <div className="min-h-screen bg-gray-200 my-0 z-0 lg:h-[100%] mx-auto font-poppins cursor-pointer">
+        <div
+          className={`flex text-white justify-between ${
+            active === "List" ? "bg-blue-500" : "bg-gray-600"
+          }`}
+        >
+          <div className="flex">
+            {" "}
+            <button
+              onClick={handleSalesCard}
+              className={`px-5 py-2 text-white ${
+                active === "Card" ? "bg-blue-500" : "bg-gray-600"
+              }`}
+            >
+              Card
+            </button>
+            <button
+              onClick={handleSalesList}
+              className={`px-8 py-2 text-white ${
+                active === "List" ? "bg-blue-500" : "bg-gray-600"
+              }`}
+            >
+              List
+            </button>
           </div>
-          <div className=" font-poppins">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-0">
-              {product.map((product, index) => (
-                <div key={index} className="rounded p-6 bg-white">
-                  <div className="">
-                    <div>
-                      <img
-                        src={`${baseUrl}/${product.imageUrl}`}
-                        alt="card image"
-                        className="aspect-video w-full h-40 bg-cover object-fill"
-                      />
-                      <div>
-                        <Barcode
-                          value={`${product.productName}, Rs.${product.unitPrice}`}
-                          width={1}
-                          height={50}
-                          displayValue={false}
-                          className="w-full bg-white"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <ProductPagination
-              page={page}
-              totalPages={totalPages}
-              setPage={setPage}
-            />
+          <div className="flex justify-end items-center mx-6">
+            <Marquee className="text-sm tracking-wider font-extralight">
+              Discover our best offers on top-quality products! Enjoy incredible
+              discounts and unbeatable prices on a wide range of items.
+            </Marquee>
           </div>
         </div>
-      )}
+        <div>
+          {display === "List" ? (
+            <div>
+              <SalesList />
+            </div>
+          ) : (
+            <div>
+              <SalesCard />
+            </div>
+          )}
+        </div>
+      </div>
+      <FooterSales />
     </>
   );
 };

@@ -5,7 +5,7 @@ import { MdDelete } from "react-icons/md";
 import { GrFormView } from "react-icons/gr";
 import { Link } from "react-router-dom";
 import SingleProductPopUp from "./SingleProductPopUp";
-import { Button, Popconfirm, Tooltip } from "antd";
+import { Popconfirm, Tooltip } from "antd";
 import { Modal } from "antd";
 
 const ProductTable = ({
@@ -37,7 +37,7 @@ const ProductTable = ({
           <tr>
             <th
               scope="col"
-              className="h-12 w-12 px-4 items-center justify-center text-sm font-medium border-0 first:border-l-0 stroke-slate-700 text-white bg-sky-500"
+              className="h-12 w-12 px-3 items-center justify-center text-sm font-medium border-0 first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               No
             </th>
@@ -54,17 +54,30 @@ const ProductTable = ({
             >
               Description
             </th> */}
-            <th
+            {/* <th
               scope="col"
               className="h-12 px-4 w-44 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Category Name
-            </th>
+            </th> */}
+
             <th
               scope="col"
               className="h-12 px-2 w-8 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Unit Price
+            </th>
+            <th
+              scope="col"
+              className="h-12 px-2 w-20 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
+            >
+              Discount
+            </th>
+            <th
+              scope="col"
+              className="h-12 px-2 w-20 text-sm text-center  font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
+            >
+              Price
             </th>
             <th
               scope="col"
@@ -81,7 +94,7 @@ const ProductTable = ({
             </th>
             <th
               scope="col"
-              className="h-12 px-6 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
+              className="h-12 px-12 text-sm font-medium border-l first:border-l-0 stroke-slate-700 text-white bg-sky-500"
             >
               Actions
             </th>
@@ -102,20 +115,26 @@ const ProductTable = ({
                 {item.productName}
               </td>
 
-              {/* <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-black">
-                {item.productDescription}
-              </td> */}
-              <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
+              {/* <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
                 {item.categoryName}
+              </td> */}
+
+              <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
+                Rs.{item.unitPrice}.00
               </td>
               <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
-                Rs.{item.unitPrice}
+                {item.discount}%
               </td>
               <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
-                {item.reOrderLevel}
+                Rs.{item.discountedPrice}
               </td>
               <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
-                {item.totalQuantity}
+                {item.reOrderLevel}&nbsp;
+                {item.unitType}
+              </td>
+              <td className="h-12 px-6 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
+                {item.totalQuantity}&nbsp;
+                {item.unitType}
               </td>
               <td className="h-12 px-1 text-sm transition duration-300 border-t border-0 first:border-l-0 border-slate-200 stroke-slate-500 text-black">
                 <div className="flex flex-row justify-center items-center gap-2">

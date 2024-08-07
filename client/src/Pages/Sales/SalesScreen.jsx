@@ -3,12 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Button, message, Popconfirm, Table } from "antd";
 import SalesTable from "../../Components/Sales/SalesTable";
 import axios from "axios";
-import { MdDelete, MdEditSquare } from "react-icons/md";
-import { AiOutlineFolderView } from "react-icons/ai";
-import toast from "react-hot-toast";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { LuPlus } from "react-icons/lu";
-import Barcode from "react-barcode";
 import SalesSearch from "../../Components/Sales/SalesSearch";
 import SalesSort from "../../Components/Sales/SalesSort";
 import GridLoader from "react-spinners/GridLoader";
@@ -27,6 +23,7 @@ const SalesScreen = () => {
         title: "Sales Quantity",
         dataIndex: "salesQuantity",
         key: "salesQuantity",
+        render: (text, record) => `${record.salesQuantity} ${record.unitType}`,
       },
     ];
     const dataList = [];
@@ -154,13 +151,13 @@ const SalesScreen = () => {
               <h1 className="text-3xl font-medium font-acme">
                 All Sales Here!
               </h1>
-              <Link
+              {/* <Link
                 to="/sales/add"
                 className="bg-cyan-500 text-white px-3 py-2 rounded flex gap-2 items-center"
               >
                 <LuPlus />
                 New Sale
-              </Link>
+              </Link> */}
             </div>
             <div className="flex lg:flex-row md:flex-row flex-col  items-center gap-2">
               <h1>SortBy:</h1>

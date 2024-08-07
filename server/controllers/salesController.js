@@ -4,34 +4,38 @@ const Product = require("../models/products");
 const Stocks = require("../models/stocks");
 const SalesDetail = require("../models/salesDetails");
 const axios = require("axios");
+const Unit = require("../models/unit");
 
 // POST -> localhost:5000/api/v1/sales
 exports.createSales = async (req, res) => {
   try {
     let sales = req.body;
 
-    // Ensure sales is an array
     if (!Array.isArray(sales)) {
       sales = [sales];
     }
 
     const createdSales = [];
+    const saleDetailsToCreate = [];
+    const stockUpdates = [];
 
     for (const sale of sales) {
-      const { custName, customerContact, soldDate, products } = sale;
-
+      const { custName, customerContact, soldDate, finalDiscount, products } =
+        sale;
       const productList = Array.isArray(products) ? products : [products];
+
       // Create the main sales record
       const newSale = await Sales.create({
         custName: custName,
         customerContact: customerContact,
         soldDate: soldDate,
-        totalRevenue: 0, // Initial total revenue
+        finalDiscount: finalDiscount ? finalDiscount : 0,
+        totalRevenue: 0,
       });
 
-      let totalRevenue = 0;
+      let subTotal = 0;
+      const productDetails = [];
 
-      // Process each product in the sale
       for (const productSale of productList) {
         const { productName, salesQuantity } = productSale;
 
@@ -46,8 +50,11 @@ exports.createSales = async (req, res) => {
             .json({ message: `Product '${productName}' not found` });
         }
 
-        const { productID, unitPrice } = product;
-        const revenue = unitPrice * salesQuantity;
+        const { productID, unitPrice, unitID, discountedPrice } = product;
+
+        console.log("====================================");
+        console.log("dp", discountedPrice);
+        console.log("====================================");
 
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
@@ -56,9 +63,8 @@ exports.createSales = async (req, res) => {
         });
 
         let remainingQuantity = salesQuantity;
-        let stockDetails = [];
+        const stockDetails = [];
 
-        // Deduct sales quantity from available stock
         for (const stock of stocks) {
           if (remainingQuantity <= 0) break;
 
@@ -66,10 +72,8 @@ exports.createSales = async (req, res) => {
           stock.productQuantity -= usedQuantity;
           remainingQuantity -= usedQuantity;
 
-          // Save updated stock quantity
-          await stock.save();
+          stockUpdates.push(stock.save());
 
-          // Track stock details for SalesDetail creation
           stockDetails.push({ stockID: stock.stockID, usedQuantity });
         }
 
@@ -79,39 +83,78 @@ exports.createSales = async (req, res) => {
           });
         }
 
-        // Create SalesDetail record
-        await SalesDetail.create({
+        const unit = await Unit.findOne({
+          where: { unitID: unitID },
+        });
+
+        if (!unit) {
+          return res
+            .status(404)
+            .json({ message: `Unit for product '${productName}' not found` });
+        }
+
+        const revenue = salesQuantity * discountedPrice;
+
+        saleDetailsToCreate.push({
           salesID: newSale.salesID,
           productID: productID,
-          stockID: stockDetails[0].stockID, // Assuming first stock used for simplicity
+          stockID: stockDetails[0].stockID,
           salesQuantity: salesQuantity,
           unitPrice: unitPrice,
           revenue: revenue,
           productName: productName,
+          unitID: unitID,
         });
 
-        totalRevenue += revenue; // Accumulate revenue for the sale
+        subTotal += revenue;
+
+        productDetails.push({
+          productName: productName,
+          salesQuantity: salesQuantity,
+          unitType: unit.unitType,
+        });
       }
 
-      // Update total revenue for the sale
+      let totalRevenue;
+      let discountedAmount;
+
+      if (finalDiscount) {
+        totalRevenue = (1 - finalDiscount / 100) * subTotal;
+        discountedAmount = (finalDiscount / 100) * subTotal
+      } else {
+        totalRevenue = subTotal;
+        discountedAmount = 0;
+      }
+
       newSale.totalRevenue = totalRevenue;
       await newSale.save();
 
-      createdSales.push(newSale);
+     
+
+      createdSales.push({
+        salesID: newSale.salesID,
+        custName: newSale.custName,
+        customerContact: newSale.customerContact,
+        soldDate: newSale.soldDate,
+        subTotal,
+        discount:finalDiscount,
+        discountedAmount,
+        totalRevenue: newSale.totalRevenue,
+        products: productDetails,
+      });
     }
 
-    // Emit event for real-time updates
+    await Promise.all(stockUpdates);
+    await SalesDetail.bulkCreate(saleDetailsToCreate);
+
     const io = req.app.get("socketio");
 
-    // Fetch and emit the updated sales count
     const count = await Sales.count();
     io.emit("saleCount", count);
 
-    // Fetch and emit the updated total product quantity
     const totalQuantity = await Stocks.sum("productQuantity");
     io.emit("totalProductQuantityUpdated", totalQuantity);
 
-    // Fetch and emit all sales data
     try {
       const { data: salesData } = await axios.get(
         "http://localhost:5000/api/v1/sales/sort",
@@ -131,7 +174,6 @@ exports.createSales = async (req, res) => {
       );
     }
 
-    // Fetch and emit low stock products
     try {
       const lowStockResponse = await axios.get(
         "http://localhost:5000/api/v1/notification/low-stock"
@@ -183,7 +225,8 @@ exports.getAllSales = async (req, res) => {
 exports.updateSales = async (req, res) => {
   try {
     const { id } = req.params;
-    const { custName, customerContact, soldDate, products } = req.body;
+    const { custName, customerContact, soldDate, finalDiscount, products } =
+      req.body;
 
     const existingSale = await Sales.findByPk(id);
     if (!existingSale) {
@@ -196,14 +239,13 @@ exports.updateSales = async (req, res) => {
     existingSale.custName = custName || existingSale.custName;
     existingSale.customerContact =
       customerContact || existingSale.customerContact;
-
     existingSale.soldDate = soldDate || existingSale.soldDate;
+    existingSale.finalDiscount = finalDiscount || existingSale.finalDiscount;
 
     // Remove old sales details and restore quantities
     const oldSalesDetails = await SalesDetail.findAll({
       where: { salesID: id },
     });
-
     for (const detail of oldSalesDetails) {
       const stock = await Stocks.findByPk(detail.stockID);
       stock.productQuantity += detail.salesQuantity;
@@ -215,17 +257,30 @@ exports.updateSales = async (req, res) => {
       products.map(async (productSale) => {
         const { productName, salesQuantity } = productSale;
 
+        // Validate salesQuantity
+        if (salesQuantity < 1) {
+          return res.status(400).json({
+            message: `Invalid sales quantity for product '${productName}'`,
+          });
+        }
+
         // Find the product in the Product table
         const product = await Product.findOne({ where: { productName } });
-
         if (!product) {
           return res
             .status(404)
             .json({ message: `Product '${productName}' not found` });
         }
 
-        const { unitPrice } = product;
-        const calculatedTotalPrice = unitPrice * salesQuantity;
+        // Fetch unit ID and unit type from the Unit table
+        const unit = await Unit.findByPk(product.unitID);
+        if (!unit) {
+          return res
+            .status(404)
+            .json({ message: `Unit not found for product '${productName}'` });
+        }
+
+        const { discountedPrice } = product;
 
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
@@ -251,7 +306,6 @@ exports.updateSales = async (req, res) => {
           }
 
           await stock.save();
-
           stockDetails.push({ stockID: stock.stockID, usedQuantity });
         }
 
@@ -268,6 +322,7 @@ exports.updateSales = async (req, res) => {
               salesID: existingSale.salesID,
               productID: product.productID,
               stockID: stockDetail.stockID,
+              unitID: unit.unitID,
               productName: product.productName,
               salesQuantity: stockDetail.usedQuantity,
               unitPrice: unitPrice,
@@ -277,21 +332,20 @@ exports.updateSales = async (req, res) => {
         );
 
         return {
-          salesID: existingSale.salesID,
-          productID: product.productID,
           productName: product.productName,
           salesQuantity,
-          unitPrice,
-          revenue: calculatedTotalPrice,
+          unitType: unit.unitType,
+          discountedPrice,
         };
       })
     );
 
-    // Calculate total revenue for the sale
-    const totalRevenue = saleDetails.reduce(
-      (total, detail) => total + detail.revenue,
+    // Calculate total revenue for the sale with the discount applied
+    const subTotal = saleDetails.reduce(
+      (total, detail) => total + detail.discountedPrice * detail.salesQuantity,
       0
     );
+    const totalRevenue = subTotal * (1 - finalDiscount / 100);
     existingSale.totalRevenue = totalRevenue;
     await existingSale.save();
 
@@ -337,7 +391,16 @@ exports.updateSales = async (req, res) => {
 
     res.status(200).json({
       message: `Sales record with ID '${id}' updated successfully`,
-      updatedSale: existingSale,
+      sales: [
+        {
+          salesID: existingSale.salesID,
+          custName: existingSale.custName,
+          customerContact: existingSale.customerContact,
+          soldDate: existingSale.soldDate,
+          totalRevenue: existingSale.totalRevenue,
+          products: saleDetails,
+        },
+      ],
     });
   } catch (e) {
     console.error("Error updating sales:", e);
@@ -462,11 +525,20 @@ exports.querySales = async (req, res) => {
     // Querying Sales with included SalesDetail
     const { count: countCustomer, rows: salesCustomer } =
       await Sales.findAndCountAll({
-        include: {
-          model: SalesDetail,
-          as: "details",
-          attributes: ["productName", "salesQuantity"],
-        },
+        include: [
+          {
+            model: SalesDetail,
+            as: "details",
+            attributes: ["productName", "salesQuantity"],
+            include: [
+              {
+                model: Unit,
+                as: "unit",
+                attributes: ["unitType"],
+              },
+            ],
+          },
+        ],
         where: searchCondition,
         offset,
         limit: parsedLimit,
@@ -478,15 +550,23 @@ exports.querySales = async (req, res) => {
 
     const { count: countProduct, rows: salesProduct } =
       await Sales.findAndCountAll({
-        include: {
-          model: SalesDetail,
-          as: "details",
-          attributes: ["productName", "salesQuantity"],
-          where: {
-            productName: { [Op.like]: `%${productName}%` },
+        include: [
+          {
+            model: SalesDetail,
+            as: "details",
+            attributes: ["productName", "salesQuantity"],
+            where: {
+              productName: { [Op.like]: `%${productName}%` },
+            },
+            include: [
+              {
+                model: Unit,
+                as: "unit",
+                attributes: ["unitType"],
+              },
+            ],
           },
-        },
-
+        ],
         offset,
         limit: parsedLimit,
         order: [
@@ -498,11 +578,24 @@ exports.querySales = async (req, res) => {
     let count = countCustomer > 0 ? countCustomer : countProduct;
     let sales = countCustomer > 0 ? salesCustomer : salesProduct;
 
+    const salesWithUnitType = sales.map((sale) => ({
+      salesID: sale.salesID,
+      custName: sale.custName,
+      customerContact: sale.customerContact,
+      soldDate: sale.soldDate,
+      totalRevenue: sale.totalRevenue,
+      details: sale.details.map((detail) => ({
+        productName: detail.productName,
+        salesQuantity: detail.salesQuantity,
+        unitType: detail.unit.unitType,
+      })),
+    }));
+
     // Total pages
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      sales,
+      sales: salesWithUnitType,
       pagination: {
         currentPage: parsedPage,
         totalPages,

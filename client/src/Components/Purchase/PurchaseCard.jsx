@@ -44,7 +44,7 @@ const PurchaseCard = ({ purchase, confirmDelete, cancelDelete }) => {
                     From {purchase.purchaseVendor}
                   </p>
                   <p className="text-sm text-slate-400">
-                    Quantity: {purchase.purchaseQuantity}
+                    Quantity: {purchase.purchaseQuantity} {purchase.unitType}
                   </p>
                 </div>
               </header>

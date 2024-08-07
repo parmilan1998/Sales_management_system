@@ -57,10 +57,7 @@ const Stocks = () => {
       console.log("Response data:", res.data);
       const { stocks, pagination } = res.data;
       setTotalPages(pagination.totalPages);
-      console.log({ stocks });
       setStocks(stocks);
-      console.log("H", sortDate, sortName);
-      console.log("Stocks set:", stocks);
     } catch (err) {
       console.log(err.message);
     } finally {
@@ -163,10 +160,11 @@ const Stocks = () => {
     {
       title: "No",
       dataIndex: "index",
-      valueType: "indexBorder",
       ellipsis: true,
+      width: 60,
+      align: "center",
       render: (text, record, index) => (
-        <div className="w-5 h-5 bg-gray-600 text-white text flex justify-center items-center rounded-full">
+        <div className="w-5 h-5 ml-3 bg-gray-600 text-white text flex justify-center items-center rounded-full">
           <span>{index + 1}</span>
         </div>
       ),
@@ -175,7 +173,8 @@ const Stocks = () => {
       title: "Product Name",
       dataIndex: "productName",
       valueType: "select",
-      width: 180,
+      align: "center",
+      width: 171,
       fieldProps: {
         options: productOptions,
       },
@@ -193,35 +192,49 @@ const Stocks = () => {
       title: "Product Quantity",
       dataIndex: "productQuantity",
       valueType: "digit",
-      width: 100,
+      align: "center",
+      width: 125,
+      render: (text, record) => `${record.productQuantity} ${record.unitType}`,
+      renderFormItem: (_, { recordKey, ...restProps }) => (
+        <input
+          className="w-24"
+          {...restProps}
+          defaultValue={_.productQuantity || ""}
+        />
+      ),
     },
     {
       title: "Purchase Price",
       dataIndex: "purchasePrice",
       valueType: "money",
-      width: 120,
+      align: "center",
+      width: 110,
     },
     {
       title: "Manufactured Date",
       dataIndex: "manufacturedDate",
       valueType: "date",
+      align: "center",
       width: 140,
     },
     {
       title: "Expiry Date",
       dataIndex: "expiryDate",
       valueType: "date",
-      width: 120,
+      align: "center",
+      width: 90,
     },
     {
       title: "Purchased Date",
       dataIndex: "purchasedDate",
       valueType: "date",
-      width: 100,
+      align: "center",
+      width: 115,
     },
     {
       title: "Action",
       valueType: "option",
+      width: 150,
       render: (_, row) => [
         <React.Fragment key={`actions-${row.id}`}>
           <Popconfirm
@@ -267,7 +280,7 @@ const Stocks = () => {
           <div className="max-w-screen-xl z-0 mx-auto lg:px-8 font-poppins cursor-pointer">
             <div className="flex flex-col  justify-between pb-5 relative">
               <div className="flex lg:flex-row md:flex-row flex-col items-center justify-between gap-4 pb-5">
-                <div className="flex gap-3 mx-5">
+                <div className="flex gap-3 mx-2">
                   <h1 className="text-4xl font-semibold font-acme text-blue-600">
                     Stocks List
                   </h1>
@@ -287,15 +300,18 @@ const Stocks = () => {
                   />
                 </div>
               </div>
-              <div className="m-5 border rounded-md border-slate-400">
-                <ProCard>
+              <div
+                className="m-1  border rounded-md  border-slate-400 " style={{
+                  maxWidth: 1250,
+                }}
+              >
+                <ProCard className="px-1">
                   {loading ? (
                     <div>Loading...</div>
                   ) : (
                     <div
                       style={{
-                        maxWidth: 1000,
-                        margin: "auto",
+                        maxWidth: 990,
                       }}
                     >
                       <ProForm
@@ -303,12 +319,14 @@ const Stocks = () => {
                         // onFinish={(data) => {
                         //   console.log({ data });
                         // }}
+
                         formRef={formRef}
                         initialValues={{
                           table: stocks.map((stock) => ({
-                            id: stock.stockID,
+                            id: stock.id,
                             productName: stock.productName,
                             productQuantity: stock.productQuantity,
+                            unitType: stock.unitType,
                             purchasePrice: stock.purchasePrice,
                             manufacturedDate: stock.manufacturedDate,
                             expiryDate: stock.expiryDate,
@@ -324,7 +342,7 @@ const Stocks = () => {
                           //   },
                           // }}
                           rowKey="id"
-                          scroll={{ x: true }}
+                          scroll={{ x: 890 }}
                           editableFormRef={editableFormRef}
                           controlled
                           actionRef={actionRef}
@@ -347,19 +365,13 @@ const Stocks = () => {
                             onDelete: async () => {
                               fetchStocks();
                             },
-                            onCancel: async () => {},
+                            // actionRender: (row, config, defaultDom) => [
+                            //   defaultDom.save,
+                            //   // defaultDom.delete,
+                            //   defaultDom.cancel
+                            // ],
                           }}
                           rowClassName={() => rowClassName}
-                          locale={{
-                            emptyText: "No Data",
-                            edit: "Edit",
-                            delete: "Delete",
-                            deletePopconfirmMessage:
-                              "Are you sure to delete this record?",
-                            add: "Add",
-                            save: "Save",
-                            cancel: "Cancel",
-                          }}
                           pagination={{
                             total: totalPages * limit,
                             current: page,

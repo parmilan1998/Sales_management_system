@@ -4,6 +4,8 @@ const Category = require("../models/category");
 const Stocks = require("../models/stocks");
 const fs = require("fs");
 const path = require("path");
+const Unit = require("../models/unit");
+const generateRandomCode = require("../utils/randomCodeGenerator");
 
 // POST -> localhost:5000/api/v1/product
 exports.createProduct = async (req, res) => {
@@ -11,12 +13,13 @@ exports.createProduct = async (req, res) => {
     productName,
     categoryName,
     productDescription,
+    unitType,
     unitPrice,
     reOrderLevel,
+    discount,
   } = req.body;
 
   try {
-    // Check if the product already exists
     const existingProduct = await Product.findOne({
       where: {
         productName: productName,
@@ -29,6 +32,7 @@ exports.createProduct = async (req, res) => {
         product: existingProduct,
       });
     }
+
     const category = await Category.findOne({
       where: { categoryName: categoryName },
     });
@@ -39,20 +43,36 @@ exports.createProduct = async (req, res) => {
         .json({ error: `Category ${categoryName} not found` });
     }
 
+    const unit = await Unit.findOne({
+      where: { unitType: unitType },
+    });
+
+    const code = generateRandomCode();
+
+    let discountedPrice;
+    if (discount) {
+      discountedPrice = unitPrice * ((100 - discount) / 100);
+    } else {
+      discountedPrice = unitPrice;
+    }
+
     const newProduct = await Product.create({
       productName,
       categoryID: category.categoryID,
       categoryName,
       productDescription,
+      unitID: unit.unitID,
+      unitType,
       unitPrice,
+      discount: discount ? discount : 0,
+      discountedPrice,
       reOrderLevel,
       imageUrl: req.file ? req.file.filename : null,
+      code: code,
     });
 
-    // Emit event for real-time updates
     const io = req.app.get("socketio");
 
-    // Fetch and emit the updated product count
     const count = await Product.count();
     io.emit("productCount", count);
 
@@ -145,12 +165,38 @@ exports.filterbyCategory = async (req, res) => {
       where: { categoryID },
     });
 
+    const productIDs = products.map((product) => product.productID);
+
+    const stockQuantities = await Stocks.findAll({
+      attributes: [
+        "productID",
+        [fn("sum", col("productQuantity")), "totalQuantity"],
+      ],
+      where: {
+        productID: {
+          [Op.in]: productIDs,
+        },
+      },
+      group: ["productID"],
+    });
+
+    const stockQuantityMap = stockQuantities.reduce((acc, stock) => {
+      acc[stock.productID] = stock.dataValues.totalQuantity;
+      return acc;
+    }, {});
+
+    const productWithQuantities = products.map((product) => ({
+      ...product.dataValues,
+      totalQuantity: stockQuantityMap[product.productID] || 0,
+    }));
+
     if (products.length === 0) {
       return res
         .status(404)
         .json({ message: "No products found in this category" });
     }
-    res.status(200).json(products);
+
+    res.status(200).json(productWithQuantities);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -163,7 +209,9 @@ exports.updateProduct = async (req, res) => {
     productName,
     categoryName,
     productDescription,
+    unitType,
     unitPrice,
+    discount,
     reOrderLevel,
   } = req.body;
 
@@ -197,6 +245,12 @@ exports.updateProduct = async (req, res) => {
       console.log("New file uploaded:", req?.file);
     }
 
+    let discountedPrice = 0;
+    if (discount) {
+      discountedPrice = unitPrice * ((100 - discount) / 100);
+    } else {
+      discountedPrice = unitPrice;
+    }
     // Delete existing image if it exists
     if (product.imageUrl) {
       const filePath = path.join(
@@ -223,10 +277,13 @@ exports.updateProduct = async (req, res) => {
         productName,
         productDescription,
         categoryName,
+        unitType: Unit.unitType || unitType,
         unitPrice,
+        discount,
+        discountedPrice,
         categoryID,
         reOrderLevel,
-        imageUrl: req?.file?.filename, // Update imageUrl with the new file path
+        imageUrl: req?.file?.filename,
       });
     } else {
       // Update product without changing the image
@@ -234,7 +291,10 @@ exports.updateProduct = async (req, res) => {
         productName,
         productDescription,
         categoryName,
+        unitType: Unit.unitType || unitType,
         unitPrice,
+        discount,
+        discountedPrice,
         reOrderLevel,
         categoryID,
       });

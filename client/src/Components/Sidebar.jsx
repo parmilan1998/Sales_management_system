@@ -12,53 +12,53 @@ import { Tooltip } from "antd";
 import LoginScreen from "../Pages/Admin/LoginScreen";
 import { jwtDecode } from "jwt-decode";
 import { LuGanttChartSquare } from "react-icons/lu";
-import { MdOutlineProductionQuantityLimits } from "react-icons/md";
+import { MdOutlineProductionQuantityLimits, MdPayment } from "react-icons/md";
 import { MdOutlineCurrencyExchange } from "react-icons/md";
 import { PiWarehouseLight } from "react-icons/pi";
 
 export default function Sidebar() {
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
   const user = useSelector((state) => state.auth.user);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  // const navigate = useNavigate();
+  // const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/user/login");
-    }
-  }, [user, navigate]);
+  // useEffect(() => {
+  //   if (!user) {
+  //     navigate("/user/login");
+  //   }
+  // }, [user, navigate]);
 
-  const handleLogout = async () => {
-    try {
-      await dispatch(logOutAdmin());
-      dispatch(logout());
-      navigate("/");
-      toast.success("Logged out successfully!");
-    } catch (error) {
-      toast.error("Logout failed. Please try again.");
-    }
-  };
+  // const handleLogout = async () => {
+  //   try {
+  //     await dispatch(logOutAdmin());
+  //     dispatch(logout());
+  //     navigate("/");
+  //     toast.success("Logged out successfully!");
+  //   } catch (error) {
+  //     toast.error("Logout failed. Please try again.");
+  //   }
+  // };
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-      const expTime = decodedToken.exp;
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (token) {
+  //     const decodedToken = jwtDecode(token);
+  //     const currentTime = Date.now() / 1000;
+  //     const expTime = decodedToken.exp;
 
-      const expiryTime = (expTime - currentTime) * 1000;
+  //     const expiryTime = (expTime - currentTime) * 1000;
 
-      if (expiryTime > 0) {
-        const timer = setTimeout(() => {
-          dispatch(logout());
-        }, expiryTime);
+  //     if (expiryTime > 0) {
+  //       const timer = setTimeout(() => {
+  //         dispatch(logout());
+  //       }, expiryTime);
 
-        return () => clearTimeout(timer);
-      } else {
-        dispatch(logout());
-      }
-    }
-  }, [dispatch]);
+  //       return () => clearTimeout(timer);
+  //     } else {
+  //       dispatch(logout());
+  //     }
+  //   }
+  // }, [dispatch]);
 
   return (
     <>
@@ -99,7 +99,7 @@ export default function Sidebar() {
           isSideNavOpen ? "translate-x-0" : " -translate-x-full"
         }`}
       >
-        <div className="flex flex-col items-center gap-4 p-6">
+        <div className="flex flex-col items-center gap-3 p-3">
           <span className="flex flex-row items-center justify-start pt-5 w-full place-content-center rounded-lg text-3xl font-acme font-medium tracking-widest">
             <SiPowerapps className="mr-2 text-primaryRed" />
             <span className=" text-primaryRed">Vital</span> <span>Mart</span>
@@ -110,7 +110,7 @@ export default function Sidebar() {
           className="flex-1 text-white overflow-y-scroll no-scrollbar"
         >
           <div>
-            <ul className="flex flex-1 flex-col gap-1 pt-0">
+            <ul className="flex flex-1 flex-col gap-2 pt-0">
               <li className="px-3">
                 <Link
                   to="/"
@@ -194,6 +194,19 @@ export default function Sidebar() {
               </li>
               <li className="px-3">
                 <Link
+                  to="/payment"
+                  className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
+                >
+                  <div className="flex items-center self-center ">
+                    <MdPayment size={22} />
+                  </div>
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
+                    Payment
+                  </div>
+                </Link>
+              </li>
+              <li className="px-3">
+                <Link
                   to="/reports"
                   className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
                 >
@@ -202,6 +215,19 @@ export default function Sidebar() {
                   </div>
                   <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
                     Reports
+                  </div>
+                </Link>
+              </li>
+              <li className="px-3">
+                <Link
+                  to="/invoice"
+                  className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
+                >
+                  <div className="flex items-center self-center ">
+                    <FaShopify size={20} />
+                  </div>
+                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
+                    Orders
                   </div>
                 </Link>
               </li>
@@ -218,24 +244,11 @@ export default function Sidebar() {
                   </div>
                 </Link>
               </li>
-              <li className="px-3">
-                <Link
-                  to="/order"
-                  className="flex items-center gap-3 rounded p-3 transition-colors focus:text-emerald-500 text-white hover:text-emerald-500"
-                >
-                  <div className="flex items-center self-center ">
-                    <FaShopify size={20} />
-                  </div>
-                  <div className="flex w-full flex-1 font-light tracking-wider flex-col items-start justify-center gap-0 overflow-hidden truncate text-sm">
-                    Orders
-                  </div>
-                </Link>
-              </li>
             </ul>
           </div>
         </nav>
 
-        <footer className="px-3 py-2">
+        {/* <footer className="px-3 py-2">
           {user ? (
             <div>
               <Tooltip title="Logout">
@@ -276,7 +289,7 @@ export default function Sidebar() {
           ) : (
             <LoginScreen />
           )}
-        </footer>
+        </footer> */}
       </aside>
 
       {/* <div

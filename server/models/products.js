@@ -2,6 +2,7 @@ const { DataTypes } = require("sequelize");
 const db = require("../database/db");
 const Category = require("./category");
 const io = require("../index");
+const Unit = require("./unit");
 
 const Product = db.define(
   "Product",
@@ -46,12 +47,40 @@ const Product = db.define(
         notEmpty: true,
       },
     },
+    code: {
+      type: DataTypes.STRING(6),
+      allowNull: true,
+    },
+    unitID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "unit",
+        key: "unitID",
+      },
+      validate: {
+        notEmpty: true,
+      },
+    },
+    unitType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     unitPrice: {
       type: DataTypes.FLOAT,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
+    },
+    discount: {
+      type: DataTypes.FLOAT,
+    },
+    discountedPrice: {
+      type: DataTypes.FLOAT,
     },
     reOrderLevel: {
       type: DataTypes.INTEGER,
@@ -63,6 +92,7 @@ const Product = db.define(
     imageUrl: {
       type: DataTypes.TEXT,
     },
+
   },
   {
     timestamps: true,
@@ -73,6 +103,11 @@ const Product = db.define(
 Product.belongsTo(Category, {
   foreignKey: "categoryID",
   targetKey: "categoryID",
+});
+
+Product.belongsTo(Unit, {
+  foreignKey: "unitID",
+  targetKey: "unitID",
 });
 
 module.exports = Product;

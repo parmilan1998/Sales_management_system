@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const Stocks = require("../models/stocks");
 const Product = require("../models/products");
 const axios = require("axios");
+const Unit = require("../models/unit");
 
 // POST -> localhost:5000/api/v1/stocks
 exports.createStocks = async (req, res) => {
@@ -36,6 +37,7 @@ exports.createStocks = async (req, res) => {
     const existingStock = await Stocks.findOne({
       where: {
         productID: product.productID,
+        unitID:product.unitID,
         productName,
         purchasePrice,
         manufacturedDate,
@@ -89,6 +91,7 @@ exports.createStocks = async (req, res) => {
 
     const createdStock = await Stocks.create({
       productID: product.productID,
+      unitID:product.unitID,
       productName,
       productQuantity,
       purchasePrice: purchasePrice || null,
@@ -281,13 +284,33 @@ exports.queryStocks = async (req, res) => {
         ["productName", sortOrder],
         ["expiryDate", sortDate],
       ],
+      include: [
+        {
+          model: Unit,
+          attributes: ["unitType"],
+          required: true,
+        },
+      ],
     });
+
+    const stocksWithUnitType = stocks.map((stock) => ({
+      id: stock.stockID,
+      product:stock.productID,
+      purchaseID:stock.purchaseID,
+      productName: stock.productName,
+      productQuantity: stock.productQuantity,
+      purchasePrice: stock.purchasePrice,
+      manufacturedDate: stock.manufacturedDate,
+      expiryDate: stock.expiryDate,
+      purchasedDate: stock.purchasedDate,
+      unitType: stock.Unit.unitType,
+    }));
 
     // Total pages
     const totalPages = Math.ceil(count / parsedLimit);
 
     res.status(200).json({
-      stocks,
+      stocks: stocksWithUnitType,
       pagination: {
         currentPage: parsedPage,
         totalPages,

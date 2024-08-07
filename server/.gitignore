@@ -1,3 +1,6 @@
 node_modules
 .env
-public
+public/category
+public/products
+public/profile
+public/reports

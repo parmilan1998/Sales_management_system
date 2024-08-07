@@ -3,9 +3,33 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
+import { IoMdAddCircleOutline } from "react-icons/io";
 
 const AddProduct = () => {
   const [category, setCategory] = useState([]);
+  const [unit, setUnit] = useState([]);
+  const [unitType, setUnitType] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+
+  const handleAddUnitType = async () => {
+    try {
+      const res = await axios.post("http://localhost:5000/api/v1/unit", {
+        unitType,
+      });
+      console.log(res.data);
+      toast.success("Unit added successfully!");
+      setUnitType("");
+      setIsAdding(false);
+      fetchUnitApi();
+    } catch (err) {
+      console.log(err.message);
+      toast.error("Failed to add unit type");
+    }
+  };
+  const handleIconClick = () => {
+    setIsAdding(!isAdding);
+  };
+
   const navigate = useNavigate();
   const {
     register,
@@ -21,7 +45,9 @@ const AddProduct = () => {
       formData.append("productName", data.productName);
       formData.append("image", data.image[0]);
       formData.append("categoryName", data.categoryName);
+      formData.append("unitType", data.unitType);
       formData.append("unitPrice", data.unitPrice);
+      formData.append("discount", data.discount);
       formData.append("reOrderLevel", data.reOrderLevel);
       formData.append("productDescription", data.description);
 
@@ -58,12 +84,25 @@ const AddProduct = () => {
       });
   };
 
+  const fetchUnitApi = async () => {
+    const res = await axios
+      .get("http://localhost:5000/api/v1/unit/list")
+      .then((res) => {
+        console.log(res.data);
+        setUnit(res.data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  };
+
   useEffect(() => {
     fetchCategoryApi();
+    fetchUnitApi();
   }, []);
 
   return (
-    <div className=" max-w-screen-xl mx-auto lg:px-24 font-poppins cursor-pointer">
+    <div className=" max-w-screen-2xl mx-auto lg:px-8 font-poppins cursor-pointer">
       <div className="bg-white rounded p-10">
         <div className="flex items-center justify-center gap-4 py-6 font-poppins">
           <span className="shrink-0 rounded-full bg-blue-400 p-2 text-white">
@@ -97,7 +136,7 @@ const AddProduct = () => {
                 type="text"
                 name="productName"
                 id="productName"
-                className="w-full py-3 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
                 placeholder="Ex - Memory Foam Pillow"
               />
               {errors.productName && (
@@ -106,28 +145,6 @@ const AddProduct = () => {
                 </p>
               )}
             </div>
-            <div className="mb-4">
-              <label htmlFor="image" className="flex pb-2 text-gray-600">
-                Product Image
-              </label>
-              <input
-                {...register("image", {
-                  required: "Image is required",
-                })}
-                type="file"
-                name="image"
-                id="image"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                placeholder="Ex - Rs.59.99"
-              />
-              {errors.image && (
-                <p className="text-red-500 py-1 text-sm">
-                  {errors.image.message}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
             <div className="mb-4">
               <label htmlFor="categoryName" className="flex pb-2 text-gray-600">
                 Category Name
@@ -139,7 +156,7 @@ const AddProduct = () => {
                 type="text"
                 name="categoryName"
                 id="categoryName"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
                 placeholder="Ex - Home Essentials"
               >
                 <option value="" className="text-gray-200 opacity-5">
@@ -157,7 +174,134 @@ const AddProduct = () => {
                 </p>
               )}
             </div>
+          </div>
+
+          <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
+            {/* <div className="mb-4 col-span-2">
+              <label htmlFor="image" className="flex pb-2 text-gray-600">
+                Product Image
+              </label>
+              <input
+                {...register("image", {
+                  required: "Image is required",
+                })}
+                type="file"
+                name="image"
+                id="image"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                placeholder="Ex - Rs.59.99"
+              />
+              {errors.image && (
+                <p className="text-red-500 py-1 text-sm">
+                  {errors.image.message}
+                </p>
+              )}
+            </div> */}
+            <div className="my-4 col-span-2">
+              <label htmlFor="image" className="flex pb-2 text-gray-600">
+                Product Image
+              </label>
+              <input
+                {...register("image", {
+                  required: "Image is required",
+                })}
+                type="file"
+                name="image"
+                id="image"
+                className="w-full py-1.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                placeholder="Ex - Rs.59.99"
+              />
+              {errors.image && (
+                <p className="text-red-500 py-1 text-sm">
+                  {errors.image.message}
+                </p>
+              )}
+            </div>
+            <div className="my-4 col-span-1">
+              <label htmlFor="reOrderLevel" className="flex pb-2 text-gray-600">
+                Reorder Level
+              </label>
+              <input
+                {...register("reOrderLevel", {
+                  required: "reorder level is required",
+                })}
+                type="number"
+                name="reOrderLevel"
+                id="reOrderLevel"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                placeholder="Ex - 40"
+              />
+              {errors.reOrderLevel && (
+                <p className="text-red-500 py-1 text-sm">
+                  {errors.reOrderLevel.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-3 grid-cols-1 gap-2">
             <div className="mb-4">
+              <div className="flex flex-row gap-3">
+                <label
+                  htmlFor="unitType"
+                  className="flex pb-2 text-gray-600 my-2"
+                >
+                  Unit Type
+                </label>
+                <div className=" my-1.5">
+                  <button
+                    type="button"
+                    onClick={handleIconClick}
+                    className="py-1 px-1 rounded bg-blue-500 text-white text-sm focus:outline-none"
+                  >
+                    <IoMdAddCircleOutline size={20} />
+                  </button>
+                </div>
+              </div>
+              {isAdding ? (
+                <div className="mb-2">
+                  <input
+                    type="text"
+                    value={unitType}
+                    onChange={(e) => setUnitType(e.target.value)}
+                    placeholder="Add new unit type"
+                    className="w-full py-2 px-3 mb-2 rounded border border-gray-300 text-sm focus:outline-cyan-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddUnitType}
+                    className="py-1.5 px-3 rounded bg-blue-500 text-white text-sm focus:outline-none"
+                  >
+                    Add
+                  </button>
+                </div>
+              ) : (
+                <select
+                  {...register("unitType", {
+                    required: "UnitType is required",
+                  })}
+                  type="text"
+                  name="unitType"
+                  id="unitType"
+                  className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                >
+                  <option value="" className="text-gray-200 opacity-5">
+                    Ex - Pair
+                  </option>
+                  {unit.map((unit, index) => (
+                    <option value={unit.unitType} key={index}>
+                      {unit.unitType}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {errors.unitType && (
+                <p className="text-red-500 py-1 text-sm">
+                  {errors.unitType.message}
+                </p>
+              )}
+            </div>
+            <div className="my-4">
               <label htmlFor="unitPrice" className="flex pb-2 text-gray-600">
                 Unit Price
               </label>
@@ -168,7 +312,7 @@ const AddProduct = () => {
                 type="text"
                 name="unitPrice"
                 id="unitPrice"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
                 placeholder="Ex - Rs.59.99"
               />
               {errors.unitPrice && (
@@ -177,23 +321,25 @@ const AddProduct = () => {
                 </p>
               )}
             </div>
-            <div className="mb-4">
-              <label htmlFor="reOrderLevel" className="flex pb-2 text-gray-600">
-                Reorder Level
+            <div className="my-4">
+              <label htmlFor="discount" className="flex pb-2 text-gray-600">
+                Discount
               </label>
               <input
-                {...register("reOrderLevel", {
-                  required: "Unit price is required",
+                {...register("discount", {
+                  required: "discount is required",
                 })}
                 type="number"
-                name="reOrderLevel"
-                id="reOrderLevel"
-                className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
-                placeholder="Ex - 40"
+                name="discount"
+                id="discount"
+                defaultValue="0"
+                min="0"
+                className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+                placeholder="Ex - 20%"
               />
-              {errors.reOrderLevel && (
+              {errors.discount && (
                 <p className="text-red-500 py-1 text-sm">
-                  {errors.reOrderLevel.message}
+                  {errors.discount.message}
                 </p>
               )}
             </div>
@@ -211,7 +357,7 @@ const AddProduct = () => {
               name="description"
               id="description"
               rows={5}
-              className="w-full py-2.5 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
+              className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
               placeholder="Ex - Ergonomically designed pillow for superior neck support and comfort."
             />
             {errors.description && (
@@ -220,10 +366,11 @@ const AddProduct = () => {
               </p>
             )}
           </div>
+
           <div className="mt-6 grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 sm:flex gap-2 sm:gap-4 justify-center">
             <Link to="/products">
               <button
-                className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-gray-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
+                className="mt-2 cursor-pointer inline-block w-full rounded bg-gray-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
                 href="#"
               >
                 Cancel
@@ -231,14 +378,14 @@ const AddProduct = () => {
             </Link>
             <button
               onClick={handleClear}
-              className="mt-2 cursor-pointer inline-block w-full rounded-lg bg-blue-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
+              className="mt-2 cursor-pointer inline-block w-full rounded bg-blue-500 px-12 py-2 text-center text-sm font-semibold text-white sm:mt-0 sm:w-auto"
               href="#"
             >
               Clear
             </button>
             <button
               type="submit"
-              className="inline-block w-full cursor-pointer rounded-lg bg-green-500 px-12 py-2 text-center text-sm font-semibold text-white sm:w-auto"
+              className="inline-block w-full cursor-pointer rounded bg-green-500 px-12 py-2 text-center text-sm font-semibold text-white sm:w-auto"
               href="#"
             >
               Add Product
