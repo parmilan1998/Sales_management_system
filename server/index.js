@@ -93,6 +93,9 @@ app.get("/", (req, res) => {
   res.render("main", { layout: "index" });
 });
 
+app.get("/invoice", (req, res) => {
+  res.render("invoice", { layout: "index" });
+});
 const PORT = process.env.PORT || 5000;
 
 // Define associations
