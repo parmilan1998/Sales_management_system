@@ -24,12 +24,15 @@ const renderTemplate = async (data) => {
 
 // Generate PDF from HTML content
 const generatePDFReport = async (htmlContent, reportID) => {
+
+  const tailwindCSSCDN = '<script src="https://cdn.tailwindcss.com"></script>';
+  const modifiedHtmlContent = htmlContent + tailwindCSSCDN;
+
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  const cssPath = path.resolve(__dirname, '../public/index.css');
-  await page.setContent(htmlContent);
-  await page.addStyleTag({ path: cssPath });
+  await page.setContent(modifiedHtmlContent);
+
 
   const pdfFileName = `Gross_Profit_Report_${reportID}.pdf`;
   const pdfFilePath = path.resolve(__dirname, "../public/reports", pdfFileName);
