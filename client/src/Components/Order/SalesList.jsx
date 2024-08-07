@@ -19,6 +19,7 @@ const SalesList = () => {
   const [products, setProducts] = useState([]);
   const [showContent, setShowContent] = useState(false);
   const [discount, setDiscount] = useState(0);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   // Fetch products
   const fetchProductsApi = async () => {
@@ -39,24 +40,6 @@ const SalesList = () => {
     }))
   );
 
-  // const calculateSubtotal = (product) => {
-  //   const subTotal = product.discountedPrice * product.salesQuantity;
-  //   return subTotal;
-  // };
-
-  // const calculateTotal = () => {
-  //   return addedProducts
-  //     .reduce((total, product) => {
-  //       const discount =
-  //         product.discount != null ? parseFloat(product.discount) : 0;
-  //       return (
-  //         total +
-  //         ((100 - discount) / 100) * (product.salesQuantity * product.unitPrice)
-  //       );
-  //     }, 0)
-  //     .toFixed(2);
-  // };
-
   const handleCustomerChange = (allValues) => {
     setCustomerData(allValues.customer);
     console.log(allValues.customer);
@@ -64,16 +47,15 @@ const SalesList = () => {
     setShowContent(false);
   };
 
+  const formatDate = (date) => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  };
+
   const onHandleProduct = (values) => {
     console.log("Success:", values);
-
-    const selectedProduct = products.find(
-      (product) => product.productName === values.product.productName
-    );
-
-    if (selectedProduct) {
-      setCurrentPrice(selectedProduct.discountedPrice);
-    }
 
     const amount = values.product.salesQuantity * currentPrice;
     const updatedProduct = { ...values.product, currentPrice, amount };
@@ -91,8 +73,7 @@ const SalesList = () => {
           salesQuantity:
             updatedProducts[existingProductIndex].salesQuantity +
             values.product.salesQuantity,
-          discount: values.product.discount || 0, // Ensure discount is updated
-          // subtotal: calculateSubtotal(updatedProduct),
+          discount: values.product.discount || 0,
         };
 
         // Update tempProducts quantity
@@ -135,6 +116,7 @@ const SalesList = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    clearAll();
 
     if (!customerData) {
       toast.error("Fill all the customer information!...");
@@ -143,7 +125,8 @@ const SalesList = () => {
     const payload = {
       custName: customerData.custName,
       customerContact: customerData.contactNo,
-      soldDate: customerData.soldDate.format("YYYY-MM-DD"),
+      soldDate: formatDate(currentDate),
+      finalDiscount: discount,
       products: addedProducts.map((product) => ({
         productName: product.productName,
         salesQuantity: product.salesQuantity,
@@ -169,6 +152,18 @@ const SalesList = () => {
     if (product) {
       product.totalQuantity += quantity;
     }
+  };
+
+  const calculateSubtotal = () => {
+    return addedProducts.reduce(
+      (total, product) => total + product.currentPrice * product.salesQuantity,
+      0
+    );
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    return subtotal * (1 - discount / 100);
   };
 
   const handleDeleteProduct = (index) => {
@@ -228,8 +223,8 @@ const SalesList = () => {
               )}
             </button>
             {showContent && (
-              <div className="bg-white px-2 w-full my-2 rounded shadow-md">
-                <div className="flex w-full">
+              <div className="bg-white px-2 w-3/4 my-2 rounded shadow-md">
+                <div className="flex w-auto">
                   <Form
                     className="gap-3 pt-8 px-3 bg-white flex"
                     layout="vertical"
@@ -262,22 +257,6 @@ const SalesList = () => {
                         placeholder="Ex: 0770337897"
                         className="font-poppins py-0.5 w-full"
                         maxLength={10}
-                      />
-                    </Form.Item>
-                    <Form.Item
-                      name={["customer", "soldDate"]}
-                      label="Sold Date"
-                      className="font-poppins font-medium  px-3 w-full"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select the sold date!",
-                        },
-                      ]}
-                    >
-                      <DatePicker
-                        className="font-poppins py-1.5 w-full"
-                        placeholder="Ex: 22.08.2024"
                       />
                     </Form.Item>
                     <Form.Item className="flex justify-center mt-7 items-center">
@@ -336,8 +315,9 @@ const SalesList = () => {
                         const selectedProduct = products.find(
                           (product) => product.productName == value
                         );
+
                         if (selectedProduct) {
-                          setCurrentPrice(selectedProduct.unitPrice);
+                          setCurrentPrice(selectedProduct.discountedPrice);
 
                           // Find if the selected product is already in addedProducts
                           const existingProduct = addedProducts.find(
@@ -346,10 +326,7 @@ const SalesList = () => {
 
                           form.setFieldsValue({
                             product: {
-                              unitPrice: selectedProduct.unitPrice,
-                              discount: existingProduct
-                                ? existingProduct.discount
-                                : 0,
+                              currentPrice: selectedProduct.discountedPrice,
                             },
                           });
                         }
@@ -373,14 +350,9 @@ const SalesList = () => {
               <div className="flex">
                 <div className="w-full mx-2">
                   <Form.Item
-                    name={["product", "unitPrice"]}
+                    name={["product", "currentPrice"]}
                     className="font-poppins w-full"
                     label="Current Price"
-                    rules={[
-                      {
-                        message: "Please input current price!",
-                      },
-                    ]}
                   >
                     <InputNumber
                       placeholder="Ex:10.00"
@@ -479,8 +451,7 @@ const SalesList = () => {
                             >
                               <div className="relative tracking-wide text-end">
                                 Rs.
-                                {product.discountedPrice *
-                                  product.salesQuantity}
+                                {product.currentPrice * product.salesQuantity}
                               </div>
                             </td>
                             <td
@@ -496,15 +467,7 @@ const SalesList = () => {
                             </td>
                           </tr>
                         ))}
-                        <tr>
-                          {/* <td
-                            colSpan="5"
-                            className="text-right text-sm font-medium py-3 px-20"
-                          > */}
-                          {/* <span className="mr-4">Total:</span> Rs. */}
-                          {/* {calculateTotal(addedProducts)} */}
-                          {/* </td> */}
-                        </tr>
+                        <tr></tr>
                       </tbody>
                     </table>
                   </div>
@@ -514,7 +477,7 @@ const SalesList = () => {
                 <div className="flex justify-between items-center px-4 py-2 text-gray-600 border-t-0">
                   <h3 className="text-sm font-medium">Sub Total</h3>
                   <p className="text-sm font-medium">
-                    {/* Rs.{calculateSubtotal().toFixed(2)} */}
+                    Rs.{calculateSubtotal().toFixed(2)}
                   </p>
                 </div>
                 <div className="flex justify-between items-center px-4 py-2 text-gray-600 border-t-0">
@@ -523,9 +486,9 @@ const SalesList = () => {
                     <input
                       type="number"
                       className="w-16 px-2 py-1 text-sm border rounded"
-                      // value={discount}
+                      value={discount}
                       min="0"
-                      // onChange={(e) => setDiscount(Number(e.target.value))}
+                      onChange={(e) => setDiscount(Number(e.target.value))}
                     />
                     <span className="text-gray-600 px-1 text-xs">%</span>
                   </p>
@@ -533,7 +496,7 @@ const SalesList = () => {
                 <div className="flex justify-between items-center px-4 text-gray-600 py-2 border-t-0">
                   <h3 className="text-sm font-medium">Total</h3>
                   <p className="text-sm font-medium">
-                    {/* Rs.{calculateTotal().toFixed(2)} */}
+                    Rs.{calculateTotal().toFixed(2)}
                   </p>
                 </div>
                 <div className="flex justify-between items-center py-4 px-4 gap-3 border-t-0">
