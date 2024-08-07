@@ -29,7 +29,7 @@ exports.createSales = async (req, res) => {
         custName: custName,
         customerContact: customerContact,
         soldDate: soldDate,
-        finalDiscount,
+        finalDiscount: finalDiscount ? finalDiscount : 0,
         totalRevenue: 0,
       });
 
@@ -110,7 +110,12 @@ exports.createSales = async (req, res) => {
           unitType: unit.unitType,
         });
       }
-      const totalRevenue = finalDiscount * subTotal;
+
+      let totalRevenue;
+      if (finalDiscount) {
+        totalRevenue = finalDiscount * subTotal;
+      }
+      totalRevenue = subTotal;
 
       newSale.totalRevenue = totalRevenue;
       await newSale.save();
