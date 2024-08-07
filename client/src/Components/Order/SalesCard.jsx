@@ -144,10 +144,6 @@ const SalesCard = () => {
       products: cart.map((product) => ({
         productName: product.productName,
         salesQuantity: product.quantity,
-        subTotal:
-          product.unitPrice *
-          product.quantity *
-          (1 - (product.discount || 0) / 100),
       })),
     };
 
