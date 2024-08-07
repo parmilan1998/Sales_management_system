@@ -52,6 +52,10 @@ exports.createSales = async (req, res) => {
 
         const { productID, unitPrice, unitID, discountedPrice } = product;
 
+        console.log("====================================");
+        console.log("dp", discountedPrice);
+        console.log("====================================");
+
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
           where: { productID },
@@ -112,19 +116,29 @@ exports.createSales = async (req, res) => {
       }
 
       let totalRevenue;
+      let discountedAmount;
+
       if (finalDiscount) {
-        totalRevenue = finalDiscount * subTotal;
+        totalRevenue = (1 - finalDiscount / 100) * subTotal;
+        discountedAmount = (finalDiscount / 100) * subTotal
+      } else {
+        totalRevenue = subTotal;
+        discountedAmount = 0;
       }
-      totalRevenue = subTotal;
 
       newSale.totalRevenue = totalRevenue;
       await newSale.save();
+
+     
 
       createdSales.push({
         salesID: newSale.salesID,
         custName: newSale.custName,
         customerContact: newSale.customerContact,
         soldDate: newSale.soldDate,
+        subTotal,
+        discount:finalDiscount,
+        discountedAmount,
         totalRevenue: newSale.totalRevenue,
         products: productDetails,
       });

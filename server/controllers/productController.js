@@ -49,7 +49,7 @@ exports.createProduct = async (req, res) => {
 
     const code = generateRandomCode();
 
-    let discountedPrice = 0;
+    let discountedPrice;
     if (discount) {
       discountedPrice = unitPrice * ((100 - discount) / 100);
     } else {
