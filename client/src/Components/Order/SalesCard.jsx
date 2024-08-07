@@ -133,6 +133,10 @@ const SalesCard = () => {
   const handleFinished = async (e) => {
     e.preventDefault();
 
+    if (!customerData) {
+      toast.error("Fill customer information!...");
+    }
+
     const payload = {
       custName: customerData.custName,
       customerContact: customerData.contactNo,
@@ -282,22 +286,30 @@ const SalesCard = () => {
                     products.map((product) => (
                       <div
                         key={product.productID}
-                        className="border bg-white p-4 rounded shadow"
+                        className="border bg-white p-5 rounded shadow"
                       >
-                        <img
-                          src={`http://localhost:5000/public/products/${product.imageUrl}`}
-                          alt={product.productName}
-                          className="w-full h-32 object-cover mb-4"
-                        />
-                        <h3 className="font-bold">{product.productName}</h3>
-                        <div className="flex justify-between">
-                          <p className="text-gray-800 text-xs font-bold">
-                            Price: Rs.{product.unitPrice}
-                          </p>
-                          <button onClick={() => addToCart(product)}>
-                            <IoAddCircleOutline size={20} />
-                          </button>
-                        </div>
+                        <button onClick={() => addToCart(product)}>
+                          <img
+                            src={`http://localhost:5000/public/products/${product.imageUrl}`}
+                            alt={product.productName}
+                            className="w-full h-32 object-cover mb-4"
+                          />
+                          <h3 className="font-bold text-xs">
+                            {product.productName}
+                          </h3>
+                          <div className="flex justify-between">
+                            <span className="text-xs"> Price: </span>
+                            &nbsp;
+                            <p className="text-xs font-bold line-through text-red-600">
+                              Rs.{product.unitPrice}
+                            </p>
+                            &nbsp;
+                            <p className="text-gray-800 text-xs font-bold">
+                              Rs.{product.discountedPrice}
+                            </p>
+                            {/* <IoAddCircleOutline size={20} /> */}
+                          </div>
+                        </button>
                       </div>
                     ))
                   ) : (
