@@ -35,6 +35,9 @@ const sales = db.define(
         notEmpty: true,
       },
     },
+    finalDiscount: {
+      type: DataTypes.FLOAT,
+    },
     soldDate: {
       type: DataTypes.DATEONLY,
       allowNull: false,

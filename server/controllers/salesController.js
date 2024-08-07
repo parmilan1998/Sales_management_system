@@ -20,7 +20,7 @@ exports.createSales = async (req, res) => {
     const stockUpdates = [];
 
     for (const sale of sales) {
-      const { custName, customerContact, soldDate, products } = sale;
+      const { custName, customerContact, soldDate,finalDiscount,totalRevenue, products } = sale;
       const productList = Array.isArray(products) ? products : [products];
 
       // Create the main sales record
@@ -28,14 +28,14 @@ exports.createSales = async (req, res) => {
         custName: custName,
         customerContact: customerContact,
         soldDate: soldDate,
-        totalRevenue: 0,
+        finalDiscount:finalDiscount,
+        totalRevenue: totalRevenue,
       });
 
-      let totalRevenue = 0;
       const productDetails = [];
 
       for (const productSale of productList) {
-        const { productName, salesQuantity, subTotal } = productSale;
+        const { productName, salesQuantity } = productSale;
 
         // Find the product in the Product table
         const product = await Product.findOne({
@@ -48,15 +48,8 @@ exports.createSales = async (req, res) => {
             .json({ message: `Product '${productName}' not found` });
         }
 
-        const { productID, unitPrice, unitID } = product;
+        const { productID, unitPrice, unitID, discountedPrice } = product;
 
-        // Ensure subTotal is a number
-        const revenue = parseFloat(subTotal);
-        if (isNaN(revenue)) {
-          return res.status(400).json({
-            message: `Invalid subtotal '${subTotal}' for product '${productName}'`,
-          });
-        }
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
           where: { productID },
@@ -93,6 +86,11 @@ exports.createSales = async (req, res) => {
             .status(404)
             .json({ message: `Unit for product '${productName}' not found` });
         }
+        let revenue = 0;
+        if (discountedPrice) {
+          revenue = salesQuantity * discountedPrice;
+        }
+        revenue = salesQuantity * unitPrice;
 
         saleDetailsToCreate.push({
           salesID: newSale.salesID,
@@ -105,17 +103,12 @@ exports.createSales = async (req, res) => {
           unitID: unitID,
         });
 
-        totalRevenue += revenue;
-
         productDetails.push({
           productName: productName,
           salesQuantity: salesQuantity,
           unitType: unit.unitType,
         });
       }
-
-      newSale.totalRevenue = totalRevenue;
-      await newSale.save();
 
       createdSales.push({
         salesID: newSale.salesID,
