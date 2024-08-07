@@ -30,6 +30,7 @@ const EditProductScreen = () => {
       setValue("categoryName", product.categoryName);
       setValue("unitType", product.unitType);
       setValue("unitPrice", product.unitPrice);
+      setValue("discount", product.discount);
       setValue("reOrderLevel", product.reOrderLevel);
       setValue("description", product.productDescription);
       setValue("imageUrl", `${baseUrl}/${product.imageUrl}`);
@@ -45,6 +46,7 @@ const EditProductScreen = () => {
     formData.append("categoryName", data.categoryName);
     formData.append("unitType", data.unitType);
     formData.append("unitPrice", data.unitPrice);
+    formData.append("discount", data.discount);
     formData.append("reOrderLevel", data.reOrderLevel);
     formData.append("productDescription", data.description);
 

@@ -47,6 +47,7 @@ const AddProduct = () => {
       formData.append("categoryName", data.categoryName);
       formData.append("unitType", data.unitType);
       formData.append("unitPrice", data.unitPrice);
+      formData.append("discount", data.discount);
       formData.append("reOrderLevel", data.reOrderLevel);
       formData.append("productDescription", data.description);
 
@@ -331,6 +332,8 @@ const AddProduct = () => {
                 type="number"
                 name="discount"
                 id="discount"
+                defaultValue="0"
+                min="0"
                 className="w-full py-2 px-3 rounded border border-gray-300 mx-auto text-sm focus:outline-cyan-400"
                 placeholder="Ex - 20%"
               />
