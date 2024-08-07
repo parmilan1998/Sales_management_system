@@ -49,7 +49,12 @@ exports.createProduct = async (req, res) => {
 
     const code = generateRandomCode();
 
-    const discountedPrice = unitPrice*((100-discount)/100);
+    let discountedPrice = 0;
+    if (discount) {
+      discountedPrice = unitPrice * ((100 - discount) / 100);
+    } else {
+      discountedPrice = unitPrice;
+    }
 
     const newProduct = await Product.create({
       productName,
@@ -59,7 +64,7 @@ exports.createProduct = async (req, res) => {
       unitID: unit.unitID,
       unitType,
       unitPrice,
-      discount,
+      discount: discount ? discount : 0,
       discountedPrice,
       reOrderLevel,
       imageUrl: req.file ? req.file.filename : null,
@@ -240,8 +245,12 @@ exports.updateProduct = async (req, res) => {
       console.log("New file uploaded:", req?.file);
     }
 
-    const discountedPrice = unitPrice*((100-discount)/100);
-
+    let discountedPrice = 0;
+    if (discount) {
+      discountedPrice = unitPrice * ((100 - discount) / 100);
+    } else {
+      discountedPrice = unitPrice;
+    }
     // Delete existing image if it exists
     if (product.imageUrl) {
       const filePath = path.join(

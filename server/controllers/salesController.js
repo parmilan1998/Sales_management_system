@@ -20,7 +20,8 @@ exports.createSales = async (req, res) => {
     const stockUpdates = [];
 
     for (const sale of sales) {
-      const { custName, customerContact, soldDate,finalDiscount,totalRevenue, products } = sale;
+      const { custName, customerContact, soldDate, finalDiscount, products } =
+        sale;
       const productList = Array.isArray(products) ? products : [products];
 
       // Create the main sales record
@@ -28,10 +29,11 @@ exports.createSales = async (req, res) => {
         custName: custName,
         customerContact: customerContact,
         soldDate: soldDate,
-        finalDiscount:finalDiscount,
-        totalRevenue: totalRevenue,
+        finalDiscount,
+        totalRevenue: 0,
       });
 
+      let subTotal = 0;
       const productDetails = [];
 
       for (const productSale of productList) {
@@ -86,11 +88,8 @@ exports.createSales = async (req, res) => {
             .status(404)
             .json({ message: `Unit for product '${productName}' not found` });
         }
-        let revenue = 0;
-        if (discountedPrice) {
-          revenue = salesQuantity * discountedPrice;
-        }
-        revenue = salesQuantity * unitPrice;
+
+        const revenue = salesQuantity * discountedPrice;
 
         saleDetailsToCreate.push({
           salesID: newSale.salesID,
@@ -103,12 +102,18 @@ exports.createSales = async (req, res) => {
           unitID: unitID,
         });
 
+        subTotal += revenue;
+
         productDetails.push({
           productName: productName,
           salesQuantity: salesQuantity,
           unitType: unit.unitType,
         });
       }
+      const totalRevenue = finalDiscount * subTotal;
+
+      newSale.totalRevenue = totalRevenue;
+      await newSale.save();
 
       createdSales.push({
         salesID: newSale.salesID,
@@ -201,7 +206,8 @@ exports.getAllSales = async (req, res) => {
 exports.updateSales = async (req, res) => {
   try {
     const { id } = req.params;
-    const { custName, customerContact, soldDate, products } = req.body;
+    const { custName, customerContact, soldDate, finalDiscount, products } =
+      req.body;
 
     const existingSale = await Sales.findByPk(id);
     if (!existingSale) {
@@ -211,10 +217,10 @@ exports.updateSales = async (req, res) => {
     }
 
     // Update basic sale details
-    existingSale.custName = custName || existingSale.custName;
-    existingSale.customerContact =
-      customerContact || existingSale.customerContact;
-    existingSale.soldDate = soldDate || existingSale.soldDate;
+    existingSale.custName = custName;
+    existingSale.customerContact = customerContact;
+    existingSale.soldDate = soldDate;
+    existingSale.finalDiscount = finalDiscount;
 
     // Remove old sales details and restore quantities
     const oldSalesDetails = await SalesDetail.findAll({
@@ -254,8 +260,7 @@ exports.updateSales = async (req, res) => {
             .json({ message: `Unit not found for product '${productName}'` });
         }
 
-        const { unitPrice } = product;
-        const calculatedTotalPrice = unitPrice * salesQuantity;
+        const { discountedPrice } = product;
 
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
@@ -310,16 +315,17 @@ exports.updateSales = async (req, res) => {
           productName: product.productName,
           salesQuantity,
           unitType: unit.unitType,
-          unitPrice, // Include unitPrice for revenue calculation
+          discountedPrice,
         };
       })
     );
 
-    // Calculate total revenue for the sale
-    const totalRevenue = saleDetails.reduce(
-      (total, detail) => total + detail.unitPrice * detail.salesQuantity,
+    // Calculate total revenue for the sale with the discount applied
+    const subTotal = saleDetails.reduce(
+      (total, detail) => total + detail.discountedPrice * detail.salesQuantity,
       0
     );
+    const totalRevenue = subTotal * (1 - finalDiscount / 100);
     existingSale.totalRevenue = totalRevenue;
     await existingSale.save();
 
