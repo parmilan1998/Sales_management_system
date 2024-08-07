@@ -76,6 +76,12 @@ const Product = db.define(
         notEmpty: true,
       },
     },
+    discount: {
+      type: DataTypes.FLOAT,
+    },
+    discountedPrice: {
+      type: DataTypes.FLOAT,
+    },
     reOrderLevel: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -86,6 +92,7 @@ const Product = db.define(
     imageUrl: {
       type: DataTypes.TEXT,
     },
+
   },
   {
     timestamps: true,
