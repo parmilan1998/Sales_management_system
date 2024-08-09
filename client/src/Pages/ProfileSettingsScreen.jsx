@@ -5,6 +5,7 @@ import ChangePassword from "../Components/admin/ChangePassword";
 import UpdateProfile from "../Components/admin/UpdateProfile";
 import axios from "axios";
 import GridLoader from "react-spinners/GridLoader";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const ProfileSettingsScreen = () => {
   const token = localStorage.getItem("token");
@@ -13,7 +14,7 @@ const ProfileSettingsScreen = () => {
   const [user, setUser] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const baseUrl = "http://localhost:5000/public/profile";
+  const baseUrl = `${apiUrl}/public/profile`;
   console.log(baseUrl);
 
   const showPasswordModal = () => {
@@ -38,7 +39,7 @@ const ProfileSettingsScreen = () => {
       if (!token) {
         throw new Error("Token not found");
       }
-      const res = await axios.get(`http://localhost:5000/api/v1/user`, {
+      const res = await axios.get(`${apiUrl}/api/v1/user`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data);

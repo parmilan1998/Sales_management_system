@@ -3,6 +3,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const UpdateProfile = ({ setIsModalOpen, user, fetchDetails }) => {
   const [username, setUsername] = useState(user.username);
@@ -36,16 +37,12 @@ const UpdateProfile = ({ setIsModalOpen, user, fetchDetails }) => {
       if (profileImage) {
         formData.append("profileImage", profileImage);
       }
-      const response = await axios.put(
-        "http://localhost:5000/api/v1/user",
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.put(`${apiUrl}/api/v1/user`, formData, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       toast.success(response.data.message);
       setIsModalOpen(false);
       fetchDetails();

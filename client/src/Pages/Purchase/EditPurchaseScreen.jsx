@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { Link, useNavigate, useParams } from "react-router-dom";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const EditPurchaseScreen = () => {
   const [products, setProducts] = useState([]);
@@ -25,7 +26,7 @@ const EditPurchaseScreen = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/v1/product/list");
+      const res = await axios.get(`${apiUrl}/api/v1/product/list`);
       setProducts(res.data);
     } catch (err) {
       console.error(err.message);
@@ -35,9 +36,7 @@ const EditPurchaseScreen = () => {
   const fetchUpdatePurchaseDetails = async () => {
     console.log("yyyy", id);
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/v1/purchase/${id}`
-      );
+      const res = await axios.get(`${apiUrl}/api/v1/purchase/${id}`);
       const purchase = res.data;
       console.log("Purchase: " + res.data);
       setValue("productName", purchase.productName);
@@ -55,10 +54,7 @@ const EditPurchaseScreen = () => {
 
   const onSubmit = async (data) => {
     try {
-      const res = await axios.put(
-        `http://localhost:5000/api/v1/purchase/${id}`,
-        data
-      );
+      const res = await axios.put(`${apiUrl}/api/v1/purchase/${id}`, data);
       toast.success(`Purchase updated successfully!`);
       navigate("/purchase");
       reset();

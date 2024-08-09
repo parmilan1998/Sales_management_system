@@ -2,6 +2,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const ChangePassword = ({ setIsModalOpen }) => {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -24,7 +25,7 @@ const ChangePassword = ({ setIsModalOpen }) => {
 
     try {
       const response = await axios.put(
-        "http://localhost:5000/api/v1/user/change-password",
+        `${apiUrl}/api/v1/user/change-password`,
         {
           currentPassword,
           newPassword,

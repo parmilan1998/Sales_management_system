@@ -10,6 +10,7 @@ import {
   IoIosArrowDroprightCircle,
 } from "react-icons/io";
 import SalesTimeDate from "./SalesTimeDate";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const SalesList = () => {
   const [tempProducts, setTempProducts] = useState([]);
@@ -25,7 +26,7 @@ const SalesList = () => {
   // Fetch products
   const fetchProductsApi = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/v1/product/list");
+      const res = await axios.get(`${apiUrl}/api/v1/product/list`);
       console.log(res.data);
       setProducts(res.data);
       setTempProducts(res.data);
@@ -134,10 +135,7 @@ const SalesList = () => {
     };
 
     try {
-      const res = await axios.post(
-        `http://localhost:5000/api/v1/sales`,
-        payload
-      );
+      const res = await axios.post(`${apiUrl}/api/v1/sales`, payload);
       console.log(res.data);
       toast.success(`Sales created successfully!`);
       navigate("/sales");

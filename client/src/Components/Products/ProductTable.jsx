@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import SingleProductPopUp from "./SingleProductPopUp";
 import { Popconfirm, Tooltip } from "antd";
 import { Modal } from "antd";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const ProductTable = ({
   products,
@@ -17,7 +18,7 @@ const ProductTable = ({
 }) => {
   const [rowData, setRowData] = useState({});
 
-  const baseUrl = "http://localhost:5000/public/products";
+  const baseUrl = `${apiUrl}/public/products`;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = (record) => {
     setRowData(record);

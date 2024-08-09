@@ -10,6 +10,7 @@ import PropTypes from "prop-types";
 import { BsFillCalendar2DateFill } from "react-icons/bs";
 import SalesTimeDate from "./SalesTimeDate";
 import PaymentModal from "../Payment/PaymentModal";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const Invoice = ({
   cart,
@@ -51,7 +52,7 @@ const Invoice = ({
                           <th className="flex justify-start items-start">
                             {" "}
                             <img
-                              src={`http://localhost:5000/public/products/${item.imageUrl}`}
+                              src={`${apiUrl}/public/products/${item.imageUrl}`}
                               alt={item.productName}
                               className="w-12 h-12 object-cover mb-4 rounded"
                             />

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const AddPurchaseScreen = () => {
   const [products, setProducts] = useState([]);
@@ -30,7 +31,7 @@ const AddPurchaseScreen = () => {
     }
 
     const res = await axios
-      .post("http://localhost:5000/api/v1/purchase", data)
+      .post(`${apiUrl}/api/v1/purchase`, data)
       .then((res) => {
         console.log(res.data);
         toast.success(`Purchase created successfully!`);
@@ -48,7 +49,7 @@ const AddPurchaseScreen = () => {
 
   const fetchProducts = async () => {
     const res = await axios
-      .get("http://localhost:5000/api/v1/product/list")
+      .get(`${apiUrl}/api/v1/product/list`)
       .then((res) => {
         console.log(res.data);
         setProducts(res.data);

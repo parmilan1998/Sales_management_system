@@ -65,6 +65,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/public", express.static(path.join(__dirname, "./public")));
 
+app.get("/", (req, res) => res.send("Express on Vercel"));
+
 app.use("/api/v1/category", categoryRoute);
 app.use("/api/v1/product", productRoute);
 app.use("/api/v1/stocks", stockRoute);

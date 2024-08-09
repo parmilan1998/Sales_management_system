@@ -11,6 +11,7 @@ import PurchasePagination from "../../Components/Purchase/PurchasePagination";
 import { Link } from "react-router-dom";
 import GridLoader from "react-spinners/GridLoader";
 import { motion } from "framer-motion";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const Purchase = () => {
   const [purchase, setPurchase] = useState([]);
@@ -25,7 +26,7 @@ const Purchase = () => {
   const text = "No purchases are available".split(" ");
 
   const fetchPurchases = async () => {
-    const url = `http://localhost:5000/api/v1/purchase/query?page=${page}&limit=${limit}&sort=${sortName}&sortBy=${sortDate}&keyword=${search}`;
+    const url = `${apiUrl}/api/v1/purchase/query?page=${page}&limit=${limit}&sort=${sortName}&sortBy=${sortDate}&keyword=${search}`;
 
     try {
       const res = await axios.get(url);

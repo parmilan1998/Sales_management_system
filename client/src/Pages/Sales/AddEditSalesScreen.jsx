@@ -3,6 +3,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate, useParams } from "react-router-dom";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const AddSalesScreen = () => {
   const { id } = useParams();
@@ -92,17 +93,11 @@ const AddSalesScreen = () => {
     console.log("Form submitted with values:", formValues);
     try {
       if (id) {
-        const res = await axios.put(
-          `http://localhost:5000/api/v1/sales/${id}`,
-          formValues
-        );
+        const res = await axios.put(`${apiUrl}/api/v1/sales/${id}`, formValues);
         console.log(res.data);
         toast.success(`Sales updated successfully!`);
       } else {
-        const res = await axios.post(
-          `http://localhost:5000/api/v1/sales`,
-          formValues
-        );
+        const res = await axios.post(`${apiUrl}/api/v1/sales`, formValues);
         console.log(res.data);
         toast.success(`Sales created successfully!`);
       }
@@ -115,7 +110,7 @@ const AddSalesScreen = () => {
 
   const fetchProductsApi = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/v1/product/list");
+      const res = await axios.get(`${apiUrl}/api/v1/product/list`);
       console.log(res.data);
       setProductsData(res.data);
     } catch (err) {
@@ -125,7 +120,7 @@ const AddSalesScreen = () => {
 
   const fetchSalesApi = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/v1/sales/${id}`);
+      const res = await axios.get(`${apiUrl}/api/v1/sales/${id}`);
       console.log(res.data);
       setFormValues({
         custName: res.data.custName,

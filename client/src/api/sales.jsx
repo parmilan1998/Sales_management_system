@@ -1,7 +1,8 @@
 import axios from "axios";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const salesApi = axios.create({
-  baseURL: "http://localhost:5000/api/v1/sales",
+  baseURL: `${apiUrl}/api/v1/sales`,
 });
 
 export default salesApi;

@@ -17,8 +17,9 @@ import { logout, logOutAdmin } from "../features/authSlice";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import LoginScreen from "../Pages/Admin/LoginScreen";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
-const socket = io("http://localhost:5000");
+const socket = io(`${apiUrl}`);
 
 const Navbar = () => {
   const [notifications, setNotifications] = useState([]);
@@ -28,7 +29,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const baseUrl = "http://localhost:5000/public/profile";
+  const baseUrl = `${apiUrl}/public/profile`;
 
   useEffect(() => {
     if (!user) {
@@ -52,17 +53,17 @@ const Navbar = () => {
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
-        const currentTime = Date.now() / 1000; 
+        const currentTime = Date.now() / 1000;
         const expTime = decodedToken.exp;
-  
+
         if (expTime && expTime > currentTime) {
           const expiryTime = (expTime - currentTime) * 1000;
-  
+
           if (expiryTime > 0) {
             const timer = setTimeout(() => {
               dispatch(logout());
             }, expiryTime);
-  
+
             return () => clearTimeout(timer);
           }
         } else {
@@ -76,13 +77,12 @@ const Navbar = () => {
       dispatch(logout());
     }
   }, [dispatch]);
-  
 
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
         const lowStockResponse = await axios.get(
-          "http://localhost:5000/api/v1/notification/low-stock"
+          `${apiUrl}/api/v1/notification/low-stock`
         );
 
         const lowStockNotifications = lowStockResponse.data.data.map(

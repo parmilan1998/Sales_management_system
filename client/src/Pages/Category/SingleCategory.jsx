@@ -6,12 +6,13 @@ import fetchProducts from "../../api/fetchProducts";
 import ProductSearch from "../../Components/Products/ProductSearch";
 import ProductPagination from "../../Components/Products/ProductPagination";
 import ProductSort from "../../Components/Products/ProductSort";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const SingleCategory = () => {
   const { id } = useParams();
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState([]);
-  const baseUrl = "http://localhost:5000/public/products";
+  const baseUrl = `${apiUrl}/public/products`;
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);

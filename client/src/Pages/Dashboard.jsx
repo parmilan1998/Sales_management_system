@@ -5,6 +5,7 @@ import moment from "moment";
 import categoryApi from "../api/category";
 import productApi from "../api/products";
 import stockApi from "../api/stocks";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 import {
   Chart as ChartJS,
@@ -20,7 +21,7 @@ import salesApi from "../api/sales";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-const socket = io("http://localhost:5000");
+const socket = io(`${apiUrl}`);
 
 const Dashboard = () => {
   const [sales, setSales] = useState([]);
@@ -99,7 +100,7 @@ const Dashboard = () => {
   };
 
   const fetchSalesData = async () => {
-    let url = `http://localhost:5000/api/v1/sales/sort?sortType=${sortType}`;
+    let url = `${apiUrl}/api/v1/sales/sort?sortType=${sortType}`;
     if (sortType === "month" && year) {
       url += `&year=${year}`;
     }

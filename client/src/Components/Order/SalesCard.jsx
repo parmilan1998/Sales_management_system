@@ -10,6 +10,7 @@ import { Button, DatePicker, Form, Input, InputNumber } from "antd";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Invoice from "./Invoice";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const SalesCard = () => {
   const [category, setCategory] = useState([]);
@@ -24,7 +25,7 @@ const SalesCard = () => {
 
   const fetchCategoryData = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/v1/category/list");
+      const res = await axios.get(`${apiUrl}/api/v1/category/list`);
       setCategory(res.data);
       console.log(res.data);
       const techCategory = res.data.find(
@@ -42,9 +43,7 @@ const SalesCard = () => {
   const fetchProductsData = async (categoryID) => {
     try {
       setProducts([]);
-      const res = await axios.get(
-        `http://localhost:5000/api/v1/product/fbc/${categoryID}`
-      );
+      const res = await axios.get(`${apiUrl}/api/v1/product/fbc/${categoryID}`);
       setProducts(res.data);
     } catch (error) {
       console.error("Error fetching products data:", error);
@@ -156,10 +155,7 @@ const SalesCard = () => {
     };
 
     try {
-      const res = await axios.post(
-        `http://localhost:5000/api/v1/sales`,
-        payload
-      );
+      const res = await axios.post(`${apiUrl}/api/v1/sales`, payload);
       console.log(res.data);
       toast.success(`Sales created successfully!`);
       clearAll();
@@ -281,7 +277,7 @@ const SalesCard = () => {
                       >
                         <button onClick={() => addToCart(product)}>
                           <img
-                            src={`http://localhost:5000/public/products/${product.imageUrl}`}
+                            src={`${apiUrl}/public/products/${product.imageUrl}`}
                             alt={product.productName}
                             className="w-full h-32 object-cover mb-4"
                           />
