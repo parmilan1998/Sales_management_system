@@ -201,9 +201,9 @@ const Navbar = () => {
   });
 
   return (
-    <header>
-      <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 bg-gray-200 w-full font-poppins">
-        <div className="flex pt-4 items-center justify-end">
+    <>
+      <div className="max-w-screen-xl sm:px-6 bg-sky-600 z-50 w-full font-poppins">
+        <div className="flex py-1 items-center justify-end">
           <div className="flex items-center justify-end gap-4">
             <div className="sm:flex sm:gap-4 space-x-6 flex justify-end">
               <Badge
@@ -219,22 +219,21 @@ const Navbar = () => {
                 >
                   <a onClick={(e) => e.preventDefault()}>
                     <Space className={animate ? "bell" : ""}>
-                      <IoNotifications size={22} className="text-sky-800" />
+                      <IoNotifications size={22} className="text-black" />
                     </Space>
                   </a>
                 </Dropdown>
               </Badge>
-
               {user ? (
                 <div className="dropdown dropdown-end">
                   <div tabIndex={0} role="button" className="text-black">
-                    <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-white">
+                    <span className="relative inline-flex z-10 h-10 w-10 items-center justify-center rounded-full text-white">
                       <img
                         src={`${baseUrl}/${user.profileImage}`}
                         alt="user name"
                         title="user name"
-                        width="80"
-                        height="80"
+                        width="60"
+                        height="60"
                         className="max-w-full rounded-full"
                       />
                     </span>
@@ -283,28 +282,10 @@ const Navbar = () => {
                 <LoginScreen />
               )}
             </div>
-            <div className="block md:hidden">
-              <button className="rounded bg-gray-100 p-2 text-gray-600 transition hover:text-gray-600/75">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-            </div>
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 };
 

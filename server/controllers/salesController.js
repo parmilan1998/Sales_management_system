@@ -20,7 +20,8 @@ exports.createSales = async (req, res) => {
     const stockUpdates = [];
 
     for (const sale of sales) {
-      const { custName, customerContact, soldDate, products } = sale;
+      const { custName, customerContact, soldDate, finalDiscount, products } =
+        sale;
       const productList = Array.isArray(products) ? products : [products];
 
       // Create the main sales record
@@ -28,14 +29,15 @@ exports.createSales = async (req, res) => {
         custName: custName,
         customerContact: customerContact,
         soldDate: soldDate,
+        finalDiscount: finalDiscount ? finalDiscount : 0,
         totalRevenue: 0,
       });
 
-      let totalRevenue = 0;
+      let subTotal = 0;
       const productDetails = [];
 
       for (const productSale of productList) {
-        const { productName, salesQuantity, subTotal } = productSale;
+        const { productName, salesQuantity } = productSale;
 
         // Find the product in the Product table
         const product = await Product.findOne({
@@ -48,15 +50,12 @@ exports.createSales = async (req, res) => {
             .json({ message: `Product '${productName}' not found` });
         }
 
-        const { productID, unitPrice, unitID } = product;
+        const { productID, unitPrice, unitID, discountedPrice } = product;
 
-        // Ensure subTotal is a number
-        const revenue = parseFloat(subTotal);
-        if (isNaN(revenue)) {
-          return res.status(400).json({
-            message: `Invalid subtotal '${subTotal}' for product '${productName}'`,
-          });
-        }
+        console.log("====================================");
+        console.log("dp", discountedPrice);
+        console.log("====================================");
+
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
           where: { productID },
@@ -94,6 +93,8 @@ exports.createSales = async (req, res) => {
             .json({ message: `Unit for product '${productName}' not found` });
         }
 
+        const revenue = salesQuantity * discountedPrice;
+
         saleDetailsToCreate.push({
           salesID: newSale.salesID,
           productID: productID,
@@ -105,7 +106,7 @@ exports.createSales = async (req, res) => {
           unitID: unitID,
         });
 
-        totalRevenue += revenue;
+        subTotal += revenue;
 
         productDetails.push({
           productName: productName,
@@ -114,14 +115,30 @@ exports.createSales = async (req, res) => {
         });
       }
 
+      let totalRevenue;
+      let discountedAmount;
+
+      if (finalDiscount) {
+        totalRevenue = (1 - finalDiscount / 100) * subTotal;
+        discountedAmount = (finalDiscount / 100) * subTotal
+      } else {
+        totalRevenue = subTotal;
+        discountedAmount = 0;
+      }
+
       newSale.totalRevenue = totalRevenue;
       await newSale.save();
+
+     
 
       createdSales.push({
         salesID: newSale.salesID,
         custName: newSale.custName,
         customerContact: newSale.customerContact,
         soldDate: newSale.soldDate,
+        subTotal,
+        discount:finalDiscount,
+        discountedAmount,
         totalRevenue: newSale.totalRevenue,
         products: productDetails,
       });
@@ -208,7 +225,8 @@ exports.getAllSales = async (req, res) => {
 exports.updateSales = async (req, res) => {
   try {
     const { id } = req.params;
-    const { custName, customerContact, soldDate, products } = req.body;
+    const { custName, customerContact, soldDate, finalDiscount, products } =
+      req.body;
 
     const existingSale = await Sales.findByPk(id);
     if (!existingSale) {
@@ -222,6 +240,7 @@ exports.updateSales = async (req, res) => {
     existingSale.customerContact =
       customerContact || existingSale.customerContact;
     existingSale.soldDate = soldDate || existingSale.soldDate;
+    existingSale.finalDiscount = finalDiscount || existingSale.finalDiscount;
 
     // Remove old sales details and restore quantities
     const oldSalesDetails = await SalesDetail.findAll({
@@ -261,8 +280,7 @@ exports.updateSales = async (req, res) => {
             .json({ message: `Unit not found for product '${productName}'` });
         }
 
-        const { unitPrice } = product;
-        const calculatedTotalPrice = unitPrice * salesQuantity;
+        const { discountedPrice } = product;
 
         // Find stock entries for the product
         const stocks = await Stocks.findAll({
@@ -317,16 +335,17 @@ exports.updateSales = async (req, res) => {
           productName: product.productName,
           salesQuantity,
           unitType: unit.unitType,
-          unitPrice, // Include unitPrice for revenue calculation
+          discountedPrice,
         };
       })
     );
 
-    // Calculate total revenue for the sale
-    const totalRevenue = saleDetails.reduce(
-      (total, detail) => total + detail.unitPrice * detail.salesQuantity,
+    // Calculate total revenue for the sale with the discount applied
+    const subTotal = saleDetails.reduce(
+      (total, detail) => total + detail.discountedPrice * detail.salesQuantity,
       0
     );
+    const totalRevenue = subTotal * (1 - finalDiscount / 100);
     existingSale.totalRevenue = totalRevenue;
     await existingSale.save();
 

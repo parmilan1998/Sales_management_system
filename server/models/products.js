@@ -5,7 +5,7 @@ const io = require("../index");
 const Unit = require("./unit");
 
 const Product = db.define(
-  "Product",
+  "product",
   {
     productID: {
       type: DataTypes.INTEGER,
@@ -75,6 +75,12 @@ const Product = db.define(
       validate: {
         notEmpty: true,
       },
+    },
+    discount: {
+      type: DataTypes.FLOAT,
+    },
+    discountedPrice: {
+      type: DataTypes.FLOAT,
     },
     reOrderLevel: {
       type: DataTypes.INTEGER,

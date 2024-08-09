@@ -1,45 +1,47 @@
 const { Op } = require("sequelize");
-const { jsPDF } = require("jspdf");
 const Reports = require("../models/reports");
 const Sales = require("../models/sales");
 const Purchase = require("../models/purchase");
 const Stocks = require("../models/stocks");
 const path = require("path");
 const fs = require("fs");
+const puppeteer = require("puppeteer");
+const exphbs = require("express-handlebars");
 
-const generatePDFReport = async (
-  startDate,
-  endDate,
-  reportName,
-  grossProfit,
-  totalCOGS,
-  totalRevenue,
-  totalPurchases,
-  totalSales,
-  reportID
-) => {
-  // Initialize jsPDF
-  const doc = new jsPDF();
+// Create an instance of express-handlebars with custom configurations
+const hbs = exphbs.create({
+  layoutsDir: path.join(__dirname, "public/views/layouts"),
+  defaultLayout: "index",
+});
 
-  // Add content to the PDF
-  doc.text(`Gross Profit Report`, 10, 10);
-  doc.text(`Report Name: ${reportName}`, 10, 20);
-  doc.text(`Start Date: ${startDate}`, 10, 30);
-  doc.text(`End Date: ${endDate}`, 10, 40);
-  doc.text(`Total No of Purchases: ${totalPurchases}`, 10, 50);
-  doc.text(`Total COGS: $${totalCOGS}`, 10, 60);
-  doc.text(`Total No of Sales: ${totalSales}`, 10, 70);
-  doc.text(`Total Revenue: $${totalRevenue}`, 10, 80);
-  doc.text(`Gross Profit: $${grossProfit}`, 10, 90);
+// Function to render the Handlebars template with dynamic data
+const renderTemplate = async (data) => {
+  const templatePath = path.join(__dirname, "../public/views/main.handlebars");
+  const template = fs.readFileSync(templatePath, "utf8");
+  const compiledTemplate = hbs.handlebars.compile(template); // Use existing hbs instance
+  return compiledTemplate(data);
+};
 
-  const uploadPath = path.resolve(__dirname, "../public/reports");
+// Generate PDF from HTML content
+const generatePDFReport = async (htmlContent, reportID) => {
+  
+  const tailwindCSSCDN = '<script src="https://cdn.tailwindcss.com"></script>';
+  const modifiedHtmlContent = htmlContent + tailwindCSSCDN;
+
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+
+  const cssPath = path.resolve(__dirname, '../public/index.css');
+  await page.setContent(modifiedHtmlContent);
+  await page.addStyleTag({ path: cssPath });
+
   const pdfFileName = `Gross_Profit_Report_${reportID}.pdf`;
-  const pdfFilePath = path.join(uploadPath, pdfFileName);
+  const pdfFilePath = path.resolve(__dirname, "../public/reports", pdfFileName);
+
+  await page.pdf({ path: pdfFilePath, format: "A4" });
+  await browser.close();
 
   console.log(`PDF Report saved: ${pdfFilePath}`);
-  // Save the PDF to the filesystem
-  doc.save(pdfFilePath);
-
   return pdfFileName;
 };
 
@@ -156,16 +158,24 @@ exports.createReport = async (req, res) => {
       endDate: endDate,
     });
 
+    // Prepare data for the template
+    const templateData = {
+      reportName,
+      startDate: startDate,
+      endDate: endDate,
+      totalPurchases,
+      totalCOGS: totalCOGSFinal,
+      totalSales,
+      totalRevenue: totalRevenueFinal,
+      grossProfit: grossProfitFinal,
+    };
+
+    // Render the HTML content
+    const htmlContent = await renderTemplate(templateData);
+
     // Generate PDF report
     const reportFileName = await generatePDFReport(
-      startDate,
-      endDate,
-      reportName,
-      grossProfitFinal,
-      totalCOGSFinal,
-      totalRevenueFinal,
-      totalPurchases,
-      totalSales,
+      htmlContent,
       newReport.reportID
     );
 

@@ -16,6 +16,7 @@ exports.createProduct = async (req, res) => {
     unitType,
     unitPrice,
     reOrderLevel,
+    discount,
   } = req.body;
 
   try {
@@ -48,6 +49,13 @@ exports.createProduct = async (req, res) => {
 
     const code = generateRandomCode();
 
+    let discountedPrice;
+    if (discount) {
+      discountedPrice = unitPrice * ((100 - discount) / 100);
+    } else {
+      discountedPrice = unitPrice;
+    }
+
     const newProduct = await Product.create({
       productName,
       categoryID: category.categoryID,
@@ -56,6 +64,8 @@ exports.createProduct = async (req, res) => {
       unitID: unit.unitID,
       unitType,
       unitPrice,
+      discount: discount ? discount : 0,
+      discountedPrice,
       reOrderLevel,
       imageUrl: req.file ? req.file.filename : null,
       code: code,
@@ -201,6 +211,7 @@ exports.updateProduct = async (req, res) => {
     productDescription,
     unitType,
     unitPrice,
+    discount,
     reOrderLevel,
   } = req.body;
 
@@ -234,6 +245,12 @@ exports.updateProduct = async (req, res) => {
       console.log("New file uploaded:", req?.file);
     }
 
+    let discountedPrice = 0;
+    if (discount) {
+      discountedPrice = unitPrice * ((100 - discount) / 100);
+    } else {
+      discountedPrice = unitPrice;
+    }
     // Delete existing image if it exists
     if (product.imageUrl) {
       const filePath = path.join(
@@ -262,6 +279,8 @@ exports.updateProduct = async (req, res) => {
         categoryName,
         unitType: Unit.unitType || unitType,
         unitPrice,
+        discount,
+        discountedPrice,
         categoryID,
         reOrderLevel,
         imageUrl: req?.file?.filename,
@@ -274,6 +293,8 @@ exports.updateProduct = async (req, res) => {
         categoryName,
         unitType: Unit.unitType || unitType,
         unitPrice,
+        discount,
+        discountedPrice,
         reOrderLevel,
         categoryID,
       });

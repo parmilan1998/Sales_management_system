@@ -20,6 +20,9 @@ import LoginScreen from "./Pages/Admin/LoginScreen";
 import ProfileSettingsScreen from "./Pages/ProfileSettingsScreen";
 import OrderScreen from "./Pages/Order/OrderScreen";
 import AddInvoice from "./Pages/Order/AddInvoice";
+import PaymentScreen from "./Pages/payment/PaymentScreen";
+import Success from "./Components/Payment/Success";
+import Cancel from "./Components/Payment/Cancel";
 // import GoogleSignInButton from "./Components/admin/GoogleSignIn";
 
 const App = () => {
@@ -44,11 +47,14 @@ const App = () => {
             <Route path="/reports" element={<Report />} />
             <Route path="/profile" element={<ProfileSettingsScreen />} />
             <Route path="/stocks" element={<Stocks />} />
+            <Route path="/payment" element={<PaymentScreen />} />
             <Route path="*" element={<PageNotFound />} />
             {/* <Route path="/" element={<GoogleSignInButton />} /> */}
           </Route>
           <Route path="/user/login" element={<LoginScreen />} />
           <Route path="/invoice" element={<OrderScreen />} />
+          <Route path="/success" element={<Success />} />
+          <Route path="/cancel" element={<Cancel />} />
           <Route path="/invoice/add" element={<AddInvoice />} />
         </Routes>
       </BrowserRouter>
