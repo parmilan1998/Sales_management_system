@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const db = require("../database/db");
 
 const Reports = db.define(
-  "Reports",
+  "reports",
   {
     reportID: {
       type: DataTypes.INTEGER,
@@ -13,8 +13,8 @@ const Reports = db.define(
         notEmpty: true,
       },
     },
-    reportName:{
-      type:DataTypes.STRING
+    reportName: {
+      type: DataTypes.STRING,
     },
     startDate: {
       type: DataTypes.DATEONLY,
@@ -51,9 +51,9 @@ const Reports = db.define(
         notEmpty: true,
       },
     },
-    reportFile:{
-      type:DataTypes.TEXT
-    }
+    reportFile: {
+      type: DataTypes.TEXT,
+    },
   },
   {
     timestamps: true,

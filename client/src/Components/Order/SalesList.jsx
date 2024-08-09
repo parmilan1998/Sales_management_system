@@ -9,6 +9,7 @@ import {
   IoIosArrowDropdownCircle,
   IoIosArrowDroprightCircle,
 } from "react-icons/io";
+import SalesTimeDate from "./SalesTimeDate";
 
 const SalesList = () => {
   const [tempProducts, setTempProducts] = useState([]);
@@ -116,7 +117,6 @@ const SalesList = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    clearAll();
 
     if (!customerData) {
       toast.error("Fill all the customer information!...");
@@ -417,6 +417,13 @@ const SalesList = () => {
           <div>
             {addedProducts && (
               <div className="bg-white text-gray-500 rounded w-full p-4">
+                <div className="mx-4">
+                  <SalesTimeDate
+                    formatDate={formatDate}
+                    currentDate={currentDate}
+                    setCurrentDate={setCurrentDate}
+                  />
+                </div>
                 <div className="grid grid-cols-5 p-4 gap-2">
                   <div className="py-2 flex justify-center items-center gap-3 text-center text-2xl font-poppins font-bold">
                     Items
@@ -456,7 +463,7 @@ const SalesList = () => {
                             </td>
                             <td
                               data-th="Actions"
-                              className="before:inline-block w-24 justify-end py-6 before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
+                              className="before:inline-block w-4 justify-end py-6 before:font-medium before:text-slate-700 before:content-[attr(data-th)':'] sm:before:content-none flex items-center sm:table-cell h-8 text-sm transition duration-300 stroke-slate-500"
                             >
                               <button
                                 className="flex justify-end ml-12 items-center"
@@ -476,13 +483,13 @@ const SalesList = () => {
 
                 <div className="flex justify-between items-center px-4 py-2 text-gray-600 border-t-0">
                   <h3 className="text-sm font-medium">Sub Total</h3>
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium ">
                     Rs.{calculateSubtotal().toFixed(2)}
                   </p>
                 </div>
                 <div className="flex justify-between items-center px-4 py-2 text-gray-600 border-t-0">
                   <h3 className="text-sm font-medium">Discount</h3>
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium ">
                     <input
                       type="number"
                       className="w-16 px-2 py-1 text-sm border rounded"

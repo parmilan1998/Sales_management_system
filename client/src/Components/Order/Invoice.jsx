@@ -8,6 +8,8 @@ import {
 import { CiCircleRemove } from "react-icons/ci";
 import PropTypes from "prop-types";
 import { BsFillCalendar2DateFill } from "react-icons/bs";
+import SalesTimeDate from "./SalesTimeDate";
+import PaymentModal from "../Payment/PaymentModal";
 
 const Invoice = ({
   cart,
@@ -24,28 +26,14 @@ const Invoice = ({
   currentDate,
   setCurrentDate,
 }) => {
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div>
       <div className="bg-white rounded shadow-md px-4 mt-0">
-        <div className="flex justify-between items-center pt-6">
-          <span className=" flex gap-2 justify-center items-center text-md text-gray-500 font-medium">
-            <BsFillCalendar2DateFill size={20} color="blue" />
-            {formatDate(currentDate)}
-          </span>
-          <span className=" flex gap-2 justify-center items-center text-md text-gray-500 font-medium">
-            <IoIosTime size={20} color="blue" />
-            {currentDate.toLocaleTimeString()}
-          </span>
-        </div>
+        <SalesTimeDate
+          formatDate={formatDate}
+          currentDate={currentDate}
+          setCurrentDate={setCurrentDate}
+        />
         <h2 className="text-2xl font-semibold pt-6 font-acme text-gray-600">
           Items
         </h2>
@@ -74,7 +62,7 @@ const Invoice = ({
                               {item.productName}
                             </h2>
                           </th>
-                          <th className="w-24">
+                          <th className="w-32">
                             {" "}
                             <p className="text-black text-start font-medium flex justify-center items-center gap-2">
                               <IoIosRemoveCircleOutline
@@ -94,7 +82,7 @@ const Invoice = ({
                             </p>
                           </th>
 
-                          <th className="w-20">
+                          <th className="w-40 flex justify-end">
                             {" "}
                             <p className=" text-gray-800 text-start text-xs font-medium">
                               Rs.
@@ -157,10 +145,17 @@ const Invoice = ({
                 </button>
                 <button
                   onClick={handleFinished}
+                  // onClick={handlePayNow}
                   className="bg-green-500 text-sm text-white w-full px-4 py-2 rounded"
                 >
                   Pay Now
                 </button>
+                {/* <PaymentModal
+                  handleFinished={handleFinished}
+                  orderId={45896588}
+                  name="Sales Invoice"
+                  amount={calculateTotal().toFixed(2)}
+                /> */}
               </div>
             </div>
           </>

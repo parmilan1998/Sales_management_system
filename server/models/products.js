@@ -5,7 +5,7 @@ const io = require("../index");
 const Unit = require("./unit");
 
 const Product = db.define(
-  "Product",
+  "product",
   {
     productID: {
       type: DataTypes.INTEGER,
@@ -92,7 +92,6 @@ const Product = db.define(
     imageUrl: {
       type: DataTypes.TEXT,
     },
-
   },
   {
     timestamps: true,

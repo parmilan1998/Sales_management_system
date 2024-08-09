@@ -37,7 +37,7 @@ exports.createStocks = async (req, res) => {
     const existingStock = await Stocks.findOne({
       where: {
         productID: product.productID,
-        unitID:product.unitID,
+        unitID: product.unitID,
         productName,
         purchasePrice,
         manufacturedDate,
@@ -91,7 +91,7 @@ exports.createStocks = async (req, res) => {
 
     const createdStock = await Stocks.create({
       productID: product.productID,
-      unitID:product.unitID,
+      unitID: product.unitID,
       productName,
       productQuantity,
       purchasePrice: purchasePrice || null,
@@ -295,15 +295,15 @@ exports.queryStocks = async (req, res) => {
 
     const stocksWithUnitType = stocks.map((stock) => ({
       id: stock.stockID,
-      product:stock.productID,
-      purchaseID:stock.purchaseID,
+      product: stock.productID,
+      purchaseID: stock.purchaseID,
       productName: stock.productName,
       productQuantity: stock.productQuantity,
       purchasePrice: stock.purchasePrice,
       manufacturedDate: stock.manufacturedDate,
       expiryDate: stock.expiryDate,
       purchasedDate: stock.purchasedDate,
-      unitType: stock.Unit.unitType,
+      unitType: stock.unit.unitType,
     }));
 
     // Total pages

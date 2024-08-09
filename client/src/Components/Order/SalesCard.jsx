@@ -139,7 +139,6 @@ const SalesCard = () => {
   // Handle finished
   const handleFinished = async (e) => {
     e.preventDefault();
-    clearAll();
 
     if (!customerData) {
       toast.error("Fill customer information!...");

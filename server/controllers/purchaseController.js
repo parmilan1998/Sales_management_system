@@ -47,7 +47,7 @@ exports.createPurchase = async (req, res) => {
 
     const createdPurchase = await Purchase.create({
       productID: product.productID,
-      unitID:product.unitID,
+      unitID: product.unitID,
       productName,
       purchaseVendor,
       vendorContact,
@@ -83,7 +83,7 @@ exports.createPurchase = async (req, res) => {
       updatedStock = await Stocks.create({
         productName,
         productID: product.productID,
-        unitID:product.unitID,
+        unitID: product.unitID,
         purchaseID: createdPurchase.purchaseID,
         productQuantity: purchaseQuantity,
         manufacturedDate: manufacturedDate,
@@ -462,7 +462,7 @@ exports.queryPurchase = async (req, res) => {
       purchaseVendor: purchase.purchaseVendor,
       vendorContact: purchase.vendorContact,
       purchasedDate: purchase.purchasedDate,
-      unitType: purchase.Unit.unitType,
+      unitType: purchase.unit.unitType,
     }));
 
     // Total pages
