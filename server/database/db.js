@@ -1,5 +1,5 @@
 const Sequelize = require("sequelize");
-
+const mysql2 = require("mysql2");
 const dotenv = require("dotenv").config();
 
 const db = new Sequelize(
@@ -9,6 +9,7 @@ const db = new Sequelize(
   {
     host: process.env.DB_HOST,
     dialect: "mysql",
+    dialectModule: require("mysql2"),
   }
 );
 
