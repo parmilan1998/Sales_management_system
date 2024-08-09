@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { Tooltip } from "antd";
 import GridLoader from "react-spinners/GridLoader";
 import { motion } from "framer-motion";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const Category = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -38,7 +39,7 @@ const Category = () => {
     setValue,
   } = useForm();
 
-  const baseUrl = "http://localhost:5000/public/category";
+  const baseUrl = `${apiUrl}/public/category`;
 
   // Reset input fields
   const handleClear = () => {

@@ -5,7 +5,7 @@ const Product = require("./products");
 const Unit = require("./unit");
 
 const Stocks = db.define(
-  "Stocks",
+  "stocks",
   {
     stockID: {
       type: DataTypes.INTEGER,

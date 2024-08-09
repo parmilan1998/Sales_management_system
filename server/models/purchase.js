@@ -4,7 +4,7 @@ const Product = require("./products");
 const Unit = require("./unit");
 
 const Purchase = db.define(
-  "Purchase",
+  "purchase",
   {
     purchaseID: {
       type: DataTypes.INTEGER,

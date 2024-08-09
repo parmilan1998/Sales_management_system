@@ -10,6 +10,7 @@ import { Button, DatePicker, Form, Input, InputNumber } from "antd";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Invoice from "./Invoice";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const SalesCard = () => {
   const [category, setCategory] = useState([]);
@@ -20,10 +21,11 @@ const SalesCard = () => {
   const [customerData, setCustomerData] = useState(null);
   const navigate = useNavigate();
   const [discount, setDiscount] = useState(0);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const fetchCategoryData = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/v1/category/list");
+      const res = await axios.get(`${apiUrl}/api/v1/category/list`);
       setCategory(res.data);
       console.log(res.data);
       const techCategory = res.data.find(
@@ -41,11 +43,8 @@ const SalesCard = () => {
   const fetchProductsData = async (categoryID) => {
     try {
       setProducts([]);
-      const res = await axios.get(
-        `http://localhost:5000/api/v1/product/fbc/${categoryID}`
-      );
+      const res = await axios.get(`${apiUrl}/api/v1/product/fbc/${categoryID}`);
       setProducts(res.data);
-      console.log(res.data);
     } catch (error) {
       console.error("Error fetching products data:", error);
     }
@@ -129,6 +128,13 @@ const SalesCard = () => {
     localStorage.removeItem("cart");
   };
 
+  const formatDate = (date) => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  };
+
   // Handle finished
   const handleFinished = async (e) => {
     e.preventDefault();
@@ -140,7 +146,7 @@ const SalesCard = () => {
     const payload = {
       custName: customerData.custName,
       customerContact: customerData.contactNo,
-      soldDate: customerData.soldDate.format("YYYY-MM-DD"),
+      soldDate: formatDate(currentDate),
       products: cart.map((product) => ({
         productName: product.productName,
         salesQuantity: product.quantity,
@@ -149,10 +155,7 @@ const SalesCard = () => {
     };
 
     try {
-      const res = await axios.post(
-        `http://localhost:5000/api/v1/sales`,
-        payload
-      );
+      const res = await axios.post(`${apiUrl}/api/v1/sales`, payload);
       console.log(res.data);
       toast.success(`Sales created successfully!`);
       clearAll();
@@ -200,8 +203,8 @@ const SalesCard = () => {
               )}
             </button>
             {showContent && (
-              <div className="bg-white px-2 w-full mb-4 rounded shadow-md">
-                <div className="flex w-full">
+              <div className="bg-white px-2 w-3/4 mb-4 rounded shadow-md">
+                <div className="flex w-auto">
                   <Form
                     className="gap-3 pt-8 px-3 bg-white flex"
                     layout="vertical"
@@ -233,22 +236,6 @@ const SalesCard = () => {
                         placeholder="Ex: 0770337897"
                         className="font-poppins py-0.5 w-full"
                         maxLength={10}
-                      />
-                    </Form.Item>
-                    <Form.Item
-                      name={["customer", "soldDate"]}
-                      label="Sold Date"
-                      className="font-poppins font-medium px-3 w-full"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select the sold date!",
-                        },
-                      ]}
-                    >
-                      <DatePicker
-                        className="font-poppins py-1.5 w-full"
-                        placeholder="Ex: 22.08.2024"
                       />
                     </Form.Item>
                     <Form.Item className="flex justify-center mt-7 items-center">
@@ -290,7 +277,7 @@ const SalesCard = () => {
                       >
                         <button onClick={() => addToCart(product)}>
                           <img
-                            src={`http://localhost:5000/public/products/${product.imageUrl}`}
+                            src={`${apiUrl}/public/products/${product.imageUrl}`}
                             alt={product.productName}
                             className="w-full h-32 object-cover mb-4"
                           />
@@ -334,6 +321,9 @@ const SalesCard = () => {
             discount={discount}
             setDiscount={setDiscount}
             calculateTotal={calculateTotal}
+            currentDate={currentDate}
+            setCurrentDate={setCurrentDate}
+            formatDate={formatDate}
           />
         </div>
       </div>

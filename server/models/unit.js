@@ -3,7 +3,7 @@ const db = require("../database/db");
 const Product = require("./products");
 
 const Unit = db.define(
-  "Unit",
+  "unit",
   {
     unitID: {
       type: DataTypes.INTEGER,

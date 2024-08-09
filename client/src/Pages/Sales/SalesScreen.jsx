@@ -8,6 +8,7 @@ import { LuPlus } from "react-icons/lu";
 import SalesSearch from "../../Components/Sales/SalesSearch";
 import SalesSort from "../../Components/Sales/SalesSort";
 import GridLoader from "react-spinners/GridLoader";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const SalesScreen = () => {
   const navigate = useNavigate();
@@ -105,7 +106,7 @@ const SalesScreen = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchSales = async () => {
-    const url = `http://localhost:5000/api/v1/sales/query?page=${page}&limit=${limit}&sort=${sortName}&sortBy=${sortDate}&keyword=${search}`;
+    const url = `${apiUrl}/api/v1/sales/query?page=${page}&limit=${limit}&sort=${sortName}&sortBy=${sortDate}&keyword=${search}`;
     try {
       const res = await axios.get(url);
       const { sales, pagination } = res.data;

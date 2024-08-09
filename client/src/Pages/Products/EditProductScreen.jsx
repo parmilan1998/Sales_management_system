@@ -4,9 +4,10 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { Link, useNavigate, useParams } from "react-router-dom";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const EditProductScreen = () => {
-  const baseUrl = "http://localhost:5000/public/products";
+  const baseUrl = `${apiUrl}/public/products`;
 
   const { id } = useParams();
   const [category, setCategory] = useState([]);
@@ -24,7 +25,7 @@ const EditProductScreen = () => {
   // Fetch and display update product Details use setValue
   const fetchUpdateProductDetails = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/v1/product/${id}`);
+      const res = await axios.get(`${apiUrl}/api/v1/product/${id}`);
       const product = res.data;
       setValue("productName", product.productName);
       setValue("categoryName", product.categoryName);
@@ -51,7 +52,7 @@ const EditProductScreen = () => {
     formData.append("productDescription", data.description);
 
     const res = await axios
-      .put(`http://localhost:5000/api/v1/product/${id}`, formData)
+      .put(`${apiUrl}/api/v1/product/${id}`, formData)
       .then((res) => {
         console.log(res.data);
         toast.success(`Product updated successfully!`);
@@ -70,7 +71,7 @@ const EditProductScreen = () => {
   // Fetch categories
   const fetchCategoryApi = async () => {
     const res = await axios
-      .get("http://localhost:5000/api/v1/category/list")
+      .get(`${apiUrl}/api/v1/category/list`)
       .then((res) => {
         console.log(res.data);
         setCategory(res.data);
@@ -81,7 +82,7 @@ const EditProductScreen = () => {
   };
   const fetchUnitApi = async () => {
     const res = await axios
-      .get("http://localhost:5000/api/v1/unit/list")
+      .get(`${apiUrl}/api/v1/unit/list`)
       .then((res) => {
         console.log(res.data);
         setUnit(res.data);

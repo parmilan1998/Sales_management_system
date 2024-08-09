@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout, logOutAdmin } from "../features/authSlice";
 import toast from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 export default function NavbarSales() {
   const [isToggleOpen, setIsToggleOpen] = useState(false);
@@ -18,7 +19,7 @@ export default function NavbarSales() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const baseUrl = "http://localhost:5000/public/profile";
+  const baseUrl = `${apiUrl}/public/profile`;
 
   useEffect(() => {
     if (!user) {
@@ -60,7 +61,7 @@ export default function NavbarSales() {
   // Fetch Sales Count
   const fetchSalesCount = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/v1/sales/list`);
+      const res = await axios.get(`${apiUrl}/api/v1/sales/list`);
       console.log(res.data);
       setSalesCount(res.data);
     } catch (err) {

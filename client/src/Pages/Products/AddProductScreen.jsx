@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { IoMdAddCircleOutline } from "react-icons/io";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const AddProduct = () => {
   const [category, setCategory] = useState([]);
@@ -13,7 +14,7 @@ const AddProduct = () => {
 
   const handleAddUnitType = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/v1/unit", {
+      const res = await axios.post(`${apiUrl}/api/v1/unit`, {
         unitType,
       });
       console.log(res.data);
@@ -51,10 +52,7 @@ const AddProduct = () => {
       formData.append("reOrderLevel", data.reOrderLevel);
       formData.append("productDescription", data.description);
 
-      const response = await axios.post(
-        "http://localhost:5000/api/v1/product",
-        formData
-      );
+      const response = await axios.post(`${apiUrl}/api/v1/product`, formData);
 
       console.log(response.data);
       toast.success(`Product created successfully!`);
@@ -74,7 +72,7 @@ const AddProduct = () => {
   // Fetch categories
   const fetchCategoryApi = async () => {
     const res = await axios
-      .get("http://localhost:5000/api/v1/category/list")
+      .get(`${apiUrl}/api/v1/category/list`)
       .then((res) => {
         console.log(res.data);
         setCategory(res.data);
@@ -86,7 +84,7 @@ const AddProduct = () => {
 
   const fetchUnitApi = async () => {
     const res = await axios
-      .get("http://localhost:5000/api/v1/unit/list")
+      .get(`${apiUrl}/api/v1/unit/list`)
       .then((res) => {
         console.log(res.data);
         setUnit(res.data);

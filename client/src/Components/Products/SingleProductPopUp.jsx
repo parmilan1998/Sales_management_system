@@ -1,9 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React from "react";
 import PropTypes from "prop-types";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const SingleProductPopUp = ({ rowData }) => {
-  const baseUrl = "http://localhost:5000/public/products";
+  const baseUrl = `${apiUrl}/public/products`;
 
   return (
     <div>

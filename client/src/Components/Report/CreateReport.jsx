@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { addDays, addMonths } from "date-fns";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const CreateReport = ({
   startDate: initialStartDate,
@@ -114,7 +115,7 @@ const CreateReport = ({
       const reportID = res.data.report.reportID;
       // Download the generated PDF file
       const downloadResponse = await fetch(
-        `http://localhost:5000/api/v1/reports/download/${reportID}`,
+        `${apiUrl}/api/v1/reports/download/${reportID}`,
         {
           method: "GET",
           headers: {

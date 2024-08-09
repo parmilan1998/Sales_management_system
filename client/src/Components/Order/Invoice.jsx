@@ -8,6 +8,9 @@ import {
 import { CiCircleRemove } from "react-icons/ci";
 import PropTypes from "prop-types";
 import { BsFillCalendar2DateFill } from "react-icons/bs";
+import SalesTimeDate from "./SalesTimeDate";
+import PaymentModal from "../Payment/PaymentModal";
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const Invoice = ({
   cart,
@@ -20,37 +23,18 @@ const Invoice = ({
   discount,
   setDiscount,
   calculateTotal,
+  formatDate,
+  currentDate,
+  setCurrentDate,
 }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatDate = (date) => {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
-  };
-
   return (
     <div>
       <div className="bg-white rounded shadow-md px-4 mt-0">
-        <div className="flex justify-between items-center pt-6">
-          <span className=" flex gap-2 justify-center items-center text-md text-gray-500 font-medium">
-            <BsFillCalendar2DateFill size={20} color="blue" />
-            {formatDate(currentDate)}
-          </span>
-          <span className=" flex gap-2 justify-center items-center text-md text-gray-500 font-medium">
-            <IoIosTime size={20} color="blue" />
-            {currentDate.toLocaleTimeString()}
-          </span>
-        </div>
+        <SalesTimeDate
+          formatDate={formatDate}
+          currentDate={currentDate}
+          setCurrentDate={setCurrentDate}
+        />
         <h2 className="text-2xl font-semibold pt-6 font-acme text-gray-600">
           Items
         </h2>
@@ -63,79 +47,67 @@ const Invoice = ({
                 <div key={index} className=" border-b-[1px]">
                   <div className="flex gap-2">
                     <table>
-                      <tr className="flex gap-3 justify-center items-center">
-                        <th className="flex justify-start items-start">
-                          {" "}
-                          <img
-                            src={`http://localhost:5000/public/products/${item.imageUrl}`}
-                            alt={item.productName}
-                            className="w-12 h-12 object-cover mb-4 rounded"
-                          />
-                        </th>
-                        <th className="w-24">
-                          {" "}
-                          <h2 className="text-xs text-start font-medium">
-                            {item.productName}
-                          </h2>
-                        </th>
-                        <th className="w-24">
-                          {" "}
-                          <p className="text-black text-start font-medium flex justify-center items-center gap-2">
-                            <IoIosRemoveCircleOutline
-                              onClick={() => decrementQuantity(item.productID)}
+                      <tbody>
+                        <tr className="flex gap-3 justify-center items-center">
+                          <th className="flex justify-start items-start">
+                            {" "}
+                            <img
+                              src={`${apiUrl}/public/products/${item.imageUrl}`}
+                              alt={item.productName}
+                              className="w-12 h-12 object-cover mb-4 rounded"
                             />
-                            <span>{item.quantity}</span>
+                          </th>
+                          <th className="w-24">
+                            {" "}
+                            <h2 className="text-xs text-start font-medium">
+                              {item.productName}
+                            </h2>
+                          </th>
+                          <th className="w-32">
+                            {" "}
+                            <p className="text-black text-start font-medium flex justify-center items-center gap-2">
+                              <IoIosRemoveCircleOutline
+                                onClick={() =>
+                                  decrementQuantity(item.productID)
+                                }
+                              />
+                              <span>{item.quantity}</span>
+                              <button
+                                onClick={() =>
+                                  incrementQuantity(item.productID)
+                                }
+                                disabled={item.quantity >= item.totalQuantity}
+                              >
+                                <IoIosAddCircleOutline />
+                              </button>
+                            </p>
+                          </th>
+
+                          <th className="w-40 flex justify-end">
+                            {" "}
+                            <p className=" text-gray-800 text-start text-xs font-medium">
+                              Rs.
+                              {(item.discountedPrice * item.quantity).toFixed(
+                                2
+                              )}
+                            </p>
+                          </th>
+                          <th>
                             <button
-                              onClick={() => incrementQuantity(item.productID)}
-                              disabled={item.quantity >= item.totalQuantity}
-                            >
-                              <IoIosAddCircleOutline />
-                            </button>
-                          </p>
-                        </th>
-                        <th className="w-16">
-                          {/* <input
-                            type="number"
-                            value={item.discount || 0}
-                            onChange={(e) => {
-                              const updatedCart = cart.map((cartItem) =>
-                                cartItem.productID === item.productID
-                                  ? {
-                                      ...cartItem,
-                                      discount: Number(e.target.value),
-                                    }
-                                  : cartItem
-                              );
-                              setCart(updatedCart);
-                            }}
-                            className="w-16 px-2 py-1 text-sm border rounded"
-                            min="0"
-                            max="100"
-                          />
-                          <span className="text-gray-600 px-1 text-xs">%</span> */}
-                        </th>
-                        <th className="w-20">
-                          {" "}
-                          <p className=" text-gray-800 text-start text-xs font-medium">
-                            Rs.
-                            {(item.discountedPrice * item.quantity).toFixed(2)}
-                          </p>
-                        </th>
-                        <th>
-                          <button
-                            className="mt-1"
-                            onClick={() =>
-                              setCart(
-                                cart.filter(
-                                  (p) => p.productID !== item.productID
+                              className="mt-1"
+                              onClick={() =>
+                                setCart(
+                                  cart.filter(
+                                    (p) => p.productID !== item.productID
+                                  )
                                 )
-                              )
-                            }
-                          >
-                            <CiCircleRemove color="red" />
-                          </button>
-                        </th>
-                      </tr>
+                              }
+                            >
+                              <CiCircleRemove color="red" />
+                            </button>
+                          </th>
+                        </tr>
+                      </tbody>
                     </table>
                   </div>
                 </div>
@@ -174,10 +146,17 @@ const Invoice = ({
                 </button>
                 <button
                   onClick={handleFinished}
+                  // onClick={handlePayNow}
                   className="bg-green-500 text-sm text-white w-full px-4 py-2 rounded"
                 >
-                  Finished
+                  Pay Now
                 </button>
+                {/* <PaymentModal
+                  handleFinished={handleFinished}
+                  orderId={45896588}
+                  name="Sales Invoice"
+                  amount={calculateTotal().toFixed(2)}
+                /> */}
               </div>
             </div>
           </>
@@ -198,6 +177,9 @@ Invoice.propTypes = {
   discount: PropTypes.number.isRequired,
   setDiscount: PropTypes.func.isRequired,
   calculateTotal: PropTypes.func.isRequired,
+  setCurrentDate: PropTypes.func.isRequired,
+  currentDate: PropTypes.object,
+  formatDate: PropTypes.func,
 };
 
 export default Invoice;
